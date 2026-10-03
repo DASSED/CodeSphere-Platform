@@ -1,6 +1,6 @@
-# Pan-African Dev Exchange
+# CodeSphere
 
-A knowledge-exchange platform for African developers, built by developers: Q&A in the spirit of StackOverflow, a personalised content feed in the spirit of daily.dev, and hackathon information in the spirit of DoraHacks. Built for the Systalink hackathon.
+CodeSphere is a knowledge-exchange platform for African developers, built by developers: Q&A in the spirit of StackOverflow, a personalised content feed in the spirit of daily.dev, and hackathon information in the spirit of DoraHacks. Built for the Systalink hackathon.
 
 ## Language
 
