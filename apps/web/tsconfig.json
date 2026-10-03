@@ -22,7 +22,7 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@systalink-challenge/ui/*": ["../../packages/ui/src/*"]
+      "@codesphere/ui/*": ["../../packages/ui/src/*"]
     }
   }
 }

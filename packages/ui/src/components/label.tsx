@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@systalink-challenge/ui/lib/utils";
+import { cn } from "@codesphere/ui/lib/utils";
 import * as React from "react";
 
 function Label({ className, ...props }: React.ComponentProps<"label">) {

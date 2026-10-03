@@ -1,5 +1,5 @@
 {
-  "extends": "@systalink-challenge/config/tsconfig.base.json",
+  "extends": "@codesphere/config/tsconfig.base.json",
   "references": [{ "path": "../../packages/api" }],
   "compilerOptions": {
     "noEmit": true,

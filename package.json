@@ -1,5 +1,5 @@
 {
-  "name": "systalink-challenge",
+  "name": "codesphere",
   "private": true,
   "workspaces": {
     "packages": [
@@ -34,10 +34,10 @@
     "check-types": "turbo run check-types",
     "dev:web": "turbo run dev -F web --",
     "dev:server": "turbo run dev -F server --",
-    "db:push": "turbo run db:push -F @systalink-challenge/db --",
-    "db:studio": "turbo run db:studio -F @systalink-challenge/db --",
-    "db:generate": "turbo run db:generate -F @systalink-challenge/db --",
-    "db:migrate": "turbo run db:migrate -F @systalink-challenge/db --",
+    "db:push": "turbo run db:push -F @codesphere/db --",
+    "db:studio": "turbo run db:studio -F @codesphere/db --",
+    "db:generate": "turbo run db:generate -F @codesphere/db --",
+    "db:migrate": "turbo run db:migrate -F @codesphere/db --",
     "db:start": "docker compose up -d postgres",
     "db:watch": "docker compose up postgres",
     "db:stop": "docker compose stop postgres",
@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.12",
-    "@systalink-challenge/config": "workspace:*",
+    "@codesphere/config": "workspace:*",
     "@types/bun": "catalog:",
     "turbo": "^2.10.12",
     "typescript": "catalog:",

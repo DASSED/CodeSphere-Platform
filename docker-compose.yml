@@ -1,4 +1,4 @@
-name: systalink-challenge
+name: codesphere
 
 services:
   web:
@@ -50,7 +50,7 @@ services:
         required: false
     environment:
       CORS_ORIGIN: http://localhost:3001
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-password}@postgres:5432/systalink-challenge
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-password}@postgres:5432/codesphere
     healthcheck:
       test:
         [
@@ -70,15 +70,15 @@ services:
 
   postgres:
     image: postgres:18
-    container_name: systalink-challenge-postgres
+    container_name: codesphere-postgres
     environment:
-      POSTGRES_DB: systalink-challenge
+      POSTGRES_DB: codesphere
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
     ports:
       - "5432:5432"
     volumes:
-      - systalink-challenge_postgres_data:/var/lib/postgresql
+      - codesphere_postgres_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -87,7 +87,7 @@ services:
     restart: unless-stopped
 
 volumes:
-  systalink-challenge_postgres_data:
+  codesphere_postgres_data:
 
 # BuildKit makes these available only while install/build commands run.
 secrets:

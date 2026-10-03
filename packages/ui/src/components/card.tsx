@@ -1,4 +1,4 @@
-import { cn } from "@systalink-challenge/ui/lib/utils";
+import { cn } from "@codesphere/ui/lib/utils";
 import * as React from "react";
 
 function Card({

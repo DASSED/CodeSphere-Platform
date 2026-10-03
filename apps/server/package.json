@@ -15,16 +15,16 @@
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
-    "@systalink-challenge/api": "workspace:*",
-    "@systalink-challenge/auth": "workspace:*",
-    "@systalink-challenge/db": "workspace:*",
+    "@codesphere/api": "workspace:*",
+    "@codesphere/auth": "workspace:*",
+    "@codesphere/db": "workspace:*",
     "better-auth": "catalog:",
     "hono": "^4.13.7",
     "varlock": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@systalink-challenge/config": "workspace:*",
+    "@codesphere/config": "workspace:*",
     "@types/bun": "catalog:",
     "tsdown": "^0.23.0",
     "typescript": "catalog:"

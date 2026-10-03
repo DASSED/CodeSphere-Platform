@@ -13,8 +13,8 @@
     "@orpc/client": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/tanstack-query": "^1.15.0",
-    "@systalink-challenge/api": "workspace:*",
-    "@systalink-challenge/ui": "workspace:*",
+    "@codesphere/api": "workspace:*",
+    "@codesphere/ui": "workspace:*",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-query": "^5.102.8",
@@ -34,7 +34,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@systalink-challenge/config": "workspace:*",
+    "@codesphere/config": "workspace:*",
     "@tanstack/react-query-devtools": "^5.102.8",
     "@tanstack/react-router-devtools": "^1.167.1",
     "@testing-library/dom": "^10.4.1",

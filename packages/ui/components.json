@@ -12,11 +12,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@systalink-challenge/ui/components",
-    "utils": "@systalink-challenge/ui/lib/utils",
-    "hooks": "@systalink-challenge/ui/hooks",
-    "lib": "@systalink-challenge/ui/lib",
-    "ui": "@systalink-challenge/ui/components"
+    "components": "@codesphere/ui/components",
+    "utils": "@codesphere/ui/lib/utils",
+    "hooks": "@codesphere/ui/hooks",
+    "lib": "@codesphere/ui/lib",
+    "ui": "@codesphere/ui/components"
   },
   "menuColor": "default",
   "menuAccent": "subtle",

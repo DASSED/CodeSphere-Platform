@@ -1,4 +1,4 @@
-import type { Context as ApiContext } from "@systalink-challenge/api/context";
+import type { Context as ApiContext } from "@codesphere/api/context";
 import type { Context as HonoContext } from "hono";
 
 import { db } from "./services";

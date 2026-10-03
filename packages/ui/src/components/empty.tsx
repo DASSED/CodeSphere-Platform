@@ -1,4 +1,4 @@
-import { cn } from "@systalink-challenge/ui/lib/utils";
+import { cn } from "@codesphere/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 
 function Empty({ className, ...props }: React.ComponentProps<"div">) {

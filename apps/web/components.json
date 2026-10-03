@@ -13,8 +13,8 @@
   "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
-    "utils": "@systalink-challenge/ui/lib/utils",
-    "ui": "@systalink-challenge/ui/components",
+    "utils": "@codesphere/ui/lib/utils",
+    "ui": "@codesphere/ui/components",
     "lib": "@/lib",
     "hooks": "@/hooks"
   },

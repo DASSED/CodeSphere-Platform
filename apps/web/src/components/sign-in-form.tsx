@@ -1,6 +1,6 @@
-import { Button } from "@systalink-challenge/ui/components/button";
-import { Input } from "@systalink-challenge/ui/components/input";
-import { Label } from "@systalink-challenge/ui/components/label";
+import { Button } from "@codesphere/ui/components/button";
+import { Input } from "@codesphere/ui/components/input";
+import { Label } from "@codesphere/ui/components/label";
 import { useForm } from "@tanstack/react-form";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";

@@ -1,5 +1,5 @@
 {
-  "name": "@systalink-challenge/api",
+  "name": "@codesphere/api",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -14,12 +14,12 @@
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",
-    "@systalink-challenge/auth": "workspace:*",
-    "@systalink-challenge/db": "workspace:*",
+    "@codesphere/auth": "workspace:*",
+    "@codesphere/db": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@systalink-challenge/config": "workspace:*",
+    "@codesphere/config": "workspace:*",
     "typescript": "catalog:"
   }
 }

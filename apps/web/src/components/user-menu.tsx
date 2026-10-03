@@ -1,4 +1,4 @@
-import { Button } from "@systalink-challenge/ui/components/button";
+import { Button } from "@codesphere/ui/components/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@systalink-challenge/ui/components/dropdown-menu";
-import { Skeleton } from "@systalink-challenge/ui/components/skeleton";
+} from "@codesphere/ui/components/dropdown-menu";
+import { Skeleton } from "@codesphere/ui/components/skeleton";
 import { Link, useNavigate } from "@tanstack/react-router";
 
 import { authClient } from "@/lib/auth-client";

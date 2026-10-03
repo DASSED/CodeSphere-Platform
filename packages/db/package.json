@@ -1,5 +1,5 @@
 {
-  "name": "@systalink-challenge/db",
+  "name": "@codesphere/db",
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
@@ -20,7 +20,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@systalink-challenge/config": "workspace:*",
+    "@codesphere/config": "workspace:*",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "1.0.0-rc.4",
     "typescript": "catalog:",

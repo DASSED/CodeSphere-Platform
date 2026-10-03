@@ -6,8 +6,8 @@ import {
   useMessageScrollerScrollable,
   useMessageScrollerVisibility,
 } from "@shadcn/react/message-scroller";
-import { Button } from "@systalink-challenge/ui/components/button";
-import { cn } from "@systalink-challenge/ui/lib/utils";
+import { Button } from "@codesphere/ui/components/button";
+import { cn } from "@codesphere/ui/lib/utils";
 import { ArrowDownIcon } from "lucide-react";
 import * as React from "react";
 

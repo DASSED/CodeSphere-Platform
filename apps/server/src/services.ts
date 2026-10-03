@@ -1,5 +1,5 @@
-import { createAuth } from "@systalink-challenge/auth";
-import { createDb } from "@systalink-challenge/db";
+import { createAuth } from "@codesphere/auth";
+import { createDb } from "@codesphere/db";
 
 import { ENV } from "./env.server";
 

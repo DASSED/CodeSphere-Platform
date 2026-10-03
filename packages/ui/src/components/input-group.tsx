@@ -1,9 +1,9 @@
 "use client";
 
-import { Button } from "@systalink-challenge/ui/components/button";
-import { Input } from "@systalink-challenge/ui/components/input";
-import { Textarea } from "@systalink-challenge/ui/components/textarea";
-import { cn } from "@systalink-challenge/ui/lib/utils";
+import { Button } from "@codesphere/ui/components/button";
+import { Input } from "@codesphere/ui/components/input";
+import { Textarea } from "@codesphere/ui/components/textarea";
+import { cn } from "@codesphere/ui/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import * as React from "react";
 
