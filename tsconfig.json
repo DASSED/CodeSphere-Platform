@@ -1,0 +1,3 @@
+{
+  "extends": "@systalink-challenge/config/tsconfig.base.json"
+}
