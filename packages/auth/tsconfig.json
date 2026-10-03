@@ -1,11 +1,7 @@
 {
   "extends": "@codesphere/config/tsconfig.base.json",
   "compilerOptions": {
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "emitDeclarationOnly": true,
-    "outDir": "dist"
+    "noEmit": true
   },
   "include": ["src/**/*.ts"],
   "references": [{ "path": "../db" }]

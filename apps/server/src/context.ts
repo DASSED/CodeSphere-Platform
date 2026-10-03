@@ -9,9 +9,11 @@ export type CreateContextOptions = {
 };
 
 export async function createContext({ context }: CreateContextOptions): Promise<ApiContext> {
-  const session = await auth.api.getSession({
-    headers: context.req.raw.headers,
-  });
+  // An invalid or revoked API key makes better-auth throw; treat it as "not authenticated"
+  // so procedures answer UNAUTHORIZED instead of a 500.
+  const session = await auth.api
+    .getSession({ headers: context.req.raw.headers })
+    .catch(() => null);
   return {
     db,
     session,
