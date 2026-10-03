@@ -53,8 +53,19 @@ A profile attribute made of a country (African country or "Other/Diaspora") and 
 _Avoid_: Location, community
 
 **Hackathon**:
-A listed hackathon event, including the Systalink hackathon this platform is built for, with its dates, tracks, prizes and rules.
+A listed hackathon event, informational only (the platform does not run the contest), with its description, rules, eligibility, team size, links, source and last-verified date. The MVP lists only the Systalink CADEV 2026. Each Hackathon owns a Tag whose Questions appear on its page.
 _Avoid_: Competition, contest
+
+**Milestone**:
+A dated step in a Hackathon's timeline (registration, submission close, votes, jury, results), shown with a countdown in the viewer's timezone.
+_Avoid_: Deadline, phase
+
+**Prize**:
+A reward a Hackathon offers, with amount and conditions.
+
+**Judging criterion**:
+A weighted criterion a Hackathon is judged on, scored by jury, public or peers.
+_Avoid_: Rubric
 
 **Draft**:
 Unsent writing (a Question or Answer) a Member keeps locally and can continue offline.
