@@ -1,8 +1,10 @@
+import { OpenAPIGenerator } from "@orpc/openapi";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
-import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
+import { OpenAPIReferenceHandlerPlugin } from "@orpc/openapi/plugins";
 import { onError } from "@orpc/server";
 import { RPCHandler } from "@orpc/server/fetch";
-import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
+import { ZodToJsonSchemaConverter } from "@orpc/zod";
+import { MCPHandler } from "orpc-mcp/fetch";
 import { appRouter } from "@codesphere/api/routers/index";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -27,10 +29,17 @@ app.use(
 
 app.on(["POST", "GET"], "/api/auth/*", async (c) => auth.handler(c.req.raw));
 
+const openapiGenerator = new OpenAPIGenerator({
+  converters: [new ZodToJsonSchemaConverter()],
+});
+
 export const apiHandler = new OpenAPIHandler(appRouter, {
   plugins: [
-    new OpenAPIReferencePlugin({
-      schemaConverters: [new ZodToJsonSchemaConverter()],
+    new OpenAPIReferenceHandlerPlugin({
+      spec: () =>
+        openapiGenerator.generate(appRouter, {
+          base: { info: { title: "CodeSphere API", version: "1.0.0" } },
+        }),
     }),
   ],
   interceptors: [
@@ -48,6 +57,11 @@ export const rpcHandler = new RPCHandler(appRouter, {
   ],
 });
 
+const mcpHandler = new MCPHandler(appRouter, {
+  serverInfo: { name: "codesphere", version: "0.1.0" },
+  converters: [new ZodToJsonSchemaConverter()],
+});
+
 app.use("/*", async (c, next) => {
   const context = await createContext({ context: c });
 
@@ -61,12 +75,21 @@ app.use("/*", async (c, next) => {
   }
 
   const apiResult = await apiHandler.handle(c.req.raw, {
-    prefix: "/api-reference",
+    prefix: "/api/v1",
     context: context,
   });
 
   if (apiResult.matched) {
     return c.newResponse(apiResult.response.body, apiResult.response);
+  }
+
+  const mcpResult = await mcpHandler.handle(c.req.raw, {
+    prefix: "/mcp",
+    context: context,
+  });
+
+  if (mcpResult.matched) {
+    return c.newResponse(mcpResult.response.body, mcpResult.response);
   }
 
   await next();

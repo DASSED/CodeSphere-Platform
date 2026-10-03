@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@orpc/client": "catalog:",
+    "@orpc/contract": "catalog:",
+    "@codesphere/contract": "workspace:*",
     "@orpc/openapi": "catalog:",
     "@orpc/server": "catalog:",
     "@orpc/zod": "catalog:",

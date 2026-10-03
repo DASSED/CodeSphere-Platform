@@ -24,7 +24,8 @@ const TITLE_TEXT = `
  `;
 
 function HomeComponent() {
-  const healthCheck = useQuery(orpc.healthCheck.queryOptions());
+  const healthCheck = useQuery(orpc.health.check.queryOptions());
+  const hackathons = useQuery(orpc.hackathons.list.queryOptions({ input: {} }));
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-2">
@@ -44,6 +45,12 @@ function HomeComponent() {
                   : "Disconnected"}
             </span>
           </div>
+        </section>
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-2 font-medium">Hackathons</h2>
+          <p data-testid="hackathons" className="text-muted-foreground text-sm">
+            {hackathons.data?.items.map((h) => h.name).join(", ") ?? "…"}
+          </p>
         </section>
       </div>
     </div>

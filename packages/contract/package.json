@@ -1,0 +1,22 @@
+{
+	"name": "@codesphere/contract",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./*": "./src/*.ts"
+	},
+	"scripts": {
+		"build": "tsc -b",
+		"check-types": "tsc -b"
+	},
+	"dependencies": {
+		"@orpc/contract": "catalog:",
+		"@orpc/openapi": "catalog:",
+		"orpc-mcp": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@codesphere/config": "workspace:*",
+		"typescript": "catalog:"
+	}
+}

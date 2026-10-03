@@ -1,11 +1,13 @@
 import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import { createTanstackQueryUtils } from "@orpc/tanstack-query";
-import type { AppRouterClient } from "@codesphere/api/routers/index";
+import type { contract } from "@codesphere/contract";
+import type { RouterContractClient } from "@orpc/contract";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { ENV } from "../env";
+import { PERSIST_MAX_AGE } from "../lib/persist";
 
 export function createQueryClient() {
   return new QueryClient({
@@ -21,7 +23,7 @@ export function createQueryClient() {
         });
       },
     }),
-    defaultOptions: { queries: { staleTime: 60 * 1000 } },
+    defaultOptions: { queries: { staleTime: 60 * 1000, gcTime: PERSIST_MAX_AGE } },
   });
 }
 
@@ -41,7 +43,8 @@ function getServerUrl(url: string) {
 }
 
 const link = new RPCLink({
-  url: `${getServerUrl(ENV.VITE_SERVER_URL)}/rpc`,
+  origin: getServerUrl(ENV.VITE_SERVER_URL),
+  url: "/rpc",
   fetch(url, options) {
     return fetch(url, {
       ...options,
@@ -50,6 +53,6 @@ const link = new RPCLink({
   },
 });
 
-export const client: AppRouterClient = createORPCClient(link);
+export const client: RouterContractClient<typeof contract> = createORPCClient(link);
 
 export const orpc = createTanstackQueryUtils(client);

@@ -1,20 +1,7 @@
-import { ORPCError, os } from "@orpc/server";
+import { contract } from "@codesphere/contract";
+import { implement } from "@orpc/server";
 
 import type { Context } from "./context";
 
-export const o = os.$context<Context>();
-
-export const publicProcedure = o;
-
-const requireAuth = o.middleware(async ({ context, next }) => {
-  if (!context.session?.user) {
-    throw new ORPCError("UNAUTHORIZED");
-  }
-  return next({
-    context: {
-      session: context.session,
-    },
-  });
-});
-
-export const protectedProcedure = publicProcedure.use(requireAuth);
+/** Implementer locked to the shared contract: every handler is type-checked against it. */
+export const impl = implement(contract).$context<Context>();
