@@ -131,6 +131,7 @@ codesphere/
 - `bun run check`: Run Biome formatting and linting
 - `bun run docker:build`: Build the Docker Compose images
 - `bun run docker:up`: Build and start the Docker Compose stack
+- `bun run licenses`: Audit the licence of every package in `bun.lock` (fails on GPL/AGPL/LGPL, CADEV rules art. 6); `-- --out=FILE.md` writes the component declaration
 - `bun run docker:up:otel`: Same stack plus Jaeger for OpenTelemetry traces (dev only)
 - `bun run docker:logs`: Tail logs from the Docker Compose stack
 - `bun run docker:down`: Stop the Docker Compose stack
