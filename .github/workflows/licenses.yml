@@ -1,0 +1,26 @@
+name: Licences
+
+# CADEV rules, art. 6: third-party components must be permissively licensed.
+# GPL/AGPL/LGPL fail the job; weak copyleft (MPL...) is listed for review only.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  licenses:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run licenses -- --out=THIRD_PARTY_LICENSES.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: third-party-licenses
+          path: THIRD_PARTY_LICENSES.md
