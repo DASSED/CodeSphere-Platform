@@ -25,6 +25,7 @@ Production sur `codesphereplatform.xyz`, préproduction sur `staging.codespherep
    - créer un groupe Telegram d'équipe et un bot (@BotFather), l'ajouter au groupe ; renseigner `deploy/.env.monitor` (`chmod 600`) ;
    - healthchecks.io (gratuit) : un contrôle par environnement, période 1 jour, tolérance 2 h, alertes vers Telegram + e-mail ; copier l'URL de ping dans `BACKUP_HEARTBEAT_URL` de chaque `.env.<env>` ;
    - UptimeRobot (gratuit) : sondes HTTP 5 min sur `https://codesphereplatform.xyz/health` et `https://staging.codesphereplatform.xyz/health`, alertes vers Telegram + e-mail ;
+   - copie hors serveur : créer un bucket Cloudflare R2 (offre gratuite 10 Go) et une clé d'API limitée à ce bucket ; installer `rclone` (licence MIT) ; `rclone config` → un remote `r2` (S3, fournisseur Cloudflare) puis un remote `codesphere-offsite` de type `crypt` par-dessus `r2:codesphere-backups` (mots de passe conservés hors serveur, dans le gestionnaire de mots de passe de l'équipe) ; `OFFSITE_REMOTE=codesphere-offsite:` dans chaque `.env.<env>` ; tester une restauration depuis R2 au moins une fois ;
    - `crontab -e` de l'utilisateur `deploy` :
      ```
      */15 * * * * ~/codesphere/deploy/monitor.sh
@@ -32,6 +33,11 @@ Production sur `codesphereplatform.xyz`, préproduction sur `staging.codespherep
      30 2 * * *  ~/codesphere/deploy/backup.sh staging
      ```
 9. Fusionner sur `main` et vérifier `https://staging.codesphereplatform.xyz/health`.
+
+## Avant la démo CADEV (24 oct.)
+
+Faire une sauvegarde de production, vérifier sa présence sur R2, et en rapatrier une copie sur la machine du capitaine :
+`scp deploy@<ip>:~/backups/codesphere-production-<date>.sql.gz ~/codesphere-backups/`, puis la restaurer dans une base locale pour s'assurer qu'elle est exploitable.
 
 ## Logs
 
