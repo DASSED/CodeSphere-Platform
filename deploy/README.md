@@ -1,6 +1,6 @@
 # Déploiement de CodeSphere
 
-Production sur `codesphere.xyz`, préproduction sur `staging.codesphere.xyz`, toutes deux sur le Cloud Server Systalink (Dakar). Décisions : voir la carte « Livraison de CodeSphere ».
+Production sur `codesphereplatform.xyz`, préproduction sur `staging.codesphereplatform.xyz`, toutes deux sur le Cloud Server Systalink (Dakar). Décisions : voir la carte « Livraison de CodeSphere ».
 
 ## Fichiers
 
@@ -13,13 +13,13 @@ Production sur `codesphere.xyz`, préproduction sur `staging.codesphere.xyz`, to
 ## Checklist de mise en place (une fois, par un membre de l'équipe)
 
 1. Créer le compte sur platform.systalink.com, commander un Cloud Server **Business, Dakar** (Linux), appliquer le code promo CADEV.
-2. Acheter `codesphere.xyz` ; créer les enregistrements DNS `A` pour `codesphere.xyz` et `staging.codesphere.xyz` vers l'IP du serveur.
+2. Acheter `codesphereplatform.xyz` ; créer les enregistrements DNS `A` pour `codesphereplatform.xyz` et `staging.codesphereplatform.xyz` vers l'IP du serveur.
 3. Sur le serveur : installer Docker et le plugin Compose ; créer l'utilisateur `deploy` (sans sudo) membre du groupe `docker` ; autoriser sa clé SSH publique.
 4. Cloner le dépôt dans `~/codesphere` (lecture seule suffit) ; `docker login ghcr.io` avec un jeton en lecture des paquets.
 5. `docker network create edge` puis `docker compose -f deploy/edge/compose.yml up -d`.
 6. Créer `deploy/.env.staging` et `deploy/.env.production` à partir de `.env.example` (`chmod 600`).
 7. Dans GitHub : secrets `DEPLOY_HOST` et `DEPLOY_SSH_KEY` (clé privée de `deploy`) ; environnements `staging` et `production` (relecture requise pour `production`).
-8. Fusionner sur `main` et vérifier `https://staging.codesphere.xyz/health`.
+8. Fusionner sur `main` et vérifier `https://staging.codesphereplatform.xyz/health`.
 
 ## Points non vérifiés
 

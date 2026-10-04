@@ -44,7 +44,7 @@ jobs:
             web_env=apps/web/.env
             server_env=apps/server/.env
           build-args: |
-            VITE_SERVER_URL=https://staging.codesphere.xyz
+            VITE_SERVER_URL=https://staging.codesphereplatform.xyz
 
   deploy-staging:
     if: github.event_name == 'push'

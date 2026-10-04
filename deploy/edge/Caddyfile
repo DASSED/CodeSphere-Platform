@@ -11,14 +11,14 @@
 	}
 }
 
-codesphere.xyz {
+codesphereplatform.xyz {
 	import security_headers
 	@api path /rpc* /api/* /mcp* /health /ready
 	reverse_proxy @api codesphere-production-server-1:3000
 	reverse_proxy codesphere-production-web-1:3001
 }
 
-staging.codesphere.xyz {
+staging.codesphereplatform.xyz {
 	import security_headers
 	@api path /rpc* /api/* /mcp* /health /ready
 	reverse_proxy @api codesphere-staging-server-1:3000
