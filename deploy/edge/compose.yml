@@ -1,0 +1,24 @@
+# Shared HTTPS front for every environment on the server. Started once:
+#   docker network create edge && docker compose -f deploy/edge/compose.yml up -d
+name: codesphere-edge
+
+services:
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  edge:
+    external: true

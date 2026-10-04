@@ -1,0 +1,70 @@
+# One CodeSphere environment (production or staging) on the Systalink Cloud Server.
+# Run from deploy/ with an env file:  docker compose -p codesphere-$ENV_NAME --env-file .env.$ENV_NAME -f compose.app.yml up -d --wait
+# Images come from GHCR, tagged with the git SHA built in CI. Nothing is published on host ports:
+# the shared Caddy (edge/compose.yml) reaches web and server over the external "edge" network.
+name: codesphere-${ENV_NAME:?ENV_NAME is required}
+
+services:
+  migrate:
+    image: ghcr.io/0xdaydy/codesphere-server:${IMAGE_TAG:?IMAGE_TAG is required}
+    working_dir: /app/packages/db
+    command: ["bunx", "drizzle-kit", "migrate"]
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?}@postgres:5432/codesphere
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  server:
+    image: ghcr.io/0xdaydy/codesphere-server:${IMAGE_TAG}
+    init: true
+    env_file: .env.${ENV_NAME}
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/codesphere
+      BETTER_AUTH_URL: https://${DOMAIN:?DOMAIN is required}
+      CORS_ORIGIN: https://${DOMAIN}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks: [default, edge]
+    restart: unless-stopped
+
+  web:
+    image: ghcr.io/0xdaydy/codesphere-web:${IMAGE_TAG}
+    init: true
+    environment:
+      SERVER_URL: http://server:3000
+    depends_on:
+      server:
+        condition: service_healthy
+    networks: [default, edge]
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: codesphere
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+
+networks:
+  edge:
+    external: true

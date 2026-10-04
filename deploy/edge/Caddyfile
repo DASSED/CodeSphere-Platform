@@ -1,0 +1,26 @@
+# Web and API on one origin per environment (decided: cookies "lax", no CORS).
+# Service names resolve through the "edge" network as <compose project>-<service>-1.
+
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		-Server
+	}
+}
+
+codesphere.xyz {
+	import security_headers
+	@api path /rpc* /api/* /mcp* /health /ready
+	reverse_proxy @api codesphere-production-server-1:3000
+	reverse_proxy codesphere-production-web-1:3001
+}
+
+staging.codesphere.xyz {
+	import security_headers
+	@api path /rpc* /api/* /mcp* /health /ready
+	reverse_proxy @api codesphere-staging-server-1:3000
+	reverse_proxy codesphere-staging-web-1:3001
+}
