@@ -34,7 +34,7 @@ Production sur `codesphereplatform.xyz`, préproduction sur `staging.codespherep
      ```
 9. Fusionner sur `main` et vérifier `https://staging.codesphereplatform.xyz/health`.
 
-## Avant la démo CADEV (24 oct.)
+## Avant la démo CADEV (29 oct., début du gel)
 
 Faire une sauvegarde de production, vérifier sa présence sur R2, et en rapatrier une copie sur la machine du capitaine :
 `scp deploy@<ip>:~/backups/codesphere-production-<date>.sql.gz ~/codesphere-backups/`, puis la restaurer dans une base locale pour s'assurer qu'elle est exploitable.
