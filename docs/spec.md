@@ -21,8 +21,10 @@ Plateforme d'échange pour développeurs africains, par des développeurs : Q&R 
 | Sécurité, pages légales, i18n, contenu de démo | 25–28 oct. (répétition générale le 28) |
 | Gel, checklist de dépôt, soumission | 29–31 oct. (**soumission le 31 avant 12h GMT**, limite officielle 17h GMT) |
 | Vote des pairs, **obligatoire pour chacun des 3 membres** (sinon exclusion) | 1er–2 nov. |
+| Vote du public et notation du jury | 4–10 nov. |
+| Proclamation des résultats | 15 nov. |
 
-Points de contrôle : 11, 18 et 25 oct. Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; aucune dépendance GPL/AGPL/LGPL ; usage de l'IA déclaré ; équipe de 3. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
+Points de contrôle : 11, 18 et 25 oct. Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0, présente via `lightningcss`, à confirmer auprès de l'organisateur) ; usage de l'IA déclaré ; équipe de 3. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
 
 ### Ligne de coupe
 
@@ -125,7 +127,7 @@ Maquette de référence dans le ticket. Palette **Latérite** (`#a8432a` / `#d68
 
 ## 6. Livrables de dépôt
 
-Projet déployé sur Systalink ; déclaration d'usage de l'IA (Claude Code) ; liste des composants tiers et licences (générée par la CI) ; politique de confidentialité publiée ; déclaration d'auteur par membre ; vidéo/pitch selon le formulaire (non publié). Préparés par le membre « doc », semaine du 25 oct.
+Projet déployé sur Systalink ; déclaration d'usage de l'IA (Claude Code) ; liste des composants tiers et licences (générée par la CI) ; politique de confidentialité publiée ; déclaration d'auteur par membre ; vidéo/pitch selon le formulaire (non publié). Préparés par le membre « doc », semaine du 25 oct. À l'inscription Datacloud (étape distincte du dépôt) : pays de représentation de l'équipe, **définitif** (art. 4), représentant unique et clé de répartition du prix.
 
 ## 7. Hors MVP
 
