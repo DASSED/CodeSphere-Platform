@@ -13,6 +13,13 @@ import { logger } from "hono/logger";
 import { createContext } from "./context";
 import { ENV } from "./env.server";
 import { auth } from "./services";
+import { startTelemetry } from "./telemetry";
+
+const stopTelemetry = startTelemetry();
+if (stopTelemetry) {
+  // A SIGTERM listener replaces the default exit, so flush traces then exit explicitly.
+  process.once("SIGTERM", () => void stopTelemetry().finally(() => process.exit(0)));
+}
 
 const app = new Hono();
 
