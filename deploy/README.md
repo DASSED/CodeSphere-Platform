@@ -7,7 +7,7 @@ Production sur `codesphereplatform.xyz`, préproduction sur `staging.codespherep
 - `edge/compose.yml` + `edge/Caddyfile` : Caddy unique, HTTPS et en-têtes de sécurité, une origine par environnement.
 - `compose.app.yml` : un environnement (migration, server, web, Postgres), images GHCR étiquetées par le SHA git.
 - `deploy.sh` : pull, sauvegarde de la base, migration, démarrage, contrôle de santé.
-- `backup.sh` : sauvegarde d'un environnement dans `~/backups` (14 jours), puis signal healthchecks.io ; lancé par `deploy.sh` et chaque nuit par `cron`.
+- `backup.sh` : sauvegarde d'un environnement dans `~/backups` (7 jours), puis signal healthchecks.io ; lancé par `deploy.sh` et chaque nuit par `cron`.
 - `monitor.sh` : alerte Telegram si le disque dépasse 80 % ou la mémoire 90 % ; lancé toutes les 15 min par `cron`, configuré par `.env.monitor` (modèle `.env.monitor.example`).
 - `.env.example` : modèle des fichiers `.env.staging` et `.env.production` (sur le serveur seulement, `chmod 600`).
 - `../.github/workflows/deploy.yml` : `main` → build + préproduction automatique ; production en poussant une étiquette `vX.Y.Z` sur un commit de `main` déjà déployé en préproduction (réutilise son image, crée la Release GitHub avec notes générées, catégories dans `../.github/release.yml`). Retour arrière : relancer le workflow de l'étiquette précédente.

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Usage: ./backup.sh <staging|production>
-# Dumps the environment's database to ~/backups, keeps 14 days, then pings the healthchecks.io heartbeat.
+# Dumps the environment's database to ~/backups, keeps 7 days (security map), then pings the healthchecks.io heartbeat.
 # Run by deploy.sh before each deploy and nightly by cron (see README).
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -13,7 +13,7 @@ if ! docker ps --format '{{.Names}}' | grep -q "^${PROJECT}-postgres-1$"; then
 fi
 mkdir -p ~/backups
 docker exec "${PROJECT}-postgres-1" pg_dump -U postgres codesphere | gzip > ~/backups/${PROJECT}-$(date +%Y%m%d-%H%M%S).sql.gz
-find ~/backups -name "${PROJECT}-*.sql.gz" -mtime +14 -delete
+find ~/backups -name "${PROJECT}-*.sql.gz" -mtime +7 -delete
 # Off-server copy: rclone remote (e.g. an encrypted "crypt" remote over Cloudflare R2), configured by hand (see README).
 # The heartbeat below is only sent when the copy succeeded, so a failed upload alerts the team too.
 if [ -n "${OFFSITE_REMOTE:-}" ]; then
