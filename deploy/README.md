@@ -8,7 +8,7 @@ Production sur `codesphereplatform.xyz`, préproduction sur `staging.codespherep
 - `compose.app.yml` : un environnement (migration, server, web, Postgres), images GHCR étiquetées par le SHA git.
 - `deploy.sh` : pull, sauvegarde de la base, migration, démarrage, contrôle de santé.
 - `.env.example` : modèle des fichiers `.env.staging` et `.env.production` (sur le serveur seulement, `chmod 600`).
-- `../.github/workflows/deploy.yml` : `main` → build + préproduction automatique ; production manuelle (« Run workflow » + SHA).
+- `../.github/workflows/deploy.yml` : `main` → build + préproduction automatique ; production en poussant une étiquette `vX.Y.Z` sur un commit de `main` déjà déployé en préproduction (réutilise son image, crée la Release GitHub avec notes générées, catégories dans `../.github/release.yml`). Retour arrière : relancer le workflow de l'étiquette précédente.
 
 ## Checklist de mise en place (une fois, par un membre de l'équipe)
 

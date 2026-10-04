@@ -3,23 +3,19 @@ name: Deploy
 on:
   push:
     branches: [main]
-  workflow_dispatch:
-    inputs:
-      image_tag:
-        description: "Image tag (git SHA) to deploy to production"
-        required: true
+    tags: ["v*.*.*"]
 
 concurrency:
-  group: deploy-${{ github.event_name }}
+  group: deploy-${{ github.ref_type }}
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
   packages: write
 
 jobs:
   build:
-    if: github.event_name == 'push'
+    if: github.ref_type == 'branch'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -47,7 +43,7 @@ jobs:
             VITE_SERVER_URL=https://staging.codesphereplatform.xyz
 
   deploy-staging:
-    if: github.event_name == 'push'
+    if: github.ref_type == 'branch'
     needs: build
     runs-on: ubuntu-latest
     environment: staging
@@ -64,7 +60,7 @@ jobs:
             ./deploy.sh staging ${{ github.sha }}
 
   deploy-production:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -77,4 +73,8 @@ jobs:
           script: |
             set -euo pipefail
             cd ~/codesphere/deploy
-            ./deploy.sh production ${{ inputs.image_tag }}
+            ./deploy.sh production ${{ github.sha }}
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create "${{ github.ref_name }}" --repo "${{ github.repository }}" --verify-tag --generate-notes

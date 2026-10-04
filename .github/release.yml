@@ -1,0 +1,8 @@
+changelog:
+  categories:
+    - title: Fonctionnalités
+      labels: [feat]
+    - title: Corrections
+      labels: [fix]
+    - title: Autres
+      labels: ["*"]
