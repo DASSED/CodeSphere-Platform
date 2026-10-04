@@ -17,7 +17,8 @@ import { startTelemetry } from "./telemetry";
 
 const stopTelemetry = startTelemetry();
 if (stopTelemetry) {
-  process.once("SIGTERM", () => void stopTelemetry());
+  // A SIGTERM listener replaces the default exit, so flush traces then exit explicitly.
+  process.once("SIGTERM", () => void stopTelemetry().finally(() => process.exit(0)));
 }
 
 const app = new Hono();
