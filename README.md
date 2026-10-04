@@ -93,6 +93,7 @@ Run standalone Node/Bun tools that use Varlock from the owning app directory so 
 - Start: bun run docker:up
 - Logs: bun run docker:logs
 - Stop: bun run docker:down
+- Tracing (dev only): bun run docker:up:otel starts the stack with Jaeger, UI at http://localhost:16686 (`docker-compose.otel.yml`, in-memory, bound to localhost); stop with bun run docker:down:otel
 
 Environment variables are read from each app's `.env` file (baked into web builds for public variables) and overridden in `docker-compose.yml` for container networking.
 
@@ -130,6 +131,7 @@ codesphere/
 - `bun run check`: Run Biome formatting and linting
 - `bun run docker:build`: Build the Docker Compose images
 - `bun run docker:up`: Build and start the Docker Compose stack
+- `bun run docker:up:otel`: Same stack plus Jaeger for OpenTelemetry traces (dev only)
 - `bun run docker:logs`: Tail logs from the Docker Compose stack
 - `bun run docker:down`: Stop the Docker Compose stack
 

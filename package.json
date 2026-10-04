@@ -54,6 +54,8 @@
     "docker:build": "docker compose build",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
+    "docker:up:otel": "docker compose -f docker-compose.yml -f docker-compose.otel.yml up -d --build",
+    "docker:down:otel": "docker compose -f docker-compose.yml -f docker-compose.otel.yml down",
     "docker:logs": "docker compose logs -f",
     "env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/",
     "postinstall": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./packages/db/",

@@ -1,0 +1,19 @@
+# Opt-in tracing for local dev: Jaeger all-in-one (in-memory storage, traces are lost on restart).
+#   bun run docker:up:otel      then open http://localhost:16686
+# Not for production: no authentication on the UI, no persistence.
+services:
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.21.0
+    container_name: codesphere-jaeger
+    ports:
+      # Bound to localhost so the UI and the OTLP endpoint are never exposed on the network.
+      - "127.0.0.1:16686:16686" # UI
+      - "127.0.0.1:4318:4318" # OTLP/HTTP, for a server running outside Docker
+    restart: unless-stopped
+
+  server:
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+    depends_on:
+      jaeger:
+        condition: service_started
