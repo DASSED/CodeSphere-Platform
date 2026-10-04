@@ -13,6 +13,12 @@ import { logger } from "hono/logger";
 import { createContext } from "./context";
 import { ENV } from "./env.server";
 import { auth } from "./services";
+import { startTelemetry } from "./telemetry";
+
+const stopTelemetry = startTelemetry();
+if (stopTelemetry) {
+  process.once("SIGTERM", () => void stopTelemetry());
+}
 
 const app = new Hono();
 
