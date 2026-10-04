@@ -140,28 +140,28 @@ Langues africaines dans l'UI, modération complète, réputation et badges, noti
 - `@orpc/pino` pour `@codesphere/logger` ; compatibilité `pino-pretty` sous Bun.
 - Formulaire de dépôt CADEV et jury (non publiés).
 
-## 9. Découpage en tickets (proposition)
+## 9. Découpage en tickets 
 
 Tranches verticales, dans l'ordre du calendrier. Chaque ticket : branche `feat/<n°>-…`, tests d'intégration de ses procédures, relecture humaine.
 
-| # | Ticket | Période | Responsable |
+| Issue | Ticket | Période | Responsable |
 |---|---|---|---|
-| 1 | Fondations : retirer email/mot de passe, `BAD_REQUEST` dans `base.ts`, `@codesphere/logger`, `/health` + `/ready` (version, SHA), seed (CADEV, Tags), CI complète (gitleaks, licences, vulnérabilités) | 5–8 oct. | capitaine |
-| 2 | Premier déploiement en préproduction (finir PR #36, ticket #35) + supervision | 5–8 oct. | capitaine + tests |
-| 3 | Thème Latérite, preset shadcn, mise en page, i18n de base, pied de page | 5–8 oct. | capitaine |
-| 4 | SSO GitHub/GitLab/Google + consentement + profil (Region, ville privée) | 9–11 oct. | capitaine |
-| 5 | Tags : recherche, suivi, onboarding 3 Tags | 9–12 oct. | capitaine |
-| 6 | Page Hackathon CADEV (onglets, frise, compte à rebours, Questions du Tag) | 9–12 oct. | capitaine |
-| 7 | Flux : `questions.list` filtrable, `feed.forYou` score chaud, 3 onglets, carte CADEV | 12–14 oct. | capitaine |
-| 8 | Poser une Question (étapes, Markdown assaini, questions proches) + page Question | 15–17 oct. | capitaine |
-| 9 | Répondre, accepter, voter (règles, limites d'écriture, idempotence) | 16–18 oct. | capitaine |
-| 10 | Hors-ligne : cache persisté + outbox et brouillons + indicateurs d'état | 18–20 oct. | capitaine |
-| 11 | Agents : création, presets, clés `cs_live_`, scopes, 429, badge, masquage | 21–22 oct. | capitaine |
-| 12 | API `/api/v1` + MCP (outils, descriptions, instantané OpenAPI, test client réel) | 22–24 oct. | capitaine |
-| 13 | Admin : fermer une Question, suspendre un Member, journal d'audit | 23–24 oct. | capitaine |
-| 14 | Confidentialité : export JSON, suppression de compte, effacement local | 25–26 oct. | capitaine |
-| 15 | Sécurité : en-têtes + CSP nonce, grille OWASP, checklist serveur | 25–28 oct. | tests |
-| 16 | Tests de bout en bout : 3 parcours Playwright + seed de test | au fil de l'eau, fin 24 oct. | tests |
-| 17 | Pages légales FR/EN, traduction complète | 25–27 oct. | doc |
-| 18 | Contenu de démo (questions d'amorçage, agent de démo) + répétition générale | 26–28 oct. | doc + capitaine |
-| 19 | Dossier de dépôt CADEV (déclarations, licences, vidéo/pitch) + `v1.0.0` | 25–31 oct. | doc |
+| #40 | Fondations : retirer email/mot de passe, `BAD_REQUEST` dans `base.ts`, `@codesphere/logger`, `/health` + `/ready` (version, SHA), seed (CADEV, Tags), CI complète (gitleaks, licences, vulnérabilités) | 5–8 oct. | capitaine |
+| #41 | Premier déploiement en préproduction (finir PR #36, ticket #35) + supervision | 5–8 oct. | capitaine + tests |
+| #42 | Thème Latérite, preset shadcn, mise en page, i18n de base, pied de page | 5–8 oct. | capitaine |
+| #43 | SSO GitHub/GitLab/Google + consentement + profil (Region, ville privée) | 9–11 oct. | capitaine |
+| #44 | Tags : recherche, suivi, onboarding 3 Tags | 9–12 oct. | capitaine |
+| #45 | Page Hackathon CADEV (onglets, frise, compte à rebours, Questions du Tag) | 9–12 oct. | capitaine |
+| #46 | Flux : `questions.list` filtrable, `feed.forYou` score chaud, 3 onglets, carte CADEV | 12–14 oct. | capitaine |
+| #47 | Poser une Question (étapes, Markdown assaini, questions proches) + page Question | 15–17 oct. | capitaine |
+| #48 | Répondre, accepter, voter (règles, limites d'écriture, idempotence) | 16–18 oct. | capitaine |
+| #49 | Hors-ligne : cache persisté + outbox et brouillons + indicateurs d'état | 18–20 oct. | capitaine |
+| #50 | Agents : création, presets, clés `cs_live_`, scopes, 429, badge, masquage | 21–22 oct. | capitaine |
+| #51 | API `/api/v1` + MCP (outils, descriptions, instantané OpenAPI, test client réel) | 22–24 oct. | capitaine |
+| #52 | Admin : fermer une Question, suspendre un Member, journal d'audit | 23–24 oct. | capitaine |
+| #53 | Confidentialité : export JSON, suppression de compte, effacement local | 25–26 oct. | capitaine |
+| #54 | Sécurité : en-têtes + CSP nonce, grille OWASP, checklist serveur | 25–28 oct. | tests |
+| #55 | Tests de bout en bout : 3 parcours Playwright + seed de test | au fil de l'eau, fin 24 oct. | tests |
+| #56 | Pages légales FR/EN, traduction complète | 25–27 oct. | doc |
+| #57 | Contenu de démo (questions d'amorçage, agent de démo) + répétition générale | 26–28 oct. | doc + capitaine |
+| #58 | Dossier de dépôt CADEV (déclarations, licences, vidéo/pitch) + `v1.0.0` | 25–31 oct. | doc |
