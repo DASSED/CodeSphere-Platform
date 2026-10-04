@@ -60,3 +60,7 @@ temp
 # Agent tooling
 .claude/
 .playwright-mcp/
+
+# deploy secrets (server only)
+deploy/.env.*
+!deploy/.env*.example

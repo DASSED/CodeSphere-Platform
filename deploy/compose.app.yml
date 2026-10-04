@@ -4,6 +4,12 @@
 # the shared Caddy (edge/compose.yml) reaches web and server over the external "edge" network.
 name: codesphere-${ENV_NAME:?ENV_NAME is required}
 
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "5"
+
 services:
   migrate:
     image: ghcr.io/0xdaydy/codesphere-server:${IMAGE_TAG:?IMAGE_TAG is required}
@@ -15,6 +21,7 @@ services:
       postgres:
         condition: service_healthy
     restart: "no"
+    logging: *logging
 
   server:
     image: ghcr.io/0xdaydy/codesphere-server:${IMAGE_TAG}
@@ -35,6 +42,7 @@ services:
       start_period: 10s
     networks: [default, edge]
     restart: unless-stopped
+    logging: *logging
 
   web:
     image: ghcr.io/0xdaydy/codesphere-web:${IMAGE_TAG}
@@ -46,6 +54,7 @@ services:
         condition: service_healthy
     networks: [default, edge]
     restart: unless-stopped
+    logging: *logging
 
   postgres:
     image: postgres:18
@@ -61,6 +70,7 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    logging: *logging
 
 volumes:
   pgdata:
