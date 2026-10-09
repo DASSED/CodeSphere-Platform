@@ -18,13 +18,14 @@ Plateforme d'échange pour développeurs africains, par des développeurs : Q&R 
 | Profil, Tags, flux, page CADEV | 9–14 oct. |
 | Questions, réponses, votes, hors-ligne | 15–20 oct. |
 | Agents IA, API, MCP | 21–24 oct. |
-| Sécurité, pages légales, i18n, contenu de démo | 25–28 oct. (répétition générale le 28) |
-| Gel, checklist de dépôt, soumission | 29–31 oct. (**soumission le 31 avant 12h GMT**, limite officielle 17h GMT) |
-| Vote des pairs, **obligatoire pour chacun des 3 membres** (sinon exclusion) | 1er–2 nov. |
-| Vote du public et notation du jury | 4–10 nov. |
-| Proclamation des résultats | 15 nov. |
+| Sécurité, pages légales, i18n, contenu de démo, gel, dépôt | **à recaler** : tout doit tenir avant la soumission du 25 oct. |
+| **Soumission** (date confirmée par les organisateurs le 2026-10-09) | **25 oct. avant 17h00 GMT** |
+| Vote entre participants d'un même pays, **obligatoire pour la prise en compte de la soumission** | 25 oct. 18h – 26 oct. 23h59 |
+| Vote du public (10 % des points) | 27–30 oct., 23h59 |
+| Délibération du jury | 1er nov. |
+| Proclamation des résultats | à confirmer (15 nov. dans l'ancien règlement) |
 
-Points de contrôle : 11, 18 et 25 oct. Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0, présente via `lightningcss`, à confirmer auprès de l'organisateur) ; usage de l'IA déclaré ; équipe de 3. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
+Points de contrôle : à recaler (ceux du 18 et du 25 oct. ne tiennent plus). Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0, présente via `lightningcss`, à confirmer auprès de l'organisateur) ; usage de l'IA déclaré ; équipe de 3. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
 
 ### Ligne de coupe
 
