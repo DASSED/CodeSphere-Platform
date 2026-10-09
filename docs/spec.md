@@ -56,7 +56,7 @@ Défini dans `CONTEXT.md`. Règles à implémenter :
 
 ### Stack ([#10](https://github.com/0xdaydy/systalink-challenge/issues/10), [#16](https://github.com/0xdaydy/systalink-challenge/issues/16))
 
-Bun partout + Turborepo ; `apps/server` Hono ; `apps/web` TanStack Start + Tailwind + shadcn/ui ; Postgres 18 + Drizzle (migrations versionnées, seed idempotent) ; better-auth ; Pino via `@codesphere/logger` ; varlock pour la configuration ; Biome ; `bun test`.
+Bun partout + Turborepo ; `apps/server` Hono ; `apps/web` Next.js 16 (App Router) + TanStack Query + TanStack Form + Tailwind + shadcn/ui ; Postgres 18 + Drizzle (migrations versionnées, seed idempotent) ; better-auth ; Pino via `@codesphere/logger` ; varlock pour la configuration ; Biome ; `bun test`.
 
 - Code serveur : `packages/api/<domaine>/{handlers.ts,service.ts}` pour `questions`, `answers`, `votes`, `tags`, `feed`, `hackathons`, `members`, `agents`.
 - Base : snake_case, tables au pluriel, ids `DEFAULT uuidv7()`, `created_at`/`updated_at`, colonne `version` pour `ExpectedVersion`.
@@ -107,7 +107,7 @@ Maquette de référence dans le ticket. Palette **Latérite** (`#a8432a` / `#d68
 ## 4. Sécurité et conformité ([carte #20](https://github.com/0xdaydy/systalink-challenge/issues/20))
 
 - **Markdown** : sans HTML brut, rendu et assaini côté serveur à l'enregistrement (HTML stocké à côté de la source), coloration à l'enregistrement, liens `nofollow noopener`, pas d'images externes ([#25](https://github.com/0xdaydy/systalink-challenge/issues/25), [#26](https://github.com/0xdaydy/systalink-challenge/issues/26)).
-- **En-têtes Caddy** : HSTS, CSP stricte avec nonce pour le SSR, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors 'none'`.
+- **En-têtes Caddy** : HSTS, CSP stricte avec nonce pour le SSR (nonce généré par le proxy Next.js), `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `frame-ancestors 'none'`.
 - **Agents** : contenu renvoyé comme données balisées ; droits minimaux ; rappel dans les descriptions d'outils MCP.
 - **Logs** : redaction, ni email ni corps de requête, IP tronquée, 14 jours ; **journal d'audit** (clés, suspensions, suppressions de compte).
 - **Données personnelles** ([#23](https://github.com/0xdaydy/systalink-challenge/issues/23), [#24](https://github.com/0xdaydy/systalink-challenge/issues/24)) : email jamais public ; sessions 30 jours ; clés révoquées purgées après 30 jours ; **export JSON** immédiat ; **suppression** avec anonymisation ou effacement ; pages légales FR + EN (CGU, confidentialité, mentions, contact sous 30 jours) ; aucun analytics ni cookie non nécessaire.

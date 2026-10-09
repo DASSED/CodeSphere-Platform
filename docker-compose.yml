@@ -9,7 +9,7 @@ services:
         - web_env
         - server_env
       args:
-        VITE_SERVER_URL: http://localhost:3000
+        NEXT_PUBLIC_SERVER_URL: http://localhost:3000
     init: true
     ports:
       - "3001:3001"

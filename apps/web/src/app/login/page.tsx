@@ -1,14 +1,11 @@
-import { createFileRoute } from "@tanstack/react-router";
+"use client";
+
 import { useState } from "react";
 
 import SignInForm from "@/components/sign-in-form";
 import SignUpForm from "@/components/sign-up-form";
 
-export const Route = createFileRoute("/login")({
-  component: RouteComponent,
-});
-
-function RouteComponent() {
+export default function LoginPage() {
   const [showSignIn, setShowSignIn] = useState(false);
 
   return showSignIn ? (

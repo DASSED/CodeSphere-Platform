@@ -1,11 +1,8 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
 
 import { orpc } from "@/utils/orpc";
-
-export const Route = createFileRoute("/")({
-  component: HomeComponent,
-});
 
 const TITLE_TEXT = `
  ██████╗ ███████╗████████╗████████╗███████╗██████╗
@@ -23,7 +20,7 @@ const TITLE_TEXT = `
     ╚═╝       ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
  `;
 
-function HomeComponent() {
+export default function Home() {
   const healthCheck = useQuery(orpc.health.check.queryOptions());
   const hackathons = useQuery(orpc.hackathons.list.queryOptions({ input: {} }));
 

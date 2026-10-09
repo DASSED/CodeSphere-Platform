@@ -1,8 +1,10 @@
+"use client";
+
 import { Button } from "@codesphere/ui/components/button";
 import { Input } from "@codesphere/ui/components/input";
 import { Label } from "@codesphere/ui/components/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -11,9 +13,7 @@ import { authClient } from "@/lib/auth-client";
 import Loader from "./loader";
 
 export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
-  const navigate = useNavigate({
-    from: "/",
-  });
+  const router = useRouter();
   const { isPending } = authClient.useSession();
 
   const form = useForm({
@@ -31,9 +31,7 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
         },
         {
           onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
+            router.push("/dashboard");
             toast.success("Sign up successful");
           },
           onError: (error) => {

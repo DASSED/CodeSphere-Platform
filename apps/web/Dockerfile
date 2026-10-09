@@ -4,8 +4,8 @@ WORKDIR /app
 COPY . .
 RUN --mount=type=secret,id=web_env,target=/app/apps/web/.env.local --mount=type=secret,id=server_env,target=/app/apps/server/.env.local --mount=type=cache,target=/root/.bun/install/cache bun install
 
-ARG VITE_SERVER_URL
-ENV VITE_SERVER_URL=${VITE_SERVER_URL}
+ARG NEXT_PUBLIC_SERVER_URL
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
 ENV NODE_ENV=production
 RUN --mount=type=secret,id=web_env,target=/app/apps/web/.env.local --mount=type=secret,id=server_env,target=/app/apps/server/.env.local cd apps/web && bun run build
 
@@ -18,6 +18,5 @@ ENV HOST=0.0.0.0
 ENV PORT=3001
 EXPOSE 3001
 
-# SSR chunks require workspace dependencies at runtime
 WORKDIR /app/apps/web
-CMD ["bun", ".output/server/index.mjs"]
+CMD ["bun", "--bun", "run", "start", "--hostname", "0.0.0.0", "--port", "3001"]

@@ -74,5 +74,8 @@
     "typescript": "catalog:",
     "varlock": "catalog:"
   },
-  "packageManager": "bun@1.4.0"
+  "packageManager": "bun@1.4.0",
+  "overrides": {
+    "@next/env": "npm:@varlock/nextjs-integration@1.2.2"
+  }
 }
