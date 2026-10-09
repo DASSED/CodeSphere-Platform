@@ -123,7 +123,7 @@ Maquette de référence dans le ticket. Palette **Latérite** (`#a8432a` / `#d68
 - **Tests** : unitaires, intégration sur Postgres réel, contrat OpenAPI, 3 parcours Playwright ; push = lint/types/unitaires ; PR = + intégration, contrat, gitleaks, licences, vulnérabilités ; chaque procédure a au moins un test (nominal + erreur typée) ; seed de test déterministe.
 - **Versions** : SemVer, `v1.0.0` = soumission ; version + SHA dans `/health` et le pied de page.
 - **Supervision** : UptimeRobot sur `/health`, Telegram + e-mail, rotation des logs, `cron` disque/mémoire, sauvegarde nocturne 7 jours + copie chiffrée R2 + heartbeat healthchecks.io ; restauration testée le 29 oct.
-- **Équipe** ([#38](https://github.com/0xdaydy/systalink-challenge/issues/38)) : capitaine @0xdaydy (backend, API, déploiement, frontend), membre « tests », membre « doc » (doc et dossier CADEV) ; production/SSH/astreinte = capitaine + membre « tests ».
+- **Équipe** ([#38](https://github.com/0xdaydy/systalink-challenge/issues/38)) : 4 membres. Capitaine @0xdaydy (backend, API, base de données) ; @Justice-47 et @Strong-Ari (frontend) ; @lamafx (QA / tests, documentation et dossier CADEV, suppléant CI/CD, déploiement et infra) ; production/SSH/secrets/astreinte = capitaine + @lamafx.
 
 ## 6. Livrables de dépôt
 
