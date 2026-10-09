@@ -14,18 +14,18 @@ Plateforme d'échange pour développeurs africains, par des développeurs : Q&R 
 
 | Étape | Dates |
 |---|---|
-| Fondations et premier déploiement | 5–8 oct. |
-| Profil, Tags, flux, page CADEV | 9–14 oct. |
-| Questions, réponses, votes, hors-ligne | 15–20 oct. |
-| Agents IA, API, MCP | 21–24 oct. |
-| Sécurité, pages légales, i18n, contenu de démo, gel, dépôt | **à recaler** : tout doit tenir avant la soumission du 25 oct. |
-| **Soumission** (date confirmée par les organisateurs le 2026-10-09) | **25 oct. avant 17h00 GMT** |
+| Fondations, contrats publiés, staging `develop` (Vercel + Workers) | 9–13 oct. (contrôle le 13) |
+| Profil, Tags, flux, page CADEV, formulaire de Question | 13–17 oct. (contrôle le 17) |
+| Questions, réponses, votes, hors-ligne, agents, API, MCP | 17–21 oct. (contrôle le 21) |
+| Admin minimal, intégration, **gel des fonctionnalités le 22 au soir** (`fix/*` seulement, sur décision du capitaine) | 21–22 oct. |
+| Sécurité, pages légales, contenu de démo, répétition générale (23), dossier | 23–24 oct. |
+| **Dépôt le samedi 24 oct.** (marge d'un jour) ; limite officielle confirmée le 2026-10-09 | **25 oct. avant 17h00 GMT** |
 | Vote entre participants d'un même pays, **obligatoire pour la prise en compte de la soumission** | 25 oct. 18h – 26 oct. 23h59 |
 | Vote du public (10 % des points) | 27–30 oct., 23h59 |
 | Délibération du jury | 1er nov. |
 | Proclamation des résultats | à confirmer (15 nov. dans l'ancien règlement) |
 
-Points de contrôle : à recaler (ceux du 18 et du 25 oct. ne tiennent plus). Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0, présente via `lightningcss`, à confirmer auprès de l'organisateur) ; usage de l'IA déclaré ; équipe de 3. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
+Points de contrôle : 13, 17 et 21 oct. (staging à jour, parcours de démo rejoué, CI verte), gel le 22 au soir, répétition générale le 23. Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0, présente via `lightningcss`, à confirmer auprès de l'organisateur) ; usage de l'IA déclaré ; équipe de 4. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
 
 ### Ligne de coupe
 
@@ -120,7 +120,7 @@ Maquette de référence dans le ticket. Palette **Latérite** (`#a8432a` / `#d68
 
 - **Environnements** : local (`docker-compose.yml`) ; `staging.codesphereplatform.xyz` et `codesphereplatform.xyz` sur le même Cloud Server, Caddy partagé (squelette : PR #36).
 - **Pipeline** : `main` → build CI → GHCR (SHA) → SSH : pull, sauvegarde, migration éphémère, `up --wait`, `/ready`, Playwright en préproduction. Production = étiquette `vX.Y.Z` + Release GitHub. Retour arrière = étiquette précédente. Migrations additives uniquement.
-- **Branches** : trunk-based, `feat|fix/<n°>-<slug>`, Conventional Commits en anglais, squash + `Closes #n`, PR + CI verte + **1 relecture humaine**. Gel 29–31 oct. : `fix/*` seulement, sur décision du capitaine.
+- **Branches** : trunk-based, `feat|fix/<n°>-<slug>`, Conventional Commits en anglais, squash + `Closes #n`, PR + CI verte + **1 relecture humaine**. Gel à partir du 22 oct. au soir : `fix/*` seulement, sur décision du capitaine.
 - **Tests** : unitaires, intégration sur Postgres réel, contrat OpenAPI, 3 parcours Playwright ; push = lint/types/unitaires ; PR = + intégration, contrat, gitleaks, licences, vulnérabilités ; chaque procédure a au moins un test (nominal + erreur typée) ; seed de test déterministe.
 - **Versions** : SemVer, `v1.0.0` = soumission ; version + SHA dans `/health` et le pied de page.
 - **Supervision** : UptimeRobot sur `/health`, Telegram + e-mail, rotation des logs, `cron` disque/mémoire, sauvegarde nocturne 7 jours + copie chiffrée R2 + heartbeat healthchecks.io ; restauration testée le 29 oct.
@@ -149,22 +149,22 @@ Tranches verticales, dans l'ordre du calendrier. Chaque ticket : branche `feat/<
 
 | Issue | Ticket | Période | Responsable |
 |---|---|---|---|
-| #40 | Fondations : retirer email/mot de passe, `BAD_REQUEST` dans `base.ts`, `@codesphere/logger`, `/health` + `/ready` (version, SHA), seed (CADEV, Tags), CI complète (gitleaks, licences, vulnérabilités) | 5–8 oct. | capitaine |
-| #41 | Premier déploiement en préproduction (finir PR #36, ticket #35) + supervision | 5–8 oct. | capitaine + tests |
-| #42 | Thème Latérite, preset shadcn, mise en page, i18n de base, pied de page | 5–8 oct. | capitaine |
-| #43 | SSO GitHub/GitLab/Google + consentement + profil (Region, ville privée) | 9–11 oct. | capitaine |
-| #44 | Tags : recherche, suivi, onboarding 3 Tags | 9–12 oct. | capitaine |
-| #45 | Page Hackathon CADEV (onglets, frise, compte à rebours, Questions du Tag) | 9–12 oct. | capitaine |
-| #46 | Flux : `questions.list` filtrable, `feed.forYou` score chaud, 3 onglets, carte CADEV | 12–14 oct. | capitaine |
-| #47 | Poser une Question (étapes, Markdown assaini, questions proches) + page Question | 15–17 oct. | capitaine |
-| #48 | Répondre, accepter, voter (règles, limites d'écriture, idempotence) | 16–18 oct. | capitaine |
-| #49 | Hors-ligne : cache persisté + outbox et brouillons + indicateurs d'état | 18–20 oct. | capitaine |
-| #50 | Agents : création, presets, clés `cs_live_`, scopes, 429, badge, masquage | 21–22 oct. | capitaine |
-| #51 | API `/api/v1` + MCP (outils, descriptions, instantané OpenAPI, test client réel) | 22–24 oct. | capitaine |
-| #52 | Admin : fermer une Question, suspendre un Member, journal d'audit | 23–24 oct. | capitaine |
-| #53 | Confidentialité : export JSON, suppression de compte, effacement local | 25–26 oct. | capitaine |
-| #54 | Sécurité : en-têtes + CSP nonce, grille OWASP, checklist serveur | 25–28 oct. | tests |
-| #55 | Tests de bout en bout : 3 parcours Playwright + seed de test | au fil de l'eau, fin 24 oct. | tests |
-| #56 | Pages légales FR/EN, traduction complète | 25–27 oct. | doc |
-| #57 | Contenu de démo (questions d'amorçage, agent de démo) + répétition générale | 26–28 oct. | doc + capitaine |
-| #58 | Dossier de dépôt CADEV (déclarations, licences, vidéo/pitch) + `v1.0.0` | 25–31 oct. | doc |
+| #40 | Fondations : retirer email/mot de passe, `BAD_REQUEST` dans `base.ts`, `@codesphere/logger`, `/health` + `/ready` (version, SHA), seed (CADEV, Tags), CI complète (gitleaks, licences, vulnérabilités) | 9–12 oct. | capitaine |
+| #41 | Premier déploiement en **preview** (`develop` : web Vercel + API Workers) + supervision ; déploiement Systalink depuis `main` une fois serveur, web et domaine achetés (ticket #35) | 9–13 oct. | capitaine + lamafx |
+| #42 | Thème Latérite, preset shadcn, mise en page, i18n de base, pied de page | 9–13 oct. | Justice-47 |
+| #43 | SSO GitHub/GitLab/Google + consentement + profil (Region, ville privée) | 13–15 oct. | capitaine + Justice-47 |
+| #44 | Tags : recherche, suivi, onboarding 3 Tags | 13–15 oct. | capitaine + Justice-47 |
+| #45 | Page Hackathon CADEV (onglets, frise, compte à rebours, Questions du Tag) | 13–15 oct. | Justice-47 |
+| #46 | Flux : `questions.list` filtrable, `feed.forYou` score chaud, 3 onglets, carte CADEV | 14–16 oct. | capitaine + Justice-47 |
+| #47 | Poser une Question (étapes, Markdown assaini, questions proches) + page Question | 14–17 oct. | capitaine + Strong-Ari |
+| #48 | Répondre, accepter, voter (règles, limites d'écriture, idempotence) | 16–19 oct. | capitaine + Strong-Ari |
+| #49 | Hors-ligne : cache persisté + outbox et brouillons + indicateurs d'état | 18–21 oct. | Strong-Ari + capitaine |
+| #50 | Agents : création, presets, clés `cs_live_`, scopes, 429, badge, masquage | 17–19 oct. | capitaine + Justice-47 |
+| #51 | API `/api/v1` + MCP (outils, descriptions, instantané OpenAPI, test client réel) | 19–21 oct. | capitaine |
+| #52 | Admin : fermer une Question, suspendre un Member, journal d'audit | 20–21 oct. | capitaine |
+| #53 | Confidentialité : export JSON, suppression de compte, effacement local | 20–22 oct. | capitaine |
+| #54 | Sécurité : en-têtes + CSP nonce, grille OWASP, checklist serveur | 20–23 oct. | lamafx |
+| #55 | Tests de bout en bout : 3 parcours Playwright + seed de test | au fil de l'eau, fin 21 oct. | lamafx |
+| #56 | Pages légales FR/EN, traduction complète | 18–22 oct. | lamafx + frontend |
+| #57 | Contenu de démo (questions d'amorçage, agent de démo) + répétition générale | 21–23 oct. | lamafx + capitaine |
+| #58 | Dossier de dépôt CADEV (déclarations, licences, vidéo/pitch) + `v1.0.0` | 15–24 oct. ; dépôt le 24 | lamafx |
