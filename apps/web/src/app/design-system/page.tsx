@@ -8,6 +8,7 @@ import {
 	AvatarGroup,
 	AvatarGroupCount,
 } from "@codesphere/ui/components/atoms/avatar";
+import { Badge } from "@codesphere/ui/components/atoms/badge";
 import { Blobatar } from "@codesphere/ui/components/atoms/blobatar";
 import { Button } from "@codesphere/ui/components/atoms/button";
 import { Checkbox } from "@codesphere/ui/components/atoms/checkbox";
@@ -19,7 +20,11 @@ import {
 	MarkerContent,
 	MarkerIcon,
 } from "@codesphere/ui/components/atoms/marker";
+import { Separator } from "@codesphere/ui/components/atoms/separator";
 import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
+import { Sparkline } from "@codesphere/ui/components/atoms/sparkline";
+import { StatusBadge } from "@codesphere/ui/components/atoms/status-badge";
+import { Switch } from "@codesphere/ui/components/atoms/switch";
 import { Tag } from "@codesphere/ui/components/atoms/tag";
 import { Textarea } from "@codesphere/ui/components/atoms/textarea";
 import {
@@ -28,6 +33,12 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@codesphere/ui/components/atoms/tooltip";
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from "@codesphere/ui/components/molecules/alert";
+import { AnswerCard } from "@codesphere/ui/components/molecules/answer-card";
 import {
 	Attachment,
 	AttachmentAction,
@@ -54,6 +65,22 @@ import {
 } from "@codesphere/ui/components/molecules/card";
 import { CodeBlock } from "@codesphere/ui/components/molecules/code-block";
 import {
+	Collapsible,
+	CollapsiblePanel,
+	CollapsibleTrigger,
+} from "@codesphere/ui/components/molecules/collapsible";
+import { Countdown } from "@codesphere/ui/components/molecules/countdown";
+import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@codesphere/ui/components/molecules/dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -70,6 +97,7 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@codesphere/ui/components/molecules/empty";
+import { Field } from "@codesphere/ui/components/molecules/field";
 import { FollowedTags } from "@codesphere/ui/components/molecules/followed-tags";
 import {
 	InputGroup,
@@ -78,9 +106,58 @@ import {
 	InputGroupInput,
 	InputGroupText,
 } from "@codesphere/ui/components/molecules/input-group";
+import { KpiCard } from "@codesphere/ui/components/molecules/kpi-card";
+import {
+	LanguageSwitcher,
+	type Locale,
+} from "@codesphere/ui/components/molecules/language-switcher";
+import { OfflineBanner } from "@codesphere/ui/components/molecules/offline-banner";
+import { ProviderButton } from "@codesphere/ui/components/molecules/provider-button";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
+import { RelatedQuestions } from "@codesphere/ui/components/molecules/related-questions";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@codesphere/ui/components/molecules/select";
+import {
+	SettingRow,
+	SettingsSection,
+} from "@codesphere/ui/components/molecules/setting-row";
+import { Stepper } from "@codesphere/ui/components/molecules/stepper";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@codesphere/ui/components/molecules/table";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@codesphere/ui/components/molecules/tabs";
+import { TagInput } from "@codesphere/ui/components/molecules/tag-input";
+import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
+import { Timeline } from "@codesphere/ui/components/molecules/timeline";
+import {
+	type Vote,
+	VoteControl,
+} from "@codesphere/ui/components/molecules/vote-control";
+import { AnswerForm } from "@codesphere/ui/components/organisms/answer-form";
+import { ApiKeyReveal } from "@codesphere/ui/components/organisms/api-key-reveal";
+import { AppFooter } from "@codesphere/ui/components/organisms/app-footer";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
+import { AuditLog } from "@codesphere/ui/components/organisms/audit-log";
+import { FeedFilters } from "@codesphere/ui/components/organisms/feed-filters";
+import { KpiGrid } from "@codesphere/ui/components/organisms/kpi-grid";
+import { LoginCard } from "@codesphere/ui/components/organisms/login-card";
+import { LoginDialog } from "@codesphere/ui/components/organisms/login-dialog";
 import {
 	Message,
 	MessageAvatar,
@@ -96,9 +173,20 @@ import {
 	MessageScrollerProvider,
 	MessageScrollerViewport,
 } from "@codesphere/ui/components/organisms/message-scroller";
+import { ModerationTable } from "@codesphere/ui/components/organisms/moderation-table";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
-import { BookOpenIcon, FileTextIcon, SearchIcon } from "lucide-react";
+import { TagPicker } from "@codesphere/ui/components/organisms/tag-picker";
+import {
+	BookOpenIcon,
+	FileTextIcon,
+	InfoIcon,
+	SearchIcon,
+	TriangleAlertIcon,
+	WifiOffIcon,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
+import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
 const SAMPLE_QUESTIONS = [
@@ -189,6 +277,19 @@ const COLOR_TOKENS = [
 export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
 	const [checked, setChecked] = useState(false);
+	const [vote, setVote] = useState<Vote | null>("up");
+	const [step, setStep] = useState(1);
+	const [questionTags, setQuestionTags] = useState<string[]>(["nodejs"]);
+	const [pickedTags, setPickedTags] = useState<string[]>(["docker"]);
+	const [feedLanguage, setFeedLanguage] = useState("all");
+	const [feedCountry, setFeedCountry] = useState("all");
+	const [keyOpen, setKeyOpen] = useState(false);
+	const [locale, setLocale] = useState<Locale>("fr");
+	const [online, setOnline] = useState(false);
+	const [language, setLanguage] = useState<string | null>("fr");
+	const [answerText, setAnswerText] = useState(
+		"Utilise un `callback_url` public avec un tunnel en local.",
+	);
 
 	return (
 		<div className="min-h-svh">
@@ -299,6 +400,49 @@ export default function DesignSystemPage() {
 							size="lg"
 						/>
 					</Specimen>
+					<Specimen label="Badge — variantes">
+						<Badge>Default</Badge>
+						<Badge variant="secondary">Secondary</Badge>
+						<Badge variant="outline">Outline</Badge>
+						<Badge variant="success">Success</Badge>
+						<Badge variant="warning">Warning</Badge>
+						<Badge variant="destructive">Destructive</Badge>
+					</Specimen>
+					<Specimen label="Switch, Separator">
+						<div className="flex items-center gap-2">
+							<Switch id="ds-hide-agents" defaultChecked />
+							<Label htmlFor="ds-hide-agents" className="font-normal text-sm">
+								Masquer le contenu d'agent
+							</Label>
+						</div>
+						<div className="flex items-center gap-2">
+							<Switch id="ds-disabled" disabled />
+							<Label htmlFor="ds-disabled" className="font-normal text-sm">
+								Désactivé
+							</Label>
+						</div>
+						<Separator orientation="vertical" className="h-6" />
+						<span className="text-muted-foreground text-sm">
+							après un séparateur
+						</span>
+					</Specimen>
+					<Specimen label="Sparkline">
+						<div className="w-40">
+							<Sparkline data={[3, 5, 4, 8, 7, 12, 11, 15]} />
+						</div>
+						<div className="w-40 text-destructive">
+							<Sparkline
+								data={[15, 12, 13, 9, 10, 6, 5, 3]}
+								className="text-destructive"
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="StatusBadge — états">
+						<StatusBadge status="accepted" />
+						<StatusBadge status="pending" />
+						<StatusBadge status="rejected" />
+						<StatusBadge status="draft" />
+					</Specimen>
 					<Specimen label="Skeleton">
 						<div className="flex w-72 flex-col gap-2">
 							<Skeleton className="h-4 w-full" />
@@ -387,6 +531,285 @@ export default function DesignSystemPage() {
   return <span className="rounded-md">{name}</span>;
 }`}
 						</CodeBlock>
+					</Specimen>
+					<Specimen label="Alert — info, hors ligne, erreur">
+						<div className="flex w-full flex-col gap-3">
+							<Alert variant="info">
+								<InfoIcon />
+								<AlertTitle>Information</AlertTitle>
+								<AlertDescription>
+									La carte CADEV est épinglée pendant le concours.
+								</AlertDescription>
+							</Alert>
+							<Alert variant="warning">
+								<WifiOffIcon />
+								<AlertTitle>Vous êtes hors ligne</AlertTitle>
+								<AlertDescription>
+									Vos réponses sont gardées et seront envoyées au retour du
+									réseau.
+								</AlertDescription>
+							</Alert>
+							<Alert variant="destructive">
+								<TriangleAlertIcon />
+								<AlertTitle>Envoi rejeté</AlertTitle>
+								<AlertDescription>
+									Vous avez déjà répondu à cette question.
+								</AlertDescription>
+							</Alert>
+						</div>
+					</Specimen>
+					<Specimen label="Select — filtre de langue">
+						<div className="w-56">
+							<Select
+								value={language}
+								onValueChange={setLanguage}
+								items={[
+									{ value: "fr", label: "Français" },
+									{ value: "en", label: "English" },
+									{ value: "all", label: "Toutes les langues" },
+								]}
+							>
+								<SelectTrigger aria-label="Langue">
+									<SelectValue placeholder="Toutes les langues" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="fr">Français</SelectItem>
+									<SelectItem value="en">English</SelectItem>
+									<SelectItem value="all">Toutes les langues</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</Specimen>
+					<Specimen label="Stepper — formulaire de question">
+						<div className="flex w-full flex-col gap-3">
+							<Stepper
+								steps={["Titre", "Détails", "Tags et langue", "Relecture"]}
+								current={step}
+							/>
+							<div className="flex gap-2">
+								<Button
+									size="sm"
+									variant="outline"
+									disabled={step === 0}
+									onClick={() => setStep((s) => s - 1)}
+								>
+									Précédent
+								</Button>
+								<Button
+									size="sm"
+									disabled={step === 3}
+									onClick={() => setStep((s) => s + 1)}
+								>
+									Suivant
+								</Button>
+							</div>
+						</div>
+					</Specimen>
+					<Specimen label="Timeline — frise du hackathon">
+						<Timeline
+							className="w-full max-w-md"
+							items={[
+								{
+									date: "13 oct.",
+									title: "Point de contrôle 1",
+									description: "Staging à jour",
+									state: "done",
+								},
+								{
+									date: "17 oct.",
+									title: "Point de contrôle 2",
+									description: "Parcours de démo rejoué",
+									state: "current",
+								},
+								{
+									date: "22 oct.",
+									title: "Gel des fonctionnalités",
+									state: "upcoming",
+								},
+								{ date: "25 oct.", title: "Soumission", state: "upcoming" },
+							]}
+						/>
+					</Specimen>
+					<Specimen label="Dialog — confirmation">
+						<Dialog>
+							<DialogTrigger render={<Button variant="outline" />}>
+								Ouvrir la modale
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Supprimer le compte</DialogTitle>
+									<DialogDescription>
+										Cette action anonymise ou efface vos données. Elle est
+										définitive.
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<DialogClose render={<Button variant="outline" />}>
+										Annuler
+									</DialogClose>
+									<DialogClose render={<Button variant="destructive" />}>
+										Supprimer
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</Specimen>
+					<Specimen label="Table">
+						<div className="w-full">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Tag</TableHead>
+										<TableHead>Questions</TableHead>
+										<TableHead>Suivi</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									<TableRow>
+										<TableCell>mobile-money</TableCell>
+										<TableCell>128</TableCell>
+										<TableCell>
+											<Badge variant="success">Suivi</Badge>
+										</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell>ussd</TableCell>
+										<TableCell>41</TableCell>
+										<TableCell>
+											<Badge variant="outline">Non suivi</Badge>
+										</TableCell>
+									</TableRow>
+								</TableBody>
+							</Table>
+						</div>
+					</Specimen>
+					<Specimen label="KpiCard — hausse, baisse, métrique à minimiser">
+						<div className="grid w-full gap-4 md:grid-cols-3">
+							<KpiCard
+								label="Membres actifs"
+								value="428"
+								delta={12.4}
+								hint="vs 7 jours"
+								trend={[310, 322, 340, 365, 380, 402, 428]}
+							/>
+							<KpiCard
+								label="Questions avec réponse"
+								value="74 %"
+								delta={-3.2}
+								hint="vs 7 jours"
+								trend={[78, 77, 76, 75, 75, 74, 74]}
+							/>
+							<KpiCard
+								label="Questions sans réponse"
+								value="51"
+								delta={-6.3}
+								lowerIsBetter
+								hint="vs 7 jours"
+								trend={[58, 56, 55, 54, 53, 52, 51]}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="ProviderButton, ThemeToggle">
+						<div className="flex w-64 flex-col gap-2">
+							<ProviderButton provider="github" />
+							<ProviderButton provider="gitlab" />
+							<ProviderButton provider="google" />
+						</div>
+						<ThemeToggle />
+					</Specimen>
+					<Specimen label="Tabs">
+						<Tabs defaultValue="apercu" className="w-full max-w-md">
+							<TabsList>
+								<TabsTrigger value="apercu">Aperçu</TabsTrigger>
+								<TabsTrigger value="regles">Règles</TabsTrigger>
+								<TabsTrigger value="prix">Prix</TabsTrigger>
+							</TabsList>
+							<TabsContent value="apercu">
+								Contenu de l'onglet Aperçu.
+							</TabsContent>
+							<TabsContent value="regles">
+								Contenu de l'onglet Règles.
+							</TabsContent>
+							<TabsContent value="prix">Contenu de l'onglet Prix.</TabsContent>
+						</Tabs>
+					</Specimen>
+					<Specimen label="Collapsible — question repliable">
+						<Collapsible className="w-full max-w-md" defaultOpen>
+							<CollapsibleTrigger>
+								Comment intégrer Orange Money en Node.js ?
+							</CollapsibleTrigger>
+							<CollapsiblePanel>
+								<p className="pt-2 text-muted-foreground text-sm">
+									J'appelle l'endpoint de paiement depuis mon backend mais le
+									callback n'arrive jamais en local.
+								</p>
+							</CollapsiblePanel>
+						</Collapsible>
+					</Specimen>
+					<Specimen label="VoteControl">
+						<VoteControl
+							score={12 + (vote === "up" ? 1 : vote === "down" ? -1 : 0)}
+							value={vote}
+							onValueChange={setVote}
+						/>
+						<VoteControl
+							score={3}
+							value={null}
+							onValueChange={() => {}}
+							orientation="vertical"
+							disabled
+						/>
+					</Specimen>
+					<Specimen label="AnswerCard — acceptée, agent, longue">
+						<div className="grid w-full gap-4 md:grid-cols-2">
+							<AnswerCard
+								author="awa_dev"
+								ago="il y a 1 h"
+								score={12 + (vote === "up" ? 1 : vote === "down" ? -1 : 0)}
+								vote={vote}
+								onVoteChange={setVote}
+								accepted
+								onCopyCode={() => {}}
+								onShare={() => {}}
+							>
+								<p>
+									Expose un `callback_url` public avec un tunnel, puis vérifie
+									la signature.
+								</p>
+							</AnswerCard>
+							<AnswerCard
+								author="Claude-bot"
+								agentOf="koffi"
+								ago="hier"
+								score={4}
+								vote={null}
+								onVoteChange={() => {}}
+								voteDisabled
+								onAccept={() => {}}
+								onShare={() => {}}
+							>
+								<p>
+									Réponse d'un agent : badgée, jamais promue au-dessus d'un
+									humain.
+								</p>
+							</AnswerCard>
+							<AnswerCard
+								author="yaya"
+								ago="il y a 3 j"
+								score={1}
+								vote={null}
+								onVoteChange={() => {}}
+								long
+								className="md:col-span-2"
+							>
+								{Array.from({ length: 6 }, (_, i) => (
+									<p key={i} className="mb-2">
+										Paragraphe {i + 1} d'une longue réponse, replié tant que le
+										membre ne demande pas la suite.
+									</p>
+								))}
+							</AnswerCard>
+						</div>
 					</Specimen>
 					<Specimen label="InputGroup">
 						<InputGroup className="w-full max-w-md">
@@ -501,6 +924,253 @@ export default function DesignSystemPage() {
 								</MessageContent>
 							</Message>
 						</MessageGroup>
+					</Specimen>
+					<Specimen label="AnswerForm — écrire, aperçu, états">
+						<div className="grid w-full gap-4 md:grid-cols-2">
+							<AnswerForm
+								value={answerText}
+								onValueChange={setAnswerText}
+								preview={<p>{answerText}</p>}
+								onSubmit={() => {}}
+								status="draft"
+							/>
+							<AnswerForm
+								value="Ma réponse hors ligne"
+								onValueChange={() => {}}
+								preview={<p>Ma réponse hors ligne</p>}
+								onSubmit={() => {}}
+								status="pending"
+							/>
+							<AnswerForm
+								value="Texte conservé après rejet"
+								onValueChange={() => {}}
+								preview={<p>Texte conservé après rejet</p>}
+								onSubmit={() => {}}
+								status="rejected"
+								rejectionReason="Vous avez déjà répondu à cette question"
+								className="md:col-span-2"
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="LoginCard — SSO et consentement">
+						<div className="w-full max-w-sm">
+							<LoginCard consentVersion="2026-10" onProviderSelect={() => {}} />
+						</div>
+					</Specimen>
+					<Specimen label="LoginDialog — bouton qui ouvre la connexion">
+						<div className="flex w-full justify-center py-2">
+							<LoginDialog
+								consentVersion="2026-10"
+								onProviderSelect={() => {}}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="ModerationTable (données d'exemple)">
+						<div className="w-full">
+							<ModerationTable rows={moderationRows} onConfirm={() => {}} />
+						</div>
+					</Specimen>
+					<Specimen label="AuditLog (données d'exemple)">
+						<div className="w-full">
+							<AuditLog entries={auditEntries.slice(0, 4)} />
+						</div>
+					</Specimen>
+					<Specimen label="KpiGrid">
+						<KpiGrid
+							className="w-full"
+							items={[
+								{
+									id: "a",
+									label: "Membres actifs",
+									value: "428",
+									delta: 12.4,
+									trend: [3, 5, 6, 8, 9, 12],
+								},
+								{
+									id: "b",
+									label: "Questions posées",
+									value: "193",
+									delta: 8.1,
+									trend: [3, 4, 4, 6, 5, 7],
+								},
+							]}
+						/>
+					</Specimen>
+					<Specimen label="AppFooter">
+						<AppFooter
+							className="w-full rounded-md border-t-0"
+							version="1.0.0"
+							sha="6a2db9dd7e5e2bd5b4a4c60c247cc8bb13ff90bf"
+							links={[
+								{ label: "Confidentialité", href: "/legal/privacy" },
+								{ label: "Conditions", href: "/legal/terms" },
+							]}
+						/>
+					</Specimen>
+					<Specimen label="Field — libellé, aide et erreur par champ">
+						<div className="grid w-full gap-4 md:grid-cols-2">
+							<Field
+								id="ds-title-ok"
+								label="Titre"
+								description="Résumez le problème en une phrase."
+								required
+							>
+								<Input
+									id="ds-title-ok"
+									aria-describedby="ds-title-ok-description"
+								/>
+							</Field>
+							<Field
+								id="ds-title-ko"
+								label="Titre"
+								error="Le titre doit faire au moins 15 caractères."
+								required
+							>
+								<Input
+									id="ds-title-ko"
+									aria-invalid
+									aria-describedby="ds-title-ko-error"
+									defaultValue="Aide"
+								/>
+							</Field>
+						</div>
+					</Specimen>
+					<Specimen label="TagInput — saisie libre et suggestions">
+						<div className="w-full max-w-md">
+							<TagInput
+								value={questionTags}
+								onValueChange={setQuestionTags}
+								suggestions={[
+									"nodejs",
+									"mobile-money",
+									"ussd",
+									"postgresql",
+									"docker",
+									"pwa",
+								]}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="TagPicker — onboarding (3 tags minimum, passable)">
+						<TagPicker
+							className="w-full"
+							tags={[
+								"mobile-money",
+								"nodejs",
+								"ussd",
+								"postgresql",
+								"docker",
+								"pwa",
+								"react-native",
+								"ia",
+								"securite",
+							]}
+							value={pickedTags}
+							onValueChange={setPickedTags}
+							onSubmit={() => {}}
+							onSkip={() => {}}
+						/>
+					</Specimen>
+					<Specimen label="FeedFilters — langue et pays">
+						<FeedFilters
+							language={feedLanguage}
+							onLanguageChange={setFeedLanguage}
+							country={feedCountry}
+							onCountryChange={setFeedCountry}
+							countries={[
+								{ value: "all", label: "Tous les pays" },
+								{ value: "SN", label: "Sénégal" },
+								{ value: "CI", label: "Côte d'Ivoire" },
+								{ value: "NG", label: "Nigéria" },
+							]}
+						/>
+					</Specimen>
+					<Specimen label="OfflineBanner — hors ligne / synchronisation">
+						<div className="flex w-full flex-col gap-3">
+							<div className="flex gap-2">
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => setOnline((value) => !value)}
+								>
+									{online ? "Passer hors ligne" : "Revenir en ligne"}
+								</Button>
+							</div>
+							<OfflineBanner online={online} pendingCount={3} />
+						</div>
+					</Specimen>
+					<Specimen label="RelatedQuestions — pendant la saisie du titre">
+						<RelatedQuestions
+							className="w-full max-w-lg"
+							questions={[
+								{
+									id: "r1",
+									title: "Intégrer l'API Orange Money en Node.js",
+									answers: 3,
+									answered: true,
+									href: "#",
+								},
+								{
+									id: "r2",
+									title: "Callback de paiement jamais reçu en local",
+									answers: 1,
+									answered: false,
+									href: "#",
+								},
+							]}
+						/>
+					</Specimen>
+					<Specimen label="Countdown — clôture du hackathon">
+						<Countdown target="2026-10-25T23:59:00Z" />
+						<Countdown target="2026-10-01T00:00:00Z" />
+					</Specimen>
+					<Specimen label="SettingsSection, SettingRow, LanguageSwitcher">
+						<SettingsSection
+							className="w-full max-w-xl"
+							title="Préférences"
+							description="Réglages de votre compte."
+						>
+							<SettingRow
+								title="Langue de l'interface"
+								description="Français ou English."
+							>
+								<LanguageSwitcher value={locale} onValueChange={setLocale} />
+							</SettingRow>
+							<SettingRow
+								title="Masquer le contenu d'agent"
+								description="Les réponses d'agents restent badgées."
+							>
+								<Switch aria-label="Masquer le contenu d'agent" />
+							</SettingRow>
+						</SettingsSection>
+					</Specimen>
+					<Specimen label="ApiKeyReveal — clé d'agent affichée une seule fois">
+						<Button variant="outline" onClick={() => setKeyOpen(true)}>
+							Créer une clé
+						</Button>
+						<ApiKeyReveal
+							open={keyOpen}
+							onOpenChange={setKeyOpen}
+							agentName="Claude-bot"
+							apiKey="csk_live_7f3a91c2d84e4b6f9a1c0e5d2b8a64f3"
+						/>
+					</Specimen>
+					<Specimen label="Pages complètes">
+						<Link href="/admin" className="text-primary text-sm underline">
+							/admin (modération)
+						</Link>
+						<Link href="/admin/kpi" className="text-primary text-sm underline">
+							/admin/kpi
+						</Link>
+						<Link
+							href="/admin/audit"
+							className="text-primary text-sm underline"
+						>
+							/admin/audit
+						</Link>
+						<Link href="/signin" className="text-primary text-sm underline">
+							/signin (connexion SSO)
+						</Link>
 					</Specimen>
 					<Specimen label="MessageScroller">
 						<div className="h-48 w-full max-w-md">

@@ -1,0 +1,53 @@
+"use client";
+
+import { Button } from "@codesphere/ui/components/atoms/button";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@codesphere/ui/components/molecules/dialog";
+import {
+	LoginCard,
+	type LoginCardProps,
+} from "@codesphere/ui/components/organisms/login-card";
+
+type LoginDialogProps = Omit<LoginCardProps, "hideHeading" | "className"> & {
+	/** The element that opens the dialog. Defaults to a « Se connecter » button. */
+	trigger?: React.ReactElement;
+	open?: boolean;
+	onOpenChange?: (open: boolean) => void;
+};
+
+/** Reusable login: a button that opens the SSO sign-in in a modal. */
+function LoginDialog({
+	trigger,
+	open,
+	onOpenChange,
+	...cardProps
+}: LoginDialogProps) {
+	return (
+		<Dialog open={open} onOpenChange={onOpenChange}>
+			<DialogTrigger
+				render={
+					trigger ?? <Button size="lg" className="h-10 min-w-44 px-6 text-sm" />
+				}
+			>
+				{trigger ? undefined : "Se connecter"}
+			</DialogTrigger>
+			<DialogContent>
+				<DialogHeader>
+					<DialogTitle>Se connecter</DialogTitle>
+					<DialogDescription>
+						Choisissez le compte avec lequel vous voulez rejoindre CodeSphere.
+					</DialogDescription>
+				</DialogHeader>
+				<LoginCard hideHeading {...cardProps} />
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+export { LoginDialog, type LoginDialogProps };
