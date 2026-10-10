@@ -69,6 +69,7 @@ import {
 	CollapsiblePanel,
 	CollapsibleTrigger,
 } from "@codesphere/ui/components/molecules/collapsible";
+import { Countdown } from "@codesphere/ui/components/molecules/countdown";
 import {
 	Dialog,
 	DialogClose,
@@ -96,6 +97,7 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@codesphere/ui/components/molecules/empty";
+import { Field } from "@codesphere/ui/components/molecules/field";
 import { FollowedTags } from "@codesphere/ui/components/molecules/followed-tags";
 import {
 	InputGroup,
@@ -105,8 +107,14 @@ import {
 	InputGroupText,
 } from "@codesphere/ui/components/molecules/input-group";
 import { KpiCard } from "@codesphere/ui/components/molecules/kpi-card";
+import {
+	LanguageSwitcher,
+	type Locale,
+} from "@codesphere/ui/components/molecules/language-switcher";
+import { OfflineBanner } from "@codesphere/ui/components/molecules/offline-banner";
 import { ProviderButton } from "@codesphere/ui/components/molecules/provider-button";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
+import { RelatedQuestions } from "@codesphere/ui/components/molecules/related-questions";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import {
 	Select,
@@ -115,6 +123,10 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@codesphere/ui/components/molecules/select";
+import {
+	SettingRow,
+	SettingsSection,
+} from "@codesphere/ui/components/molecules/setting-row";
 import { Stepper } from "@codesphere/ui/components/molecules/stepper";
 import {
 	Table,
@@ -130,6 +142,7 @@ import {
 	TabsList,
 	TabsTrigger,
 } from "@codesphere/ui/components/molecules/tabs";
+import { TagInput } from "@codesphere/ui/components/molecules/tag-input";
 import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
 import { Timeline } from "@codesphere/ui/components/molecules/timeline";
 import {
@@ -137,9 +150,11 @@ import {
 	VoteControl,
 } from "@codesphere/ui/components/molecules/vote-control";
 import { AnswerForm } from "@codesphere/ui/components/organisms/answer-form";
+import { ApiKeyReveal } from "@codesphere/ui/components/organisms/api-key-reveal";
 import { AppFooter } from "@codesphere/ui/components/organisms/app-footer";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
 import { AuditLog } from "@codesphere/ui/components/organisms/audit-log";
+import { FeedFilters } from "@codesphere/ui/components/organisms/feed-filters";
 import { KpiGrid } from "@codesphere/ui/components/organisms/kpi-grid";
 import { LoginCard } from "@codesphere/ui/components/organisms/login-card";
 import { LoginDialog } from "@codesphere/ui/components/organisms/login-dialog";
@@ -160,6 +175,7 @@ import {
 } from "@codesphere/ui/components/organisms/message-scroller";
 import { ModerationTable } from "@codesphere/ui/components/organisms/moderation-table";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
+import { TagPicker } from "@codesphere/ui/components/organisms/tag-picker";
 import {
 	BookOpenIcon,
 	FileTextIcon,
@@ -263,6 +279,13 @@ export default function DesignSystemPage() {
 	const [checked, setChecked] = useState(false);
 	const [vote, setVote] = useState<Vote | null>("up");
 	const [step, setStep] = useState(1);
+	const [questionTags, setQuestionTags] = useState<string[]>(["nodejs"]);
+	const [pickedTags, setPickedTags] = useState<string[]>(["docker"]);
+	const [feedLanguage, setFeedLanguage] = useState("all");
+	const [feedCountry, setFeedCountry] = useState("all");
+	const [keyOpen, setKeyOpen] = useState(false);
+	const [locale, setLocale] = useState<Locale>("fr");
+	const [online, setOnline] = useState(false);
 	const [language, setLanguage] = useState<string | null>("fr");
 	const [answerText, setAnswerText] = useState(
 		"Utilise un `callback_url` public avec un tunnel en local.",
@@ -982,6 +1005,154 @@ export default function DesignSystemPage() {
 								{ label: "Confidentialité", href: "/legal/privacy" },
 								{ label: "Conditions", href: "/legal/terms" },
 							]}
+						/>
+					</Specimen>
+					<Specimen label="Field — libellé, aide et erreur par champ">
+						<div className="grid w-full gap-4 md:grid-cols-2">
+							<Field
+								id="ds-title-ok"
+								label="Titre"
+								description="Résumez le problème en une phrase."
+								required
+							>
+								<Input
+									id="ds-title-ok"
+									aria-describedby="ds-title-ok-description"
+								/>
+							</Field>
+							<Field
+								id="ds-title-ko"
+								label="Titre"
+								error="Le titre doit faire au moins 15 caractères."
+								required
+							>
+								<Input
+									id="ds-title-ko"
+									aria-invalid
+									aria-describedby="ds-title-ko-error"
+									defaultValue="Aide"
+								/>
+							</Field>
+						</div>
+					</Specimen>
+					<Specimen label="TagInput — saisie libre et suggestions">
+						<div className="w-full max-w-md">
+							<TagInput
+								value={questionTags}
+								onValueChange={setQuestionTags}
+								suggestions={[
+									"nodejs",
+									"mobile-money",
+									"ussd",
+									"postgresql",
+									"docker",
+									"pwa",
+								]}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="TagPicker — onboarding (3 tags minimum, passable)">
+						<TagPicker
+							className="w-full"
+							tags={[
+								"mobile-money",
+								"nodejs",
+								"ussd",
+								"postgresql",
+								"docker",
+								"pwa",
+								"react-native",
+								"ia",
+								"securite",
+							]}
+							value={pickedTags}
+							onValueChange={setPickedTags}
+							onSubmit={() => {}}
+							onSkip={() => {}}
+						/>
+					</Specimen>
+					<Specimen label="FeedFilters — langue et pays">
+						<FeedFilters
+							language={feedLanguage}
+							onLanguageChange={setFeedLanguage}
+							country={feedCountry}
+							onCountryChange={setFeedCountry}
+							countries={[
+								{ value: "all", label: "Tous les pays" },
+								{ value: "SN", label: "Sénégal" },
+								{ value: "CI", label: "Côte d'Ivoire" },
+								{ value: "NG", label: "Nigéria" },
+							]}
+						/>
+					</Specimen>
+					<Specimen label="OfflineBanner — hors ligne / synchronisation">
+						<div className="flex w-full flex-col gap-3">
+							<div className="flex gap-2">
+								<Button
+									size="sm"
+									variant="outline"
+									onClick={() => setOnline((value) => !value)}
+								>
+									{online ? "Passer hors ligne" : "Revenir en ligne"}
+								</Button>
+							</div>
+							<OfflineBanner online={online} pendingCount={3} />
+						</div>
+					</Specimen>
+					<Specimen label="RelatedQuestions — pendant la saisie du titre">
+						<RelatedQuestions
+							className="w-full max-w-lg"
+							questions={[
+								{
+									id: "r1",
+									title: "Intégrer l'API Orange Money en Node.js",
+									answers: 3,
+									answered: true,
+									href: "#",
+								},
+								{
+									id: "r2",
+									title: "Callback de paiement jamais reçu en local",
+									answers: 1,
+									answered: false,
+									href: "#",
+								},
+							]}
+						/>
+					</Specimen>
+					<Specimen label="Countdown — clôture du hackathon">
+						<Countdown target="2026-10-25T23:59:00Z" />
+						<Countdown target="2026-10-01T00:00:00Z" />
+					</Specimen>
+					<Specimen label="SettingsSection, SettingRow, LanguageSwitcher">
+						<SettingsSection
+							className="w-full max-w-xl"
+							title="Préférences"
+							description="Réglages de votre compte."
+						>
+							<SettingRow
+								title="Langue de l'interface"
+								description="Français ou English."
+							>
+								<LanguageSwitcher value={locale} onValueChange={setLocale} />
+							</SettingRow>
+							<SettingRow
+								title="Masquer le contenu d'agent"
+								description="Les réponses d'agents restent badgées."
+							>
+								<Switch aria-label="Masquer le contenu d'agent" />
+							</SettingRow>
+						</SettingsSection>
+					</Specimen>
+					<Specimen label="ApiKeyReveal — clé d'agent affichée une seule fois">
+						<Button variant="outline" onClick={() => setKeyOpen(true)}>
+							Créer une clé
+						</Button>
+						<ApiKeyReveal
+							open={keyOpen}
+							onOpenChange={setKeyOpen}
+							agentName="Claude-bot"
+							apiKey="csk_live_7f3a91c2d84e4b6f9a1c0e5d2b8a64f3"
 						/>
 					</Specimen>
 					<Specimen label="Pages complètes">
