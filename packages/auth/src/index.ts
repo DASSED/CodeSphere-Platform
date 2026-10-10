@@ -4,12 +4,14 @@ import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
 
+import { isAdminEmail, parseAdminEmails } from "./admin";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
 
 export type AuthConfig = SocialProviderEnv & {
 	BETTER_AUTH_URL: string;
 	BETTER_AUTH_SECRET: string;
 	CORS_ORIGIN: string;
+	ADMIN_EMAILS?: string;
 };
 
 export function createAuth(
@@ -17,6 +19,8 @@ export function createAuth(
 	database: Database,
 	desktopOrigins: readonly string[] = [],
 ) {
+	const admins = parseAdminEmails(env.ADMIN_EMAILS);
+
 	return betterAuth({
 		database: drizzleAdapter(database, {
 			provider: "pg",
@@ -25,6 +29,25 @@ export function createAuth(
 		trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
 		// SSO only: no email/password sign-in (#59, spec §3).
 		socialProviders: socialProvidersFrom(env),
+		account: {
+			// Link provider accounts on a verified email only: no trusted providers, so an
+			// unverified address is rejected instead of being merged (spec §3).
+			accountLinking: { enabled: true, trustedProviders: [] },
+		},
+		databaseHooks: {
+			user: {
+				create: {
+					before: async (user) => ({
+						data: {
+							...user,
+							role: isAdminEmail(user.email, user.emailVerified, admins)
+								? "admin"
+								: "member",
+						},
+					}),
+				},
+			},
+		},
 		secret: env.BETTER_AUTH_SECRET,
 		baseURL: env.BETTER_AUTH_URL,
 		advanced: {
@@ -45,6 +68,13 @@ export function createAuth(
 				},
 				// For agents: the human Member who owns and answers for them.
 				ownerId: { type: "string", required: false, input: false },
+				// "admin" | "member"; derived from ADMIN_EMAILS at account creation, never by the client.
+				role: {
+					type: "string",
+					required: false,
+					defaultValue: "member",
+					input: false,
+				},
 			},
 		},
 		plugins: [

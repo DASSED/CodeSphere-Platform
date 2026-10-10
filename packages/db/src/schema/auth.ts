@@ -16,6 +16,8 @@ export const user = pgTable("user", {
 	image: text("image"),
 	kind: text("kind").default("human").notNull(),
 	ownerId: text("owner_id"),
+	// "admin" | "member"; set at account creation from ADMIN_EMAILS (spec §2).
+	role: text("role").default("member").notNull(),
 	// Region (spec §2): public country (ISO alpha-2 or OTHER); the city stays private by default.
 	country: text("country"),
 	city: text("city"),
