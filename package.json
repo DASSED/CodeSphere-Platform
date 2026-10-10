@@ -10,7 +10,7 @@
       "zod": "^4.5.4",
       "typescript": "^6.0.3",
       "@types/bun": "^1.4.2",
-      "varlock": "1.18.0",
+      "varlock": "1.22.0",
       "@orpc/server": "2.0.0-beta.41",
       "@orpc/openapi": "2.0.0-beta.41",
       "@orpc/zod": "2.0.0-beta.41",
@@ -74,5 +74,12 @@
     "typescript": "catalog:",
     "varlock": "catalog:"
   },
-  "packageManager": "bun@1.4.0"
+  "packageManager": "bun@1.4.0",
+  "volta": {
+    "node": "22.21.1"
+  },
+  "overrides": {
+    "@next/env": "npm:@varlock/nextjs-integration@1.2.4",
+    "sharp": "npm:empty-npm-package@1.0.0"
+  }
 }

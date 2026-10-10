@@ -1,4 +1,6 @@
-import { Button } from "@codesphere/ui/components/button";
+"use client";
+
+import { Button } from "@codesphere/ui/components/atoms/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,14 +9,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@codesphere/ui/components/dropdown-menu";
-import { Skeleton } from "@codesphere/ui/components/skeleton";
-import { Link, useNavigate } from "@tanstack/react-router";
+} from "@codesphere/ui/components/molecules/dropdown-menu";
+import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth-client";
 
 export default function UserMenu() {
-  const navigate = useNavigate();
+  const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
 
   if (isPending) {
@@ -23,7 +26,7 @@ export default function UserMenu() {
 
   if (!session) {
     return (
-      <Link to="/login">
+      <Link href="/login">
         <Button variant="outline">Sign In</Button>
       </Link>
     );
@@ -45,9 +48,7 @@ export default function UserMenu() {
               authClient.signOut({
                 fetchOptions: {
                   onSuccess: () => {
-                    navigate({
-                      to: "/",
-                    });
+                    router.push("/");
                   },
                 },
               });

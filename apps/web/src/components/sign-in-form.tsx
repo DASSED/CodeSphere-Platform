@@ -1,8 +1,10 @@
-import { Button } from "@codesphere/ui/components/button";
-import { Input } from "@codesphere/ui/components/input";
-import { Label } from "@codesphere/ui/components/label";
+"use client";
+
+import { Button } from "@codesphere/ui/components/atoms/button";
+import { Input } from "@codesphere/ui/components/atoms/input";
+import { Label } from "@codesphere/ui/components/atoms/label";
 import { useForm } from "@tanstack/react-form";
-import { useNavigate } from "@tanstack/react-router";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import z from "zod";
 
@@ -11,9 +13,7 @@ import { authClient } from "@/lib/auth-client";
 import Loader from "./loader";
 
 export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () => void }) {
-  const navigate = useNavigate({
-    from: "/",
-  });
+  const router = useRouter();
   const { isPending } = authClient.useSession();
 
   const form = useForm({
@@ -29,9 +29,7 @@ export default function SignInForm({ onSwitchToSignUp }: { onSwitchToSignUp: () 
         },
         {
           onSuccess: () => {
-            navigate({
-              to: "/dashboard",
-            });
+            router.push("/dashboard");
             toast.success("Sign in successful");
           },
           onError: (error) => {

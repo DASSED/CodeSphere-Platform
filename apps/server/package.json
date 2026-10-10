@@ -39,5 +39,8 @@
     "@types/bun": "catalog:",
     "tsdown": "^0.23.0",
     "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
   }
 }
