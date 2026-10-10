@@ -20,6 +20,7 @@ import {
 	MarkerIcon,
 } from "@codesphere/ui/components/atoms/marker";
 import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
+import { StatusBadge } from "@codesphere/ui/components/atoms/status-badge";
 import { Tag } from "@codesphere/ui/components/atoms/tag";
 import { Textarea } from "@codesphere/ui/components/atoms/textarea";
 import {
@@ -28,6 +29,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@codesphere/ui/components/atoms/tooltip";
+import { AnswerCard } from "@codesphere/ui/components/molecules/answer-card";
 import {
 	Attachment,
 	AttachmentAction,
@@ -53,6 +55,11 @@ import {
 	CardTitle,
 } from "@codesphere/ui/components/molecules/card";
 import { CodeBlock } from "@codesphere/ui/components/molecules/code-block";
+import {
+	Collapsible,
+	CollapsiblePanel,
+	CollapsibleTrigger,
+} from "@codesphere/ui/components/molecules/collapsible";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -80,6 +87,17 @@ import {
 } from "@codesphere/ui/components/molecules/input-group";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@codesphere/ui/components/molecules/tabs";
+import {
+	type Vote,
+	VoteControl,
+} from "@codesphere/ui/components/molecules/vote-control";
+import { AnswerForm } from "@codesphere/ui/components/organisms/answer-form";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
 import {
 	Message,
@@ -189,6 +207,10 @@ const COLOR_TOKENS = [
 export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
 	const [checked, setChecked] = useState(false);
+	const [vote, setVote] = useState<Vote | null>("up");
+	const [answerText, setAnswerText] = useState(
+		"Utilise un `callback_url` public avec un tunnel en local.",
+	);
 
 	return (
 		<div className="min-h-svh">
@@ -299,6 +321,12 @@ export default function DesignSystemPage() {
 							size="lg"
 						/>
 					</Specimen>
+					<Specimen label="StatusBadge — états">
+						<StatusBadge status="accepted" />
+						<StatusBadge status="pending" />
+						<StatusBadge status="rejected" />
+						<StatusBadge status="draft" />
+					</Specimen>
 					<Specimen label="Skeleton">
 						<div className="flex w-72 flex-col gap-2">
 							<Skeleton className="h-4 w-full" />
@@ -387,6 +415,100 @@ export default function DesignSystemPage() {
   return <span className="rounded-md">{name}</span>;
 }`}
 						</CodeBlock>
+					</Specimen>
+					<Specimen label="Tabs">
+						<Tabs defaultValue="apercu" className="w-full max-w-md">
+							<TabsList>
+								<TabsTrigger value="apercu">Aperçu</TabsTrigger>
+								<TabsTrigger value="regles">Règles</TabsTrigger>
+								<TabsTrigger value="prix">Prix</TabsTrigger>
+							</TabsList>
+							<TabsContent value="apercu">
+								Contenu de l'onglet Aperçu.
+							</TabsContent>
+							<TabsContent value="regles">
+								Contenu de l'onglet Règles.
+							</TabsContent>
+							<TabsContent value="prix">Contenu de l'onglet Prix.</TabsContent>
+						</Tabs>
+					</Specimen>
+					<Specimen label="Collapsible — question repliable">
+						<Collapsible className="w-full max-w-md" defaultOpen>
+							<CollapsibleTrigger>
+								Comment intégrer Orange Money en Node.js ?
+							</CollapsibleTrigger>
+							<CollapsiblePanel>
+								<p className="pt-2 text-muted-foreground text-sm">
+									J'appelle l'endpoint de paiement depuis mon backend mais le
+									callback n'arrive jamais en local.
+								</p>
+							</CollapsiblePanel>
+						</Collapsible>
+					</Specimen>
+					<Specimen label="VoteControl">
+						<VoteControl
+							score={12 + (vote === "up" ? 1 : vote === "down" ? -1 : 0)}
+							value={vote}
+							onValueChange={setVote}
+						/>
+						<VoteControl
+							score={3}
+							value={null}
+							onValueChange={() => {}}
+							orientation="vertical"
+							disabled
+						/>
+					</Specimen>
+					<Specimen label="AnswerCard — acceptée, agent, longue">
+						<div className="grid w-full gap-4 md:grid-cols-2">
+							<AnswerCard
+								author="awa_dev"
+								ago="il y a 1 h"
+								score={12 + (vote === "up" ? 1 : vote === "down" ? -1 : 0)}
+								vote={vote}
+								onVoteChange={setVote}
+								accepted
+								onCopyCode={() => {}}
+								onShare={() => {}}
+							>
+								<p>
+									Expose un `callback_url` public avec un tunnel, puis vérifie
+									la signature.
+								</p>
+							</AnswerCard>
+							<AnswerCard
+								author="Claude-bot"
+								agentOf="koffi"
+								ago="hier"
+								score={4}
+								vote={null}
+								onVoteChange={() => {}}
+								voteDisabled
+								onAccept={() => {}}
+								onShare={() => {}}
+							>
+								<p>
+									Réponse d'un agent : badgée, jamais promue au-dessus d'un
+									humain.
+								</p>
+							</AnswerCard>
+							<AnswerCard
+								author="yaya"
+								ago="il y a 3 j"
+								score={1}
+								vote={null}
+								onVoteChange={() => {}}
+								long
+								className="md:col-span-2"
+							>
+								{Array.from({ length: 6 }, (_, i) => (
+									<p key={i} className="mb-2">
+										Paragraphe {i + 1} d'une longue réponse, replié tant que le
+										membre ne demande pas la suite.
+									</p>
+								))}
+							</AnswerCard>
+						</div>
 					</Specimen>
 					<Specimen label="InputGroup">
 						<InputGroup className="w-full max-w-md">
@@ -501,6 +623,33 @@ export default function DesignSystemPage() {
 								</MessageContent>
 							</Message>
 						</MessageGroup>
+					</Specimen>
+					<Specimen label="AnswerForm — écrire, aperçu, états">
+						<div className="grid w-full gap-4 md:grid-cols-2">
+							<AnswerForm
+								value={answerText}
+								onValueChange={setAnswerText}
+								preview={<p>{answerText}</p>}
+								onSubmit={() => {}}
+								status="draft"
+							/>
+							<AnswerForm
+								value="Ma réponse hors ligne"
+								onValueChange={() => {}}
+								preview={<p>Ma réponse hors ligne</p>}
+								onSubmit={() => {}}
+								status="pending"
+							/>
+							<AnswerForm
+								value="Texte conservé après rejet"
+								onValueChange={() => {}}
+								preview={<p>Texte conservé après rejet</p>}
+								onSubmit={() => {}}
+								status="rejected"
+								rejectionReason="Vous avez déjà répondu à cette question"
+								className="md:col-span-2"
+							/>
+						</div>
 					</Specimen>
 					<Specimen label="MessageScroller">
 						<div className="h-48 w-full max-w-md">
