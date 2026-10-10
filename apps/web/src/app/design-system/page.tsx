@@ -8,6 +8,7 @@ import {
 	AvatarGroup,
 	AvatarGroupCount,
 } from "@codesphere/ui/components/atoms/avatar";
+import { Badge } from "@codesphere/ui/components/atoms/badge";
 import { Blobatar } from "@codesphere/ui/components/atoms/blobatar";
 import { Button } from "@codesphere/ui/components/atoms/button";
 import { Checkbox } from "@codesphere/ui/components/atoms/checkbox";
@@ -19,8 +20,11 @@ import {
 	MarkerContent,
 	MarkerIcon,
 } from "@codesphere/ui/components/atoms/marker";
+import { Separator } from "@codesphere/ui/components/atoms/separator";
 import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
+import { Sparkline } from "@codesphere/ui/components/atoms/sparkline";
 import { StatusBadge } from "@codesphere/ui/components/atoms/status-badge";
+import { Switch } from "@codesphere/ui/components/atoms/switch";
 import { Tag } from "@codesphere/ui/components/atoms/tag";
 import { Textarea } from "@codesphere/ui/components/atoms/textarea";
 import {
@@ -29,6 +33,11 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from "@codesphere/ui/components/atoms/tooltip";
+import {
+	Alert,
+	AlertDescription,
+	AlertTitle,
+} from "@codesphere/ui/components/molecules/alert";
 import { AnswerCard } from "@codesphere/ui/components/molecules/answer-card";
 import {
 	Attachment,
@@ -61,6 +70,16 @@ import {
 	CollapsibleTrigger,
 } from "@codesphere/ui/components/molecules/collapsible";
 import {
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@codesphere/ui/components/molecules/dialog";
+import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuGroup,
@@ -85,20 +104,45 @@ import {
 	InputGroupInput,
 	InputGroupText,
 } from "@codesphere/ui/components/molecules/input-group";
+import { KpiCard } from "@codesphere/ui/components/molecules/kpi-card";
+import { ProviderButton } from "@codesphere/ui/components/molecules/provider-button";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@codesphere/ui/components/molecules/select";
+import { Stepper } from "@codesphere/ui/components/molecules/stepper";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@codesphere/ui/components/molecules/table";
 import {
 	Tabs,
 	TabsContent,
 	TabsList,
 	TabsTrigger,
 } from "@codesphere/ui/components/molecules/tabs";
+import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
+import { Timeline } from "@codesphere/ui/components/molecules/timeline";
 import {
 	type Vote,
 	VoteControl,
 } from "@codesphere/ui/components/molecules/vote-control";
 import { AnswerForm } from "@codesphere/ui/components/organisms/answer-form";
+import { AppFooter } from "@codesphere/ui/components/organisms/app-footer";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
+import { AuditLog } from "@codesphere/ui/components/organisms/audit-log";
+import { KpiGrid } from "@codesphere/ui/components/organisms/kpi-grid";
+import { LoginCard } from "@codesphere/ui/components/organisms/login-card";
+import { LoginDialog } from "@codesphere/ui/components/organisms/login-dialog";
 import {
 	Message,
 	MessageAvatar,
@@ -114,9 +158,19 @@ import {
 	MessageScrollerProvider,
 	MessageScrollerViewport,
 } from "@codesphere/ui/components/organisms/message-scroller";
+import { ModerationTable } from "@codesphere/ui/components/organisms/moderation-table";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
-import { BookOpenIcon, FileTextIcon, SearchIcon } from "lucide-react";
+import {
+	BookOpenIcon,
+	FileTextIcon,
+	InfoIcon,
+	SearchIcon,
+	TriangleAlertIcon,
+	WifiOffIcon,
+} from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
+import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
 const SAMPLE_QUESTIONS = [
@@ -208,6 +262,8 @@ export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
 	const [checked, setChecked] = useState(false);
 	const [vote, setVote] = useState<Vote | null>("up");
+	const [step, setStep] = useState(1);
+	const [language, setLanguage] = useState<string | null>("fr");
 	const [answerText, setAnswerText] = useState(
 		"Utilise un `callback_url` public avec un tunnel en local.",
 	);
@@ -321,6 +377,43 @@ export default function DesignSystemPage() {
 							size="lg"
 						/>
 					</Specimen>
+					<Specimen label="Badge — variantes">
+						<Badge>Default</Badge>
+						<Badge variant="secondary">Secondary</Badge>
+						<Badge variant="outline">Outline</Badge>
+						<Badge variant="success">Success</Badge>
+						<Badge variant="warning">Warning</Badge>
+						<Badge variant="destructive">Destructive</Badge>
+					</Specimen>
+					<Specimen label="Switch, Separator">
+						<div className="flex items-center gap-2">
+							<Switch id="ds-hide-agents" defaultChecked />
+							<Label htmlFor="ds-hide-agents" className="font-normal text-sm">
+								Masquer le contenu d'agent
+							</Label>
+						</div>
+						<div className="flex items-center gap-2">
+							<Switch id="ds-disabled" disabled />
+							<Label htmlFor="ds-disabled" className="font-normal text-sm">
+								Désactivé
+							</Label>
+						</div>
+						<Separator orientation="vertical" className="h-6" />
+						<span className="text-muted-foreground text-sm">
+							après un séparateur
+						</span>
+					</Specimen>
+					<Specimen label="Sparkline">
+						<div className="w-40">
+							<Sparkline data={[3, 5, 4, 8, 7, 12, 11, 15]} />
+						</div>
+						<div className="w-40 text-destructive">
+							<Sparkline
+								data={[15, 12, 13, 9, 10, 6, 5, 3]}
+								className="text-destructive"
+							/>
+						</div>
+					</Specimen>
 					<Specimen label="StatusBadge — états">
 						<StatusBadge status="accepted" />
 						<StatusBadge status="pending" />
@@ -415,6 +508,191 @@ export default function DesignSystemPage() {
   return <span className="rounded-md">{name}</span>;
 }`}
 						</CodeBlock>
+					</Specimen>
+					<Specimen label="Alert — info, hors ligne, erreur">
+						<div className="flex w-full flex-col gap-3">
+							<Alert variant="info">
+								<InfoIcon />
+								<AlertTitle>Information</AlertTitle>
+								<AlertDescription>
+									La carte CADEV est épinglée pendant le concours.
+								</AlertDescription>
+							</Alert>
+							<Alert variant="warning">
+								<WifiOffIcon />
+								<AlertTitle>Vous êtes hors ligne</AlertTitle>
+								<AlertDescription>
+									Vos réponses sont gardées et seront envoyées au retour du
+									réseau.
+								</AlertDescription>
+							</Alert>
+							<Alert variant="destructive">
+								<TriangleAlertIcon />
+								<AlertTitle>Envoi rejeté</AlertTitle>
+								<AlertDescription>
+									Vous avez déjà répondu à cette question.
+								</AlertDescription>
+							</Alert>
+						</div>
+					</Specimen>
+					<Specimen label="Select — filtre de langue">
+						<div className="w-56">
+							<Select
+								value={language}
+								onValueChange={setLanguage}
+								items={[
+									{ value: "fr", label: "Français" },
+									{ value: "en", label: "English" },
+									{ value: "all", label: "Toutes les langues" },
+								]}
+							>
+								<SelectTrigger aria-label="Langue">
+									<SelectValue placeholder="Toutes les langues" />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="fr">Français</SelectItem>
+									<SelectItem value="en">English</SelectItem>
+									<SelectItem value="all">Toutes les langues</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</Specimen>
+					<Specimen label="Stepper — formulaire de question">
+						<div className="flex w-full flex-col gap-3">
+							<Stepper
+								steps={["Titre", "Détails", "Tags et langue", "Relecture"]}
+								current={step}
+							/>
+							<div className="flex gap-2">
+								<Button
+									size="sm"
+									variant="outline"
+									disabled={step === 0}
+									onClick={() => setStep((s) => s - 1)}
+								>
+									Précédent
+								</Button>
+								<Button
+									size="sm"
+									disabled={step === 3}
+									onClick={() => setStep((s) => s + 1)}
+								>
+									Suivant
+								</Button>
+							</div>
+						</div>
+					</Specimen>
+					<Specimen label="Timeline — frise du hackathon">
+						<Timeline
+							className="w-full max-w-md"
+							items={[
+								{
+									date: "13 oct.",
+									title: "Point de contrôle 1",
+									description: "Staging à jour",
+									state: "done",
+								},
+								{
+									date: "17 oct.",
+									title: "Point de contrôle 2",
+									description: "Parcours de démo rejoué",
+									state: "current",
+								},
+								{
+									date: "22 oct.",
+									title: "Gel des fonctionnalités",
+									state: "upcoming",
+								},
+								{ date: "25 oct.", title: "Soumission", state: "upcoming" },
+							]}
+						/>
+					</Specimen>
+					<Specimen label="Dialog — confirmation">
+						<Dialog>
+							<DialogTrigger render={<Button variant="outline" />}>
+								Ouvrir la modale
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Supprimer le compte</DialogTitle>
+									<DialogDescription>
+										Cette action anonymise ou efface vos données. Elle est
+										définitive.
+									</DialogDescription>
+								</DialogHeader>
+								<DialogFooter>
+									<DialogClose render={<Button variant="outline" />}>
+										Annuler
+									</DialogClose>
+									<DialogClose render={<Button variant="destructive" />}>
+										Supprimer
+									</DialogClose>
+								</DialogFooter>
+							</DialogContent>
+						</Dialog>
+					</Specimen>
+					<Specimen label="Table">
+						<div className="w-full">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Tag</TableHead>
+										<TableHead>Questions</TableHead>
+										<TableHead>Suivi</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									<TableRow>
+										<TableCell>mobile-money</TableCell>
+										<TableCell>128</TableCell>
+										<TableCell>
+											<Badge variant="success">Suivi</Badge>
+										</TableCell>
+									</TableRow>
+									<TableRow>
+										<TableCell>ussd</TableCell>
+										<TableCell>41</TableCell>
+										<TableCell>
+											<Badge variant="outline">Non suivi</Badge>
+										</TableCell>
+									</TableRow>
+								</TableBody>
+							</Table>
+						</div>
+					</Specimen>
+					<Specimen label="KpiCard — hausse, baisse, métrique à minimiser">
+						<div className="grid w-full gap-4 md:grid-cols-3">
+							<KpiCard
+								label="Membres actifs"
+								value="428"
+								delta={12.4}
+								hint="vs 7 jours"
+								trend={[310, 322, 340, 365, 380, 402, 428]}
+							/>
+							<KpiCard
+								label="Questions avec réponse"
+								value="74 %"
+								delta={-3.2}
+								hint="vs 7 jours"
+								trend={[78, 77, 76, 75, 75, 74, 74]}
+							/>
+							<KpiCard
+								label="Questions sans réponse"
+								value="51"
+								delta={-6.3}
+								lowerIsBetter
+								hint="vs 7 jours"
+								trend={[58, 56, 55, 54, 53, 52, 51]}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="ProviderButton, ThemeToggle">
+						<div className="flex w-64 flex-col gap-2">
+							<ProviderButton provider="github" />
+							<ProviderButton provider="gitlab" />
+							<ProviderButton provider="google" />
+						</div>
+						<ThemeToggle />
 					</Specimen>
 					<Specimen label="Tabs">
 						<Tabs defaultValue="apercu" className="w-full max-w-md">
@@ -650,6 +928,78 @@ export default function DesignSystemPage() {
 								className="md:col-span-2"
 							/>
 						</div>
+					</Specimen>
+					<Specimen label="LoginCard — SSO et consentement">
+						<div className="w-full max-w-sm">
+							<LoginCard consentVersion="2026-10" onProviderSelect={() => {}} />
+						</div>
+					</Specimen>
+					<Specimen label="LoginDialog — bouton qui ouvre la connexion">
+						<div className="flex w-full justify-center py-2">
+							<LoginDialog
+								consentVersion="2026-10"
+								onProviderSelect={() => {}}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="ModerationTable (données d'exemple)">
+						<div className="w-full">
+							<ModerationTable rows={moderationRows} onConfirm={() => {}} />
+						</div>
+					</Specimen>
+					<Specimen label="AuditLog (données d'exemple)">
+						<div className="w-full">
+							<AuditLog entries={auditEntries.slice(0, 4)} />
+						</div>
+					</Specimen>
+					<Specimen label="KpiGrid">
+						<KpiGrid
+							className="w-full"
+							items={[
+								{
+									id: "a",
+									label: "Membres actifs",
+									value: "428",
+									delta: 12.4,
+									trend: [3, 5, 6, 8, 9, 12],
+								},
+								{
+									id: "b",
+									label: "Questions posées",
+									value: "193",
+									delta: 8.1,
+									trend: [3, 4, 4, 6, 5, 7],
+								},
+							]}
+						/>
+					</Specimen>
+					<Specimen label="AppFooter">
+						<AppFooter
+							className="w-full rounded-md border-t-0"
+							version="1.0.0"
+							sha="6a2db9dd7e5e2bd5b4a4c60c247cc8bb13ff90bf"
+							links={[
+								{ label: "Confidentialité", href: "/legal/privacy" },
+								{ label: "Conditions", href: "/legal/terms" },
+							]}
+						/>
+					</Specimen>
+					<Specimen label="Pages complètes">
+						<Link href="/admin" className="text-primary text-sm underline">
+							/admin (modération)
+						</Link>
+						<Link href="/admin/kpi" className="text-primary text-sm underline">
+							/admin/kpi
+						</Link>
+						<Link
+							href="/admin/audit"
+							className="text-primary text-sm underline"
+						>
+							/admin/audit
+						</Link>
+						<Link href="/signin" className="text-primary text-sm underline">
+							/signin (connexion SSO)
+						</Link>
 					</Specimen>
 					<Specimen label="MessageScroller">
 						<div className="h-48 w-full max-w-md">
