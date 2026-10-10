@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
 import "../index.css";
-import Header from "@/components/header";
 import Providers from "@/components/providers";
 
 export const metadata: Metadata = {
@@ -18,12 +17,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="fr" suppressHydrationWarning>
       <body>
-        <Providers>
-          <div className="grid h-svh grid-rows-[auto_1fr]">
-            <Header />
-            {children}
-          </div>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -97,7 +97,7 @@ import {
 	MessageScrollerViewport,
 } from "@codesphere/ui/components/organisms/message-scroller";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
-import { BookOpenIcon, FileTextIcon, PlusIcon, SearchIcon } from "lucide-react";
+import { BookOpenIcon, FileTextIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
@@ -166,7 +166,9 @@ function Specimen({
 	return (
 		<div className="flex flex-col gap-2">
 			<span className="font-mono text-muted-foreground text-xs">{label}</span>
-			<div className="flex flex-wrap items-center gap-3">{children}</div>
+			<div className="flex flex-wrap items-center gap-3 rounded-md border p-4">
+				{children}
+			</div>
 		</div>
 	);
 }
@@ -189,18 +191,7 @@ export default function DesignSystemPage() {
 	const [checked, setChecked] = useState(false);
 
 	return (
-		<div className="overflow-y-auto">
-			<AppHeader
-				tabs={TABS}
-				activeTab={tab}
-				onTabChange={setTab}
-				actions={
-					<Button size="sm">
-						<PlusIcon /> Question
-					</Button>
-				}
-			/>
-
+		<div className="min-h-svh">
 			<main className="mx-auto flex max-w-5xl flex-col gap-10 px-5 py-8">
 				<header className="flex flex-col gap-2">
 					<Logo />
@@ -428,7 +419,7 @@ export default function DesignSystemPage() {
 						</DropdownMenu>
 					</Specimen>
 					<Specimen label="Empty">
-						<Empty className="w-full max-w-md border">
+						<Empty className="w-full max-w-md">
 							<EmptyHeader>
 								<EmptyMedia variant="icon">
 									<FileTextIcon />
@@ -512,7 +503,7 @@ export default function DesignSystemPage() {
 						</MessageGroup>
 					</Specimen>
 					<Specimen label="MessageScroller">
-						<div className="h-48 w-full max-w-md border">
+						<div className="h-48 w-full max-w-md">
 							<MessageScrollerProvider>
 								<MessageScroller>
 									<MessageScrollerViewport>
@@ -529,8 +520,9 @@ export default function DesignSystemPage() {
 						</div>
 					</Specimen>
 					<Specimen label="AppHeader">
-						<div className="w-full overflow-hidden rounded-md border">
+						<div className="w-full overflow-hidden rounded-md">
 							<AppHeader
+								className="static!"
 								tabs={TABS}
 								activeTab={tab}
 								onTabChange={setTab}
@@ -539,7 +531,7 @@ export default function DesignSystemPage() {
 						</div>
 					</Specimen>
 					<Specimen label="Empty — état hors-ligne">
-						<Empty className="w-full max-w-md border">
+						<Empty className="w-full max-w-md">
 							<EmptyHeader>
 								<EmptyTitle>Hors-ligne</EmptyTitle>
 								<EmptyDescription>

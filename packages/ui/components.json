@@ -21,6 +21,7 @@
   "menuColor": "default",
   "menuAccent": "subtle",
   "registries": {
-    "@blobatar": "https://blobatar.dev/r/{name}.json"
+    "@blobatar": "https://blobatar.dev/r/{name}.json",
+    "@blocks-so": "https://blocks.so/r/{name}.json"
   }
 }
