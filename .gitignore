@@ -60,3 +60,4 @@ temp
 # Agent tooling
 .claude/
 .playwright-mcp/
+.sisyphus/
