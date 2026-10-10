@@ -79,6 +79,7 @@
     "node": "22.21.1"
   },
   "overrides": {
-    "@next/env": "npm:@varlock/nextjs-integration@1.2.4"
+    "@next/env": "npm:@varlock/nextjs-integration@1.2.4",
+    "sharp": "npm:empty-npm-package@1.0.0"
   }
 }
