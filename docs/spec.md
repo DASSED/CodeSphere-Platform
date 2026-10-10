@@ -25,7 +25,7 @@ Plateforme d'échange pour développeurs africains, par des développeurs : Q&R 
 | Délibération du jury | 1er nov. |
 | Proclamation des résultats | à confirmer (15 nov. dans l'ancien règlement) |
 
-Points de contrôle : 13, 17 et 21 oct. (staging à jour, parcours de démo rejoué, CI verte), gel le 22 au soir, répétition générale le 23. Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0, présente via `lightningcss`, à confirmer auprès de l'organisateur) ; usage de l'IA déclaré ; équipe de 4. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
+Points de contrôle : 13, 17 et 21 oct. (staging à jour, parcours de démo rejoué, CI verte), gel le 22 au soir, répétition générale le 23. Obligations : déploiement sur un produit payant Systalink (Cloud Server Business, Dakar) ; composants tiers sous licence permissive uniquement (MIT, Apache 2.0, BSD ; GPL/AGPL/LGPL = irrecevable, art. 6 du règlement ; MPL-2.0 acceptée par l'organisateur, présente via `lightningcss`, à déclarer dans la partie « technologies » à la création du projet) ; usage de l'IA déclaré ; équipe de 4. Jury : pertinence 25 %, qualité technique 30 %, UX 20 %, innovation 15 %, public 10 %.
 
 ### Ligne de coupe
 
