@@ -1,16 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useState } from "react";
-
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
-
+// Email/password is gone (SSO only, #59): the sign-in page is the SSO page under (auth).
 export default function LoginPage() {
-  const [showSignIn, setShowSignIn] = useState(false);
-
-  return showSignIn ? (
-    <SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-  ) : (
-    <SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
-  );
+	redirect("/signin");
 }
