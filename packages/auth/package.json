@@ -20,5 +20,8 @@
   "devDependencies": {
     "@codesphere/config": "workspace:*",
     "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
   }
 }

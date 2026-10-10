@@ -19,7 +19,7 @@
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-query": "^5.102.8",
     "@tanstack/react-query-persist-client": "^5.104.1",
-    "@varlock/nextjs-integration": "1.2.2",
+    "@varlock/nextjs-integration": "1.2.4",
     "babel-plugin-react-compiler": "^1.0.0",
     "better-auth": "catalog:",
     "idb-keyval": "^6.3.0",
@@ -41,5 +41,8 @@
     "@types/react-dom": "catalog:",
     "tailwindcss": "catalog:",
     "typescript": "catalog:"
+  },
+  "volta": {
+    "extends": "../../package.json"
   }
 }
