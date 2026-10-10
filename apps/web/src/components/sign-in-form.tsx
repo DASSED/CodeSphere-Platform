@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "@codesphere/ui/components/button";
-import { Input } from "@codesphere/ui/components/input";
-import { Label } from "@codesphere/ui/components/label";
+import { Button } from "@codesphere/ui/components/atoms/button";
+import { Input } from "@codesphere/ui/components/atoms/input";
+import { Label } from "@codesphere/ui/components/atoms/label";
 import { useForm } from "@tanstack/react-form";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@codesphere/ui/components/button";
+import { Button } from "@codesphere/ui/components/atoms/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,8 +9,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@codesphere/ui/components/dropdown-menu";
-import { Skeleton } from "@codesphere/ui/components/skeleton";
+} from "@codesphere/ui/components/molecules/dropdown-menu";
+import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
