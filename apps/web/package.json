@@ -6,7 +6,8 @@
 		"build": "tsc -b ../../packages/contract && next build",
 		"check-types": "tsc -b ../../packages/contract && next typegen && tsc --noEmit",
 		"start": "next start",
-		"env:generate": "varlock codegen"
+		"env:generate": "varlock codegen",
+		"cf:build": "opennextjs-cloudflare build"
 	},
 	"dependencies": {
 		"@codesphere/api": "workspace:*",
@@ -29,6 +30,7 @@
 		"next-themes": "catalog:",
 		"react": "catalog:",
 		"react-dom": "catalog:",
+		"server": "workspace:*",
 		"sonner": "catalog:",
 		"varlock": "catalog:",
 		"zod": "catalog:"
