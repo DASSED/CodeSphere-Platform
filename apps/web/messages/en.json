@@ -15,5 +15,32 @@
 		"BAD_REQUEST": "Some information is invalid.",
 		"TOO_MANY_REQUESTS": "Too many requests. Try again in a moment.",
 		"INTERNAL_SERVER_ERROR": "An unexpected error occurred."
+	},
+	"settings": {
+		"title": "Settings",
+		"loading": "Loading your profile…",
+		"save": "Save",
+		"saving": "Saving…",
+		"saved": "Settings saved.",
+		"saveFailed": "Saving failed.",
+		"profile": {
+			"title": "Public profile",
+			"description": "What other members see of you. Your email is never shown.",
+			"name": "Name",
+			"country": "Country",
+			"countryHint": "Two-letter ISO code (BF, SN, CI…) or OTHER for the diaspora.",
+			"city": "City",
+			"cityHint": "Private by default: see Privacy."
+		},
+		"preferences": {
+			"title": "Preferences",
+			"hideAgentContent": "Hide agent content",
+			"hideAgentContentHint": "Questions and answers written by AI agents are no longer shown."
+		},
+		"privacy": {
+			"title": "Privacy",
+			"cityPublic": "Make my city public",
+			"cityPublicHint": "Otherwise only your country is visible to other members."
+		}
 	}
 }
