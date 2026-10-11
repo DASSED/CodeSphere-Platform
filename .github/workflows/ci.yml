@@ -1,0 +1,100 @@
+name: CI
+
+# Test strategy (spec §5, #62):
+# - every push: lint (Biome, files changed against develop), types, unit tests (*.test.ts)
+# - pull requests: the same, plus integration tests (*.int.test.ts) on a disposable Postgres
+# - always: secret scan (gitleaks) and dependency audit (high and critical block)
+# Licences are checked by licenses.yml.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, types, unit tests
+    runs-on: ubuntu-latest
+    env:
+      # Required by the web env schema for type generation; no server is contacted.
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run env:generate
+      # Only the files a change touches are held to Biome, so the existing backlog does not
+      # block every pull request; each file gets fixed when someone edits it.
+      - name: Biome (changed files)
+        run: >
+          bunx biome ci
+          --vcs-enabled=true --vcs-client-kind=git --vcs-use-ignore-file=true
+          --changed --since=origin/develop --no-errors-on-unmatched
+      - run: bunx turbo run check-types
+      # Integration tests skip themselves without TEST_DATABASE_URL.
+      - run: bun test packages apps
+
+  integration:
+    name: Integration tests (Postgres)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: codesphere
+          POSTGRES_PASSWORD: codesphere
+          POSTGRES_DB: codesphere_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U codesphere"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://codesphere:codesphere@localhost:5432/codesphere_test
+      TEST_DATABASE_URL: postgres://codesphere:codesphere@localhost:5432/codesphere_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run env:generate
+      - name: Push the schema
+        working-directory: packages/db
+        run: bunx drizzle-kit push --force
+      - run: bun test packages apps
+
+  secrets:
+    name: Secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # The CLI image, not gitleaks-action: the action needs a paid licence for organisations.
+      - run: >
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:v8.18.4
+          detect --source /repo --redact --verbose
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      # GHSA-vfj7-8cjw-p6xm (braces): no fixed release exists; it only reaches us through the
+      # shadcn CLI, a development tool that never parses untrusted globs. Revisit on a fix.
+      - run: bun audit --audit-level=high --ignore=GHSA-vfj7-8cjw-p6xm
