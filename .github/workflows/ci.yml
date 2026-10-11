@@ -69,9 +69,11 @@ jobs:
           bun-version: 1.4.0
       - run: bun install --frozen-lockfile --ignore-scripts
       - run: bun run env:generate
-      - name: Push the schema
+      # The migrations, not `push`: the same path as staging and the previews, so a schema
+      # change without a generated migration fails here instead of on staging.
+      - name: Apply the migrations
         working-directory: packages/db
-        run: bunx drizzle-kit push --force
+        run: bunx drizzle-kit migrate
       - run: bun test packages apps
 
   secrets:
