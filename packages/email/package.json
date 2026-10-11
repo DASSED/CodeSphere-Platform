@@ -1,0 +1,26 @@
+{
+	"name": "@codesphere/email",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./*": "./src/*.ts"
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@react-email/components": "^1.0.12",
+		"@react-email/render": "^2.1.0",
+		"react": "catalog:",
+		"resend": "^6.32.1"
+	},
+	"devDependencies": {
+		"@codesphere/config": "workspace:*",
+		"@types/bun": "catalog:",
+		"@types/react": "catalog:",
+		"typescript": "catalog:"
+	},
+	"volta": {
+		"extends": "../../package.json"
+	}
+}
