@@ -887,12 +887,55 @@ export default function DesignSystemPage() {
 							className="w-full"
 							name="Hackathon CADEV 2026"
 							summary="Concours de développement ouvert aux équipes africaines."
-							daysLeft={15}
+							closesAt="2026-10-25T17:00:00Z"
+							now={new Date("2026-10-11T22:00:00Z")}
+							milestones={[
+								{
+									key: "submission_close",
+									label: "Soumissions",
+									startsAt: "2026-10-25T17:00:00Z",
+								},
+								{
+									key: "peer_vote",
+									label: "Votes entre pairs",
+									startsAt: "2026-10-25T18:00:00Z",
+								},
+								{
+									key: "public_vote",
+									label: "Vote du public",
+									startsAt: "2026-10-27T00:00:00Z",
+								},
+								{
+									key: "jury",
+									label: "Jury",
+									startsAt: "2026-11-01T00:00:00Z",
+								},
+							]}
 							action={
 								<span className="rounded-full bg-background px-4 py-2 font-semibold text-primary text-sm">
 									Voir les règles →
 								</span>
 							}
+						/>
+					</Specimen>
+					<Specimen label="CadevBanner — ruban (mobile, Member)">
+						<CadevBanner
+							className="w-full"
+							variant="ribbon"
+							name="CADEV 2026"
+							summary=""
+							closesAt="2026-10-25T17:00:00Z"
+							now={new Date("2026-10-11T22:00:00Z")}
+						/>
+					</Specimen>
+					<Specimen label="CadevBanner — rail (bureau, Member)">
+						<CadevBanner
+							className="w-72"
+							variant="rail"
+							name="CADEV 2026"
+							summary=""
+							closesAt="2026-10-25T17:00:00Z"
+							now={new Date("2026-10-11T22:00:00Z")}
 						/>
 					</Specimen>
 				</Section>

@@ -11,53 +11,87 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@codesphere/ui/components/molecules/dropdown-menu";
-import Link from "next/link";
+import { LogOutIcon, SettingsIcon, ShieldIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
+import SsoLoginDialog from "@/components/sso-login-dialog";
 import { authClient } from "@/lib/auth-client";
 
+function initials(name: string) {
+	return name
+		.split(/\s+/)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((part) => part.charAt(0).toUpperCase())
+		.join("");
+}
+
+/** Visitor: « Se connecter » opens the SSO dialog. Member: the account menu (#129). */
 export default function UserMenu() {
+	const t = useTranslations("header");
 	const router = useRouter();
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <Skeleton className="h-9 w-24" />;
+		return <Skeleton className="size-9 rounded-full" />;
 	}
 
 	if (!session) {
 		return (
-			<Link href="/login">
-				<Button variant="outline">Sign In</Button>
-			</Link>
+			<SsoLoginDialog
+				trigger={<Button variant="outline">{t("signIn")}</Button>}
+			/>
 		);
 	}
 
+	const { user } = session;
 	return (
 		<DropdownMenu>
-			<DropdownMenuTrigger render={<Button variant="outline" />}>
-				{session.user.name}
+			<DropdownMenuTrigger
+				render={
+					<button
+						type="button"
+						aria-label={t("account")}
+						className="grid size-9 place-items-center rounded-full bg-linear-to-br from-primary to-amber-600 font-bold text-primary-foreground text-xs ring-2 ring-background ring-offset-1 ring-offset-primary"
+					/>
+				}
+			>
+				{initials(user.name)}
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="bg-card">
+			<DropdownMenuContent align="end" className="min-w-56 bg-card">
 				<DropdownMenuGroup>
-					<DropdownMenuLabel>My Account</DropdownMenuLabel>
+					<DropdownMenuLabel>
+						<span className="block font-semibold text-foreground">
+							{user.name}
+						</span>
+					</DropdownMenuLabel>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
 					<DropdownMenuItem onClick={() => router.push("/settings")}>
-						Settings
+						<UserIcon />
+						{t("profile")}
 					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => router.push("/settings")}>
+						<SettingsIcon />
+						{t("settings")}
+					</DropdownMenuItem>
+					{user.role === "admin" && (
+						<DropdownMenuItem onClick={() => router.push("/admin")}>
+							<ShieldIcon />
+							{t("admin")}
+						</DropdownMenuItem>
+					)}
+					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						variant="destructive"
-						onClick={() => {
+						onClick={() =>
 							authClient.signOut({
-								fetchOptions: {
-									onSuccess: () => {
-										router.push("/");
-									},
-								},
-							});
-						}}
+								fetchOptions: { onSuccess: () => router.push("/") },
+							})
+						}
 					>
-						Sign Out
+						<LogOutIcon />
+						{t("signOut")}
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>
