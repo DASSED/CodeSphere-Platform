@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 
-import { isAdminEmail, parseAdminEmails } from "./admin";
+import { isAdminEmail, parseAdminEmails, roleFor } from "./admin";
 
 describe("parseAdminEmails", () => {
 	test("is empty when the variable is missing", () => {
@@ -27,5 +27,30 @@ describe("isAdminEmail", () => {
 
 	test("refuses admin to an unlisted email", () => {
 		expect(isAdminEmail("someone@example.com", true, admins)).toBe(false);
+	});
+});
+
+describe("roleFor", () => {
+	const admins = parseAdminEmails("dave@example.com");
+
+	test("promotes a listed, verified email at the next sign-in", () => {
+		expect(
+			roleFor({ email: "Dave@example.com", emailVerified: true }, admins),
+		).toBe("admin");
+	});
+
+	test("demotes an email removed from the list", () => {
+		expect(
+			roleFor(
+				{ email: "dave@example.com", emailVerified: true },
+				parseAdminEmails(""),
+			),
+		).toBe("member");
+	});
+
+	test("keeps an unverified listed email a member", () => {
+		expect(
+			roleFor({ email: "dave@example.com", emailVerified: false }, admins),
+		).toBe("member");
 	});
 });

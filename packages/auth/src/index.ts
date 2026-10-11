@@ -5,8 +5,9 @@ import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { oAuthProxy } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 
-import { isAdminEmail, parseAdminEmails } from "./admin";
+import { parseAdminEmails, roleFor } from "./admin";
 import { readConsent } from "./consent";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
@@ -51,6 +52,33 @@ export function createAuth(
 				create: { before: stripTokens },
 				update: { before: stripTokens },
 			},
+			session: {
+				create: {
+					// Every sign-in re-derives the role from ADMIN_EMAILS (#120), for humans only:
+					// an Agent is never an Admin.
+					before: async (session) => {
+						const [row] = await database
+							.select({
+								email: schema.user.email,
+								emailVerified: schema.user.emailVerified,
+								kind: schema.user.kind,
+								role: schema.user.role,
+							})
+							.from(schema.user)
+							.where(eq(schema.user.id, session.userId));
+						if (row && row.kind === "human") {
+							const role = roleFor(row, admins);
+							if (role !== row.role) {
+								await database
+									.update(schema.user)
+									.set({ role })
+									.where(eq(schema.user.id, session.userId));
+							}
+						}
+						return { data: session };
+					},
+				},
+			},
 			user: {
 				create: {
 					before: async (user, ctx) => {
@@ -66,9 +94,7 @@ export function createAuth(
 						return {
 							data: {
 								...user,
-								role: isAdminEmail(user.email, user.emailVerified, admins)
-									? "admin"
-									: "member",
+								role: roleFor(user, admins),
 								consentVersion: consent.consentVersion,
 								consentAcceptedAt: consent.consentAcceptedAt,
 							},

@@ -1,9 +1,19 @@
 "use client";
 
+import { Button } from "@codesphere/ui/components/atoms/button";
 import { AdminShell } from "@codesphere/ui/components/organisms/admin-shell";
-import { BarChart3Icon, ScrollTextIcon, ShieldIcon } from "lucide-react";
+import {
+	ArrowLeftIcon,
+	BarChart3Icon,
+	LogOutIcon,
+	ScrollTextIcon,
+	ShieldIcon,
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+
+import { useAdminIdentity } from "@/components/admin-identity";
+import { authClient } from "@/lib/auth-client";
 
 const NAV = [
 	{ label: "Modération", href: "/admin", icon: ShieldIcon },
@@ -11,7 +21,7 @@ const NAV = [
 	{ label: "Journal d'audit", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;
 
-/** The back-office layout with the navigation wired to the router. */
+/** The back-office layout with the navigation wired to the router and the signed-in Admin. */
 export default function AdminFrame({
 	title,
 	description,
@@ -24,14 +34,41 @@ export default function AdminFrame({
 	children: React.ReactNode;
 }) {
 	const pathname = usePathname();
+	const router = useRouter();
+	const identity = useAdminIdentity();
+
+	const signOut = () =>
+		authClient.signOut({
+			fetchOptions: { onSuccess: () => router.push("/") },
+		});
+
 	return (
 		<AdminShell
 			title={title}
 			description={description}
-			actions={actions}
 			LinkComponent={Link}
-			user={{ name: "Administrateur", role: "Accès administrateur" }}
+			user={
+				identity ? { name: identity.name, role: identity.email } : undefined
+			}
 			nav={NAV.map((item) => ({ ...item, active: pathname === item.href }))}
+			actions={
+				<>
+					{actions}
+					<Button
+						variant="ghost"
+						size="sm"
+						render={<Link href="/" />}
+						nativeButton={false}
+					>
+						<ArrowLeftIcon />
+						Retour au site
+					</Button>
+					<Button variant="ghost" size="sm" onClick={signOut}>
+						<LogOutIcon />
+						Se déconnecter
+					</Button>
+				</>
+			}
 		>
 			{children}
 		</AdminShell>
