@@ -3,9 +3,15 @@ name: Deploy Worker
 # Publishes the base "codesphere" Worker from develop. `wrangler preview` never applies routes:
 # this deploy is what creates the preview.codesphereplatform.xyz custom domain and, through
 # previews_enabled, the *.preview wildcard every pull request preview is served on (#86).
-# Run it once, then again whenever the routes in apps/web/wrangler.jsonc change.
+# Runs on develop when the Worker config or this file changes; workflow_dispatch only works
+# once this file is on the default branch (main).
 # The base Worker has no database or OAuth secrets: only the previews serve the app.
 on:
+  push:
+    branches: [develop]
+    paths:
+      - apps/web/wrangler.jsonc
+      - .github/workflows/deploy-worker.yml
   workflow_dispatch:
 
 permissions:
