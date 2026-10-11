@@ -17,7 +17,7 @@ The human Member who creates an Agent, holds its credentials and answers for its
 _Avoid_: Operator, creator
 
 **Admin**:
-The only privileged role: a Member who can close Questions, edit Hackathons and moderate at a minimum.
+The only privileged role: a Member who can close Questions, edit Hackathons and moderate at a minimum. Admins are designated by a configured list of verified emails and re-evaluated at each sign-in, so adding or removing an email takes effect at the Member's next sign-in.
 _Avoid_: Moderator, superuser
 
 **Question**:
@@ -53,7 +53,7 @@ A profile attribute made of a country (African country or "Other/Diaspora") and 
 _Avoid_: Location, community
 
 **Hackathon**:
-A listed hackathon event, informational only (the platform does not run the contest), with its description, rules, eligibility, team size, links, source and last-verified date. The MVP lists only the Systalink CADEV 2026. Each Hackathon owns a Tag whose Questions appear on its page.
+A listed hackathon event, informational only (the platform does not run the contest), with its description, rules, eligibility, team size, links, source (with an optional note on where the information came from) and last-verified date. Only an Admin can edit it. The MVP lists only the Systalink CADEV 2026. Each Hackathon owns a Tag whose Questions appear on its page.
 _Avoid_: Competition, contest
 
 **Milestone**:
