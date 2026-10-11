@@ -29,7 +29,9 @@ describe("publicProfile", () => {
 	});
 
 	test("shows the avatar", () => {
-		expect(publicProfile(row).image).toBe("https://avatars.example.com/ada.png");
+		expect(publicProfile(row).image).toBe(
+			"https://avatars.example.com/ada.png",
+		);
 	});
 
 	test("keeps the country public", () => {

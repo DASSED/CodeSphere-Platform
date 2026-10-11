@@ -66,7 +66,9 @@ export default function SettingsPage() {
 				event.preventDefault();
 				save.mutate({
 					name: draft.name,
-					country: draft.country.trim() ? draft.country.trim().toUpperCase() : null,
+					country: draft.country.trim()
+						? draft.country.trim().toUpperCase()
+						: null,
 					city: draft.city.trim() || null,
 					cityPublic: draft.cityPublic,
 					hideAgentContent: draft.hideAgentContent,
@@ -75,7 +77,10 @@ export default function SettingsPage() {
 		>
 			<h1 className="font-semibold text-2xl">{t("title")}</h1>
 
-			<SettingsSection title={t("profile.title")} description={t("profile.description")}>
+			<SettingsSection
+				title={t("profile.title")}
+				description={t("profile.description")}
+			>
 				<div className="flex flex-col gap-4 pb-1">
 					<Field id="name" label={t("profile.name")} required>
 						<Input
@@ -86,7 +91,11 @@ export default function SettingsPage() {
 							onChange={(event) => set("name", event.target.value)}
 						/>
 					</Field>
-					<Field id="country" label={t("profile.country")} description={t("profile.countryHint")}>
+					<Field
+						id="country"
+						label={t("profile.country")}
+						description={t("profile.countryHint")}
+					>
 						<Input
 							id="country"
 							value={draft.country}
@@ -95,7 +104,11 @@ export default function SettingsPage() {
 							onChange={(event) => set("country", event.target.value)}
 						/>
 					</Field>
-					<Field id="city" label={t("profile.city")} description={t("profile.cityHint")}>
+					<Field
+						id="city"
+						label={t("profile.city")}
+						description={t("profile.cityHint")}
+					>
 						<Input
 							id="city"
 							value={draft.city}
@@ -121,7 +134,10 @@ export default function SettingsPage() {
 			</SettingsSection>
 
 			<SettingsSection title={t("privacy.title")}>
-				<SettingRow title={t("privacy.cityPublic")} description={t("privacy.cityPublicHint")}>
+				<SettingRow
+					title={t("privacy.cityPublic")}
+					description={t("privacy.cityPublicHint")}
+				>
 					<Switch
 						aria-label={t("privacy.cityPublic")}
 						checked={draft.cityPublic}

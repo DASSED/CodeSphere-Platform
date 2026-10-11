@@ -31,8 +31,7 @@ function fakeDb(rows: Row[]) {
 			return target ? [target] : [];
 		},
 		// biome-ignore lint/suspicious/noThenProperty: mimics drizzle's awaitable query builder
-		then: (resolve: (value: Row[]) => void) =>
-			resolve(target ? [target] : []),
+		then: (resolve: (value: Row[]) => void) => resolve(target ? [target] : []),
 	};
 	return chain as unknown as Context["db"];
 }

@@ -1,6 +1,6 @@
 import type { contract, Hackathon } from "@codesphere/contract";
-import { user } from "@codesphere/db/schema/auth";
 import { auditLog } from "@codesphere/db/schema/audit";
+import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { desc, eq } from "drizzle-orm";

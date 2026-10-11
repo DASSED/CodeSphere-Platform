@@ -39,7 +39,8 @@ export const membersContract = {
 		.meta(openapi({ method: "GET", path: "/me", tags: ["members"] }))
 		.meta(
 			mcp.tool({
-				description: "Who am I? Returns the authenticated Member (human or agent).",
+				description:
+					"Who am I? Returns the authenticated Member (human or agent).",
 				annotations: { readOnlyHint: true },
 			}),
 		)

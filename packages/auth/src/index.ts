@@ -7,8 +7,8 @@ import { betterAuth } from "better-auth";
 
 import { isAdminEmail, parseAdminEmails } from "./admin";
 import { readConsent } from "./consent";
-import { withoutOAuthTokens } from "./tokens";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
+import { withoutOAuthTokens } from "./tokens";
 
 export type AuthConfig = SocialProviderEnv & {
 	BETTER_AUTH_URL: string;
