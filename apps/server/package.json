@@ -43,5 +43,10 @@
 	},
 	"volta": {
 		"extends": "../../package.json"
+	},
+	"exports": {
+		".": "./src/index.ts",
+		"./app": "./src/app.ts",
+		"./worker": "./src/worker.ts"
 	}
 }
