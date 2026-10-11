@@ -6,6 +6,10 @@
 	"compatibility_date": "2026-09-01",
 	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
 	"assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+	// workerd resolves pino to its browser build, which ignores `redact` and a custom destination:
+	// emails, cookies and tokens would reach Workers Logs in clear. Force the Node build
+	// (guarded by packages/logger/src/worker-build.test.ts).
+	"alias": { "pino": "pino/pino.js" },
 	// Pull request previews: `wrangler preview --name pr-<n>` is served at
 	// pr-<n>.preview.codesphereplatform.xyz (previews_enabled creates the wildcard DNS record
 	// and certificate). The staging domain is a separate decision.
