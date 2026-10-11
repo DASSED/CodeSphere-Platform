@@ -40,9 +40,10 @@ export const Page = <T extends z.ZodType>(item: T) =>
 /**
  * Base builder for every contract. Standard codes (UNAUTHORIZED, FORBIDDEN,
  * NOT_FOUND, CONFLICT) need no schema; only errors that carry data are typed.
+ * oRPC fills BAD_REQUEST's `issues` itself when an input fails validation (#59).
  */
 export const base = oc.errors({
-	UNPROCESSABLE_CONTENT: {
+	BAD_REQUEST: {
 		data: z.object({
 			issues: z.array(
 				z.object({
@@ -51,6 +52,9 @@ export const base = oc.errors({
 				}),
 			),
 		}),
+	},
+	INTERNAL_SERVER_ERROR: {
+		data: z.object({ requestId: z.string() }),
 	},
 	TOO_MANY_REQUESTS: {
 		data: z.object({ retryAfter: z.number() }),

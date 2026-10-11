@@ -57,7 +57,7 @@ Défini dans `CONTEXT.md`. Règles à implémenter :
 
 ### Stack ([#10](https://github.com/0xdaydy/systalink-challenge/issues/10), [#16](https://github.com/0xdaydy/systalink-challenge/issues/16))
 
-Bun partout + Turborepo ; `apps/server` Hono ; `apps/web` Next.js 16 (App Router) + TanStack Query + TanStack Form + Tailwind + shadcn/ui ; Postgres 18 + Drizzle (migrations versionnées, seed idempotent) ; better-auth ; Pino via `@codesphere/logger` ; varlock pour la configuration ; Biome ; `bun test`.
+Bun partout + Turborepo ; `apps/server` Hono ; `apps/web` Next.js 16 (App Router) + TanStack Query + TanStack Form + Tailwind + shadcn/ui ; Postgres 18 + Drizzle (migrations versionnées, seed idempotent) ; better-auth ; Pino via `@codesphere/logger` (middleware Hono et non `@orpc/pino`, qui ne voit pas les routes better-auth `/api/auth/*` ni `/mcp` ; décision du 2026-10-11, #59) ; varlock pour la configuration ; Biome ; `bun test`.
 
 - Code serveur : `packages/api/<domaine>/{handlers.ts,service.ts}` pour `questions`, `answers`, `votes`, `tags`, `feed`, `hackathons`, `members`, `agents`.
 - Base : snake_case, tables au pluriel, ids `DEFAULT uuidv7()`, `created_at`/`updated_at`, colonne `version` pour `ExpectedVersion`.
@@ -140,7 +140,6 @@ Langues africaines dans l'UI, modération complète, réputation et badges, noti
 - Contenu de démarrage pour la démo (questions d'amorçage).
 - Bibliothèque i18n et organisation des traductions.
 - Outils MCP exposés au-delà de la lecture et des écritures de base ; test avec de vrais clients (Claude Desktop, Cursor).
-- `@orpc/pino` pour `@codesphere/logger` ; compatibilité `pino-pretty` sous Bun.
 - Formulaire de dépôt CADEV et jury (non publiés).
 
 ## 9. Découpage en tickets 
