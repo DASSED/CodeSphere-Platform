@@ -1,6 +1,8 @@
-// Consent given on the sign-in page before the OAuth redirect (spec §3, §4). The page sets this
-// cookie once the box is ticked; the account is created only if it carries the current version.
-export const CONSENT_COOKIE = "consent_version";
+import { CONSENT_COOKIE } from "@codesphere/contract/consent";
+
+// Consent given on the sign-in page before the OAuth redirect (spec §3, §4): the account is
+// created only if the consent cookie carries the current version.
+export { CONSENT_COOKIE };
 
 export type ConsentResult =
 	| { accepted: true; consentVersion: string; consentAcceptedAt: Date }

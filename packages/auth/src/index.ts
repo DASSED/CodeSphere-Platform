@@ -1,5 +1,6 @@
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
@@ -14,8 +15,6 @@ export type AuthConfig = SocialProviderEnv & {
 	BETTER_AUTH_SECRET: string;
 	CORS_ORIGIN: string;
 	ADMIN_EMAILS?: string;
-	/** Version of the consent text the sign-in page shows (spec §4). */
-	CONSENT_VERSION: string;
 };
 
 const stripTokens = async <T extends object>(account: T) => ({
@@ -54,7 +53,7 @@ export function createAuth(
 						// No consent, no account (spec §3).
 						const consent = readConsent(
 							ctx?.headers?.get("cookie"),
-							env.CONSENT_VERSION,
+							CONSENT_VERSION,
 							new Date(),
 						);
 						if (!consent.accepted) {

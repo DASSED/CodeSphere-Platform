@@ -42,5 +42,10 @@
 			"cityPublic": "Make my city public",
 			"cityPublicHint": "Otherwise only your country is visible to other members."
 		}
+	},
+	"signin": {
+		"consentRequired": "No account was created: tick the consent box to sign up.",
+		"failed": "Sign-in failed.",
+		"unreachable": "The authentication server cannot be reached."
 	}
 }
