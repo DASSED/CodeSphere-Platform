@@ -1,4 +1,4 @@
-import type { Hackathon } from "@codesphere/contract";
+import { type Hackathon, JudgingCriterion } from "@codesphere/contract";
 import type { Database } from "@codesphere/db";
 import {
 	hackathon,
@@ -35,8 +35,6 @@ type Children = {
 const byPosition = (a: { position: number }, b: { position: number }) =>
 	a.position - b.position;
 
-const SCORED_BY = new Set(["jury", "public", "peers"]);
-
 /** The public shape of a Hackathon (spec §2): children in their display order, ISO dates. */
 export function toHackathon(
 	row: HackathonRow,
@@ -63,10 +61,8 @@ export function toHackathon(
 		criteria: [...children.criteria].sort(byPosition).map((c) => ({
 			label: c.label,
 			weight: c.weight,
-			scoredBy: (SCORED_BY.has(c.scoredBy) ? c.scoredBy : "jury") as
-				| "jury"
-				| "public"
-				| "peers",
+			// A bad value in the database fails loudly (INTERNAL_SERVER_ERROR) instead of being guessed.
+			scoredBy: JudgingCriterion.shape.scoredBy.parse(c.scoredBy),
 		})),
 		sourceUrl: row.sourceUrl,
 		sourceNote: row.sourceNote,

@@ -38,6 +38,8 @@ type CadevBannerProps = Omit<React.ComponentProps<"section">, "children"> & {
 	/** Call to action, e.g. the link to the Hackathon page. */
 	action?: React.ReactNode;
 	labels?: Partial<CadevBannerLabels>;
+	/** Locale of the Milestone dates (the app's, e.g. "fr"); dates use the viewer's timezone. */
+	locale?: string;
 	/** Freeze the clock (tests, previews). */
 	now?: Date;
 };
@@ -73,11 +75,6 @@ const pad = (n: number | null) =>
 const SURFACE =
 	"relative overflow-hidden text-primary-foreground bg-[radial-gradient(120%_140%_at_100%_0%,color-mix(in_oklab,var(--gold,#d68a1f)_45%,transparent)_0%,transparent_46%),linear-gradient(135deg,var(--primary),color-mix(in_oklab,var(--primary)_55%,black))]";
 
-const DATE = new Intl.DateTimeFormat(undefined, {
-	day: "numeric",
-	month: "short",
-});
-
 /** The CADEV 2026 banner: countdown in the viewer's timezone and the contest calendar. */
 function CadevBanner({
 	name,
@@ -87,6 +84,7 @@ function CadevBanner({
 	variant = "card",
 	action,
 	labels,
+	locale,
 	now,
 	className,
 	...props
@@ -253,7 +251,12 @@ function CadevBanner({
 										/>
 										<span className="block font-semibold">{m.label}</span>
 										<span className="font-mono text-[0.7rem] opacity-80">
-											{DATE.format(new Date(m.startsAt))}
+											{nowMs === null
+												? "…"
+												: new Intl.DateTimeFormat(locale, {
+														day: "numeric",
+														month: "short",
+													}).format(new Date(m.startsAt))}
 										</span>
 									</li>
 								);

@@ -15,13 +15,14 @@ import {
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, MessageSquareIcon, TagIcon } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type * as z from "zod";
 
 import { AskButton } from "@/components/site-header";
 import { authClient } from "@/lib/auth-client";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
+import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
 
 type HackathonData = z.infer<typeof Hackathon>;
@@ -66,6 +67,9 @@ function Banner({
 }) {
 	const t = useTranslations("home.banner");
 	const labels = useBannerLabels();
+	const format = useFormatter();
+	const locale = useLocale();
+	const mounted = useMounted();
 	if (!hackathon) {
 		return (
 			<Skeleton
@@ -79,12 +83,16 @@ function Banner({
 	if (!closesAt) {
 		return null;
 	}
-	const date = new Intl.DateTimeFormat(undefined, {
-		day: "numeric",
-		month: "long",
-		hour: "numeric",
-		minute: "2-digit",
-	}).format(new Date(closesAt));
+	// The viewer's timezone and the app's locale, once in the browser only (no hydration mismatch).
+	const date = mounted
+		? format.dateTime(new Date(closesAt), {
+				day: "numeric",
+				month: "long",
+				hour: "numeric",
+				minute: "2-digit",
+				timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+			})
+		: "…";
 	const see = (
 		<Button
 			variant={variant === "rail" ? "outline" : "secondary"}
@@ -99,6 +107,7 @@ function Banner({
 		<CadevBanner
 			className={className}
 			variant={variant}
+			locale={locale}
 			name={hackathon.name}
 			summary={hackathon.summary}
 			closesAt={closesAt}
@@ -109,14 +118,22 @@ function Banner({
 	);
 }
 
+const TABS = ["forYou", "recent", "unanswered"] as const;
+type TabKey = (typeof TABS)[number];
+
 function FeedTabs({ signedIn }: { signedIn: boolean }) {
 	const t = useTranslations("home.tabs");
-	const tabs = [t("forYou"), t("recent"), t("unanswered")] as const;
-	const [tab, setTab] = useState<string>(signedIn ? tabs[0] : tabs[1]);
+	// Keyed by id, not by label: switching language keeps the selected tab.
+	const [tab, setTab] = useState<TabKey>(signedIn ? "forYou" : "recent");
+	const labels = TABS.map((key) => t(key));
 	return (
 		<div className="flex flex-wrap items-center justify-between gap-3">
-			<SegmentedControl options={tabs} value={tab} onValueChange={setTab} />
-			{!signedIn && tab === tabs[0] && (
+			<SegmentedControl
+				options={labels}
+				value={t(tab)}
+				onValueChange={(label) => setTab(TABS[labels.indexOf(label)] ?? tab)}
+			/>
+			{!signedIn && tab === "forYou" && (
 				<p className="text-muted-foreground text-sm">{t("signInForYou")}</p>
 			)}
 		</div>
@@ -178,21 +195,24 @@ function MemberHome({
 	hackathon: HackathonData | undefined;
 }) {
 	const t = useTranslations("home");
-	const greeting = t(`hello.${greetingKey(new Date().getHours())}`, {
-		name: firstName(name),
-	});
+	const mounted = useMounted();
+	// The viewer's hour, read in the browser only: the server would use its own timezone.
+	const greeting = mounted
+		? t(`hello.${greetingKey(new Date().getHours())}`, {
+				name: firstName(name),
+			})
+		: null;
 	return (
 		<main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 md:grid-cols-[minmax(0,1fr)_20rem] md:px-6 md:py-8">
 			<div className="grid min-w-0 content-start gap-5">
 				{/* Phone only: greeting and compact ribbon (variant 4). */}
 				<div className="grid gap-4 md:hidden">
 					<div>
-						<h1
-							className="font-bold text-2xl tracking-tight"
-							suppressHydrationWarning
-						>
-							{greeting}
-						</h1>
+						{greeting ? (
+							<h1 className="font-bold text-2xl tracking-tight">{greeting}</h1>
+						) : (
+							<Skeleton className="h-8 w-48" />
+						)}
 						<p className="text-muted-foreground">{t("hello.lead")}</p>
 					</div>
 					<Banner hackathon={hackathon} variant="ribbon" />

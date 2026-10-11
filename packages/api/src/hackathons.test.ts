@@ -54,4 +54,16 @@ describe("toHackathon", () => {
 		expect(h.sourceNote).toBe("Calendrier communiqué par les organisateurs.");
 		expect(h.version).toBe(3);
 	});
+
+	test("refuses a criterion scored by an unknown party instead of guessing", () => {
+		expect(() =>
+			toHackathon(row, {
+				milestones: [],
+				prizes: [],
+				criteria: [
+					{ label: "?", weight: 100, scoredBy: "audience", position: 0 },
+				],
+			}),
+		).toThrow();
+	});
 });
