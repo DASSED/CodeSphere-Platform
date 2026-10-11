@@ -7,6 +7,7 @@ import { desc, eq } from "drizzle-orm";
 import type * as z from "zod";
 
 import { requireAdmin } from "../authorization";
+import { unexpectedErrors } from "../errors";
 import { impl } from "../index";
 import { ownProfile, publicProfile } from "../profile";
 
@@ -41,7 +42,7 @@ const isAdmin = impl.middleware(async ({ context, next }) => {
 	return next();
 });
 
-export const appRouter = impl.router({
+export const appRouter = impl.use(unexpectedErrors).router({
 	health: {
 		check: impl.health.check.handler(() => ({ status: "ok" as const })),
 	},

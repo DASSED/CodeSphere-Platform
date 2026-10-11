@@ -6,6 +6,7 @@ import type { Session } from "@codesphere/auth";
 import { createDb } from "@codesphere/db";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
+import { createLogger } from "@codesphere/logger";
 import { createRouterClient } from "@orpc/server";
 import { eq } from "drizzle-orm";
 
@@ -21,6 +22,8 @@ describe.skipIf(!url)("admin.auditLog.list on Postgres", () => {
 		createRouterClient(appRouter, {
 			context: {
 				db,
+				logger: createLogger({ level: "silent" }),
+				requestId: "it",
 				session: {
 					user: { id: adminId, role },
 					session: { id: "s1" },
