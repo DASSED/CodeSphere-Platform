@@ -1,0 +1,19 @@
+{
+	"footer": {
+		"build": "CodeSphere v{version} · {sha}"
+	},
+	"language": {
+		"label": "Language",
+		"fr": "Français",
+		"en": "English"
+	},
+	"errors": {
+		"UNAUTHORIZED": "You must be signed in to do this.",
+		"FORBIDDEN": "You are not allowed to do this.",
+		"NOT_FOUND": "Item not found.",
+		"CONFLICT": "This item already exists or was changed in the meantime.",
+		"BAD_REQUEST": "Some information is invalid.",
+		"TOO_MANY_REQUESTS": "Too many requests. Try again in a moment.",
+		"INTERNAL_SERVER_ERROR": "An unexpected error occurred."
+	}
+}
