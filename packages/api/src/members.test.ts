@@ -1,6 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import type { Session } from "@codesphere/auth";
+import { createLogger } from "@codesphere/logger";
 import { createRouterClient } from "@orpc/server";
 
 import type { Context } from "./context";
@@ -54,7 +55,12 @@ function client(rows: Row[], signedIn: boolean) {
 		? ({ user: { id: "u1" }, session: { id: "s1" } } as unknown as Session)
 		: null;
 	return createRouterClient(appRouter, {
-		context: { session, db: fakeDb(rows) },
+		context: {
+			session,
+			db: fakeDb(rows),
+			logger: createLogger({ level: "silent" }),
+			requestId: "test",
+		},
 	});
 }
 
