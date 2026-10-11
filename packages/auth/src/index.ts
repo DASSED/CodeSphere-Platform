@@ -4,18 +4,21 @@ import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
+import { oAuthProxy } from "better-auth/plugins";
 
 import { isAdminEmail, parseAdminEmails } from "./admin";
 import { readConsent } from "./consent";
+import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
 import { withoutOAuthTokens } from "./tokens";
 
-export type AuthConfig = SocialProviderEnv & {
-	BETTER_AUTH_URL: string;
-	BETTER_AUTH_SECRET: string;
-	CORS_ORIGIN: string;
-	ADMIN_EMAILS?: string;
-};
+export type AuthConfig = SocialProviderEnv &
+	OAuthProxyEnv & {
+		BETTER_AUTH_URL: string;
+		BETTER_AUTH_SECRET: string;
+		CORS_ORIGIN: string;
+		ADMIN_EMAILS?: string;
+	};
 
 const stripTokens = async <T extends object>(account: T) => ({
 	data: withoutOAuthTokens(account),
@@ -27,6 +30,7 @@ export function createAuth(
 	desktopOrigins: readonly string[] = [],
 ) {
 	const admins = parseAdminEmails(env.ADMIN_EMAILS);
+	const proxy = oauthProxyFrom(env);
 
 	return betterAuth({
 		database: drizzleAdapter(database, {
@@ -103,6 +107,7 @@ export function createAuth(
 			},
 		},
 		plugins: [
+			...(proxy ? [oAuthProxy(proxy)] : []),
 			apiKey({
 				enableSessionForAPIKeys: true,
 				// Accept the key as `x-api-key` (default) or `Authorization: Bearer <key>` (MCP clients).
