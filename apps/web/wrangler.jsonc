@@ -12,7 +12,7 @@
 	"alias": { "pino": "pino/pino.js" },
 	// Pull request previews: `wrangler preview --name pr-<n>` is served at
 	// pr-<n>.preview.codesphereplatform.xyz (previews_enabled creates the wildcard DNS record
-	// and certificate). The staging domain is a separate decision.
+	// and certificate).
 	// Required by `wrangler preview`, even empty: settings overridden for previews only.
 	"previews": {},
 	"routes": [
@@ -21,5 +21,16 @@
 			"custom_domain": true,
 			"previews_enabled": true
 		}
-	]
+	],
+	"env": {
+		// Staging until the Systalink Cloud Server exists (spec §Environnements): a separate
+		// Worker deployed from develop by .github/workflows/staging.yml. Its origin is the only
+		// OAuth callback the identity providers know (OAuth proxy, #100).
+		"staging": {
+			"name": "codesphere-staging",
+			"routes": [
+				{ "pattern": "staging.codesphereplatform.xyz", "custom_domain": true }
+			]
+		}
+	}
 }

@@ -1,0 +1,108 @@
+name: Staging
+
+# Deploys develop to https://staging.codesphereplatform.xyz: the "codesphere-staging" Worker
+# (wrangler env staging) on the Neon branch the previews fork from. Staging is the OAuth proxy
+# production URL: the identity providers only know its callback (#100).
+#
+# Variables: NEON_PROJECT_ID, NEON_PARENT_BRANCH (the staging branch)
+# Secrets (environment "preview", shared with the previews): CLOUDFLARE_API_TOKEN,
+#   CLOUDFLARE_ACCOUNT_ID, NEON_API_KEY, PREVIEW_BETTER_AUTH_SECRET, PREVIEW_OAUTH_PROXY_SECRET,
+#   PREVIEW_{GITHUB,GITLAB,GOOGLE}_CLIENT_{ID,SECRET}
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Deploys run in push order; a newer push does not cancel a migration halfway.
+concurrency:
+  group: staging
+  cancel-in-progress: false
+
+env:
+  ORIGIN: https://staging.codesphereplatform.xyz
+
+jobs:
+  deploy:
+    name: Deploy staging
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run env:generate
+
+      - name: Staging database URL
+        id: neon
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          BRANCH: ${{ vars.NEON_PARENT_BRANCH || 'staging' }}
+        run: |
+          url=$(bunx neonctl@2 connection-string "$BRANCH" --project-id "$PROJECT_ID" --api-key "$NEON_API_KEY")
+          echo "::add-mask::$url"
+          echo "db_url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Migrate the staging database
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+        run: bunx drizzle-kit migrate
+
+      - name: Build the Worker
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_SERVER_URL: ${{ env.ORIGIN }}
+        run: bunx opennextjs-cloudflare build
+
+      - name: Deploy
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+          BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_BETTER_AUTH_SECRET }}
+          OAUTH_PROXY_SECRET: ${{ secrets.PREVIEW_OAUTH_PROXY_SECRET }}
+          GITHUB_CLIENT_ID: ${{ secrets.PREVIEW_GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.PREVIEW_GITHUB_CLIENT_SECRET }}
+          GITLAB_CLIENT_ID: ${{ secrets.PREVIEW_GITLAB_CLIENT_ID }}
+          GITLAB_CLIENT_SECRET: ${{ secrets.PREVIEW_GITLAB_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.PREVIEW_GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.PREVIEW_GOOGLE_CLIENT_SECRET }}
+        run: |
+          # Secrets go through a file, never the command line; removed right after.
+          umask 077
+          node ../../scripts/preview-secrets.mjs staging-secrets.json
+          bunx wrangler deploy --env staging \
+            --message "${GITHUB_SHA::7}" \
+            --var "BETTER_AUTH_URL:$ORIGIN" \
+            --var "CORS_ORIGIN:$ORIGIN" \
+            --var "OAUTH_PROXY_PRODUCTION_URL:$ORIGIN" \
+            --var "GIT_SHA:${GITHUB_SHA::7}" \
+            --secrets-file staging-secrets.json
+          rm -f staging-secrets.json
+
+      # Bot Fight Mode challenges GitHub runners (403 + cf-mitigated): reachable, not checked.
+      - name: Wait for staging to be reachable
+        run: |
+          for attempt in $(seq 1 30); do
+            headers=$(curl -sS -m 10 -o /dev/null -D - "$ORIGIN/api/v1/ready" || true)
+            status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP/ {code=$2} END {print code}')
+            if [ "${status:0:1}" = "2" ]; then
+              echo "ready after $attempt attempt(s)"
+              exit 0
+            fi
+            if [ "$status" = "403" ] && printf '%s' "$headers" | grep -qi '^cf-mitigated: *challenge'; then
+              echo "::notice::reachable, readiness not checked: Cloudflare challenged the runner"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$ORIGIN is not reachable after 5 minutes (last status: ${status:-none})"
+          exit 1
