@@ -5,6 +5,7 @@ import { membersContract } from "./members";
 
 export * from "./admin";
 export * from "./base";
+export * from "./consent";
 export * from "./hackathons";
 export * from "./members";
 

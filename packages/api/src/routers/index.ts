@@ -1,13 +1,15 @@
 import type { contract, Hackathon } from "@codesphere/contract";
 import { auditLog } from "@codesphere/db/schema/audit";
+import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import type * as z from "zod";
 
 import { requireAdmin } from "../authorization";
 import { unexpectedErrors } from "../errors";
 import { impl } from "../index";
+import { ownProfile, publicProfile } from "../profile";
 
 // Spike data: the real CADEV entry will come from the seed script.
 const cadev: z.infer<typeof Hackathon> = {
@@ -45,21 +47,44 @@ export const appRouter = impl.use(unexpectedErrors).router({
 		check: impl.health.check.handler(() => ({ status: "ok" as const })),
 	},
 	members: {
-		me: impl.members.me.handler(({ context, errors }) => {
-			const user = context.session?.user;
-			if (!user) {
+		me: impl.members.me.handler(async ({ context, errors }) => {
+			const userId = context.session?.user.id;
+			if (!userId) {
 				throw errors.UNAUTHORIZED();
 			}
-			const { kind, ownerId } = user as {
-				kind?: string;
-				ownerId?: string | null;
-			};
-			return {
-				id: user.id,
-				name: user.name,
-				kind: kind === "agent" ? ("agent" as const) : ("human" as const),
-				ownerId: ownerId ?? null,
-			};
+			const [row] = await context.db
+				.select()
+				.from(user)
+				.where(eq(user.id, userId));
+			if (!row) {
+				throw errors.UNAUTHORIZED();
+			}
+			return ownProfile(row);
+		}),
+		update: impl.members.update.handler(async ({ context, input, errors }) => {
+			const userId = context.session?.user.id;
+			if (!userId) {
+				throw errors.UNAUTHORIZED();
+			}
+			const [row] = await context.db
+				.update(user)
+				.set(input)
+				.where(eq(user.id, userId))
+				.returning();
+			if (!row) {
+				throw errors.UNAUTHORIZED();
+			}
+			return ownProfile(row);
+		}),
+		get: impl.members.get.handler(async ({ context, input, errors }) => {
+			const [row] = await context.db
+				.select()
+				.from(user)
+				.where(eq(user.id, input.id));
+			if (!row) {
+				throw errors.NOT_FOUND();
+			}
+			return publicProfile(row);
 		}),
 	},
 	hackathons: {

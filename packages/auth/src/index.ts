@@ -1,11 +1,14 @@
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
 
 import { isAdminEmail, parseAdminEmails } from "./admin";
+import { readConsent } from "./consent";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
+import { withoutOAuthTokens } from "./tokens";
 
 export type AuthConfig = SocialProviderEnv & {
 	BETTER_AUTH_URL: string;
@@ -13,6 +16,10 @@ export type AuthConfig = SocialProviderEnv & {
 	CORS_ORIGIN: string;
 	ADMIN_EMAILS?: string;
 };
+
+const stripTokens = async <T extends object>(account: T) => ({
+	data: withoutOAuthTokens(account),
+});
 
 export function createAuth(
 	env: AuthConfig,
@@ -35,16 +42,34 @@ export function createAuth(
 			accountLinking: { enabled: true, trustedProviders: [] },
 		},
 		databaseHooks: {
+			account: {
+				// First sign-in and linking create the account; a later sign-in updates its tokens.
+				create: { before: stripTokens },
+				update: { before: stripTokens },
+			},
 			user: {
 				create: {
-					before: async (user) => ({
-						data: {
-							...user,
-							role: isAdminEmail(user.email, user.emailVerified, admins)
-								? "admin"
-								: "member",
-						},
-					}),
+					before: async (user, ctx) => {
+						// No consent, no account (spec §3).
+						const consent = readConsent(
+							ctx?.headers?.get("cookie"),
+							CONSENT_VERSION,
+							new Date(),
+						);
+						if (!consent.accepted) {
+							return false;
+						}
+						return {
+							data: {
+								...user,
+								role: isAdminEmail(user.email, user.emailVerified, admins)
+									? "admin"
+									: "member",
+								consentVersion: consent.consentVersion,
+								consentAcceptedAt: consent.consentAcceptedAt,
+							},
+						};
+					},
 				},
 			},
 		},

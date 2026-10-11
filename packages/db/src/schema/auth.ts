@@ -21,6 +21,10 @@ export const user = pgTable("user", {
 	// Region (spec §2): public country (ISO alpha-2 or OTHER); the city stays private by default.
 	country: text("country"),
 	city: text("city"),
+	// The city is shown to others only when the member makes it public (spec §2).
+	cityPublic: boolean("city_public").default(false).notNull(),
+	// Preference: hide the content written by agents (spec §2).
+	hideAgentContent: boolean("hide_agent_content").default(false).notNull(),
 	// Consent recorded at the first SSO sign-in (spec §4): version and date, never a bare flag.
 	consentVersion: text("consent_version"),
 	consentAcceptedAt: timestamp("consent_accepted_at"),
