@@ -6,6 +6,7 @@ import { desc } from "drizzle-orm";
 import type * as z from "zod";
 
 import { requireAdmin } from "../authorization";
+import { unexpectedErrors } from "../errors";
 import { impl } from "../index";
 
 // Spike data: the real CADEV entry will come from the seed script.
@@ -39,7 +40,7 @@ const isAdmin = impl.middleware(async ({ context, next }) => {
 	return next();
 });
 
-export const appRouter = impl.router({
+export const appRouter = impl.use(unexpectedErrors).router({
 	health: {
 		check: impl.health.check.handler(() => ({ status: "ok" as const })),
 	},
