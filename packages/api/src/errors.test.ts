@@ -27,9 +27,10 @@ describe("invalid input", () => {
 	});
 
 	test("leaves other typed errors untouched", async () => {
-		await expect(
-			client().hackathons.get({ slug: "unknown" }),
-		).rejects.toMatchObject({ code: "NOT_FOUND" });
+		// No session: members.me answers UNAUTHORIZED before touching the database.
+		await expect(client().members.me()).rejects.toMatchObject({
+			code: "UNAUTHORIZED",
+		});
 	});
 });
 

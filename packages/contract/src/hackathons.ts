@@ -11,6 +11,19 @@ export const Milestone = z.object({
 	endsAt: Timestamp.nullable(),
 });
 
+export const Prize = z.object({
+	label: z.string(),
+	amount: z.string().nullable(),
+	conditions: z.string().nullable(),
+});
+
+export const JudgingCriterion = z.object({
+	label: z.string(),
+	/** Share of the final score, in percent; a Hackathon's criteria total 100. */
+	weight: z.number().int(),
+	scoredBy: z.enum(["jury", "public", "peers"]),
+});
+
 export const Hackathon = z.object({
 	slug: z.string(),
 	name: z.string(),
@@ -19,8 +32,14 @@ export const Hackathon = z.object({
 	teamMin: z.number().int(),
 	teamMax: z.number().int(),
 	milestones: z.array(Milestone),
+	prizes: z.array(Prize),
+	criteria: z.array(JudgingCriterion),
 	sourceUrl: z.url(),
+	/** Where non-public information came from, shown next to « vérifié le ». */
+	sourceNote: z.string().nullable(),
 	verifiedAt: Timestamp,
+	/** Increments on every edit; an Admin update with a stale version gets CONFLICT. */
+	version: z.number().int().min(1),
 });
 
 export const hackathonsContract = {
@@ -28,7 +47,8 @@ export const hackathonsContract = {
 		.meta(openapi({ method: "GET", path: "/hackathons", tags: ["hackathons"] }))
 		.meta(
 			mcp.tool({
-				description: "List hackathons (dates, rules, team size) known to CodeSphere.",
+				description:
+					"List hackathons (dates, rules, team size) known to CodeSphere.",
 				annotations: { readOnlyHint: true },
 			}),
 		)
@@ -37,7 +57,11 @@ export const hackathonsContract = {
 	get: base
 		.errors({ NOT_FOUND: {} })
 		.meta(
-			openapi({ method: "GET", path: "/hackathons/{slug}", tags: ["hackathons"] }),
+			openapi({
+				method: "GET",
+				path: "/hackathons/{slug}",
+				tags: ["hackathons"],
+			}),
 		)
 		.meta(
 			mcp.tool({

@@ -66,6 +66,13 @@ jobs:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: bunx drizzle-kit migrate
 
+      # Idempotent: creates the CADEV 2026 once and never overwrites what an Admin edited (#61).
+      - name: Seed the preview database
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+        run: bun src/seed/index.ts
+
       - name: Build the Worker
         working-directory: apps/web
         env:

@@ -1,17 +1,28 @@
 "use client";
 
+import { Button } from "@codesphere/ui/components/atoms/button";
 import { AdminShell } from "@codesphere/ui/components/organisms/admin-shell";
-import { BarChart3Icon, ScrollTextIcon, ShieldIcon } from "lucide-react";
+import {
+	ArrowLeftIcon,
+	BarChart3Icon,
+	LogOutIcon,
+	ScrollTextIcon,
+	ShieldIcon,
+} from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+
+import { useAdminIdentity } from "@/components/admin-identity";
+import { authClient } from "@/lib/auth-client";
 
 const NAV = [
-	{ label: "Modération", href: "/admin", icon: ShieldIcon },
-	{ label: "KPI", href: "/admin/kpi", icon: BarChart3Icon },
-	{ label: "Journal d'audit", href: "/admin/audit", icon: ScrollTextIcon },
+	{ key: "moderation", href: "/admin", icon: ShieldIcon },
+	{ key: "kpi", href: "/admin/kpi", icon: BarChart3Icon },
+	{ key: "audit", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;
 
-/** The back-office layout with the navigation wired to the router. */
+/** The back-office layout with the navigation wired to the router and the signed-in Admin. */
 export default function AdminFrame({
 	title,
 	description,
@@ -24,14 +35,52 @@ export default function AdminFrame({
 	children: React.ReactNode;
 }) {
 	const pathname = usePathname();
+	const router = useRouter();
+	const identity = useAdminIdentity();
+	const t = useTranslations("admin");
+
+	const signOut = () =>
+		authClient.signOut({
+			fetchOptions: { onSuccess: () => router.push("/") },
+		});
+
 	return (
 		<AdminShell
 			title={title}
 			description={description}
-			actions={actions}
 			LinkComponent={Link}
-			user={{ name: "Administrateur", role: "Accès administrateur" }}
-			nav={NAV.map((item) => ({ ...item, active: pathname === item.href }))}
+			user={
+				identity
+					? {
+							name: identity.name,
+							email: identity.email,
+							role: identity.role === "admin" ? t("role") : identity.role,
+						}
+					: undefined
+			}
+			nav={NAV.map(({ key, ...item }) => ({
+				...item,
+				label: t(key),
+				active: pathname === item.href,
+			}))}
+			actions={
+				<>
+					{actions}
+					<Button
+						variant="ghost"
+						size="sm"
+						render={<Link href="/" />}
+						nativeButton={false}
+					>
+						<ArrowLeftIcon />
+						{t("backToSite")}
+					</Button>
+					<Button variant="ghost" size="sm" onClick={signOut}>
+						<LogOutIcon />
+						{t("signOut")}
+					</Button>
+				</>
+			}
 		>
 			{children}
 		</AdminShell>

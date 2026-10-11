@@ -49,8 +49,8 @@ Défini dans `CONTEXT.md`. Règles à implémenter :
 - **Vote** : up/down, un par Member et par cible, modifiable et retirable, jamais sur son propre contenu ; **Score** = total net ; pas de réputation.
 - **Tag** : création libre normalisée, suivi par Member, liste de départ amorcée (~30, dont `mobile-money`, `ussd`, `cadev-2026`).
 - **Region** : pays (ISO alpha-2 africain ou `OTHER`) public + ville libre **privée par défaut**.
-- **Admin** : désigné par `ADMIN_EMAILS` (emails vérifiés) ; ferme une Question, suspend un Member, édite les Hackathons via le seed.
-- **Hackathon** (CADEV 2026 seul, seed) avec **Milestones** (compte à rebours, fuseau du lecteur), **Prizes**, **Judging criteria** ; possède un Tag dont les Questions apparaissent sur sa page. Lecture seule, exposée aux agents.
+- **Admin** : désigné par `ADMIN_EMAILS` (emails vérifiés) ; ferme une Question, suspend un Member, édite le Hackathon (dates, Milestones, Prizes, critères) depuis l'administration ; le seed fournit les valeurs de départ.
+- **Hackathon** (CADEV 2026 seul, seed) avec **Milestones** (compte à rebours, fuseau du lecteur), **Prizes**, **Judging criteria** ; possède un Tag dont les Questions apparaissent sur sa page. Lecture seule pour les Members et les agents (exposée dans le contrat) ; seul l'Admin l'édite.
 - **Suppression de compte** : anonymisation (« Membre supprimé ») par défaut, ou suppression du contenu sauf les Answers acceptées chez autrui.
 
 ## 3. Architecture

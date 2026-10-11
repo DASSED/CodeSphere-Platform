@@ -1,36 +1,15 @@
-import type { contract, Hackathon } from "@codesphere/contract";
+import type { contract } from "@codesphere/contract";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { desc, eq, sql } from "drizzle-orm";
-import type * as z from "zod";
 
 import { requireAdmin } from "../authorization";
 import { unexpectedErrors } from "../errors";
+import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
 import { ownProfile, publicProfile } from "../profile";
-
-// Spike data: the real CADEV entry will come from the seed script.
-const cadev: z.infer<typeof Hackathon> = {
-	slug: "cadev-2026",
-	name: "Coupe d'Afrique des Développeurs 2026",
-	organizer: "Systalink",
-	summary:
-		"Concours en ligne pour équipes de développeurs de l'Afrique francophone.",
-	teamMin: 2,
-	teamMax: 5,
-	milestones: [
-		{
-			key: "submission_close",
-			label: "Clôture des soumissions",
-			startsAt: "2026-10-25T17:00:00.000Z",
-			endsAt: null,
-		},
-	],
-	sourceUrl: "https://systalink.com/fr/coupe-afrique-des-developpeurs-cadev",
-	verifiedAt: "2026-10-03T00:00:00.000Z",
-};
 
 // The authorization guard behind every admin procedure (spec §2). Throws the typed
 // UNAUTHORIZED / FORBIDDEN error declared on the admin contract.
@@ -100,15 +79,16 @@ export const appRouter = impl.use(unexpectedErrors).router({
 		}),
 	},
 	hackathons: {
-		list: impl.hackathons.list.handler(() => ({
-			items: [cadev],
+		list: impl.hackathons.list.handler(async ({ context, input }) => ({
+			items: await loadHackathons(context.db, undefined, input.limit),
 			nextCursor: null,
 		})),
-		get: impl.hackathons.get.handler(({ input, errors }) => {
-			if (input.slug !== cadev.slug) {
+		get: impl.hackathons.get.handler(async ({ context, input, errors }) => {
+			const [found] = await loadHackathons(context.db, { slug: input.slug }, 1);
+			if (!found) {
 				throw errors.NOT_FOUND();
 			}
-			return cadev;
+			return found;
 		}),
 	},
 	admin: {

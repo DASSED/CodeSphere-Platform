@@ -47,5 +47,68 @@
 		"consentRequired": "Aucun compte n'a été créé : cochez la case de consentement pour vous inscrire.",
 		"failed": "La connexion a échoué.",
 		"unreachable": "Impossible de joindre le serveur d'authentification."
+	},
+	"header": {
+		"signIn": "Se connecter",
+		"ask": "Poser une question",
+		"askSoon": "Le formulaire de question arrive bientôt.",
+		"account": "Menu du compte",
+		"profile": "Profil public",
+		"settings": "Réglages",
+		"admin": "Administration",
+		"signOut": "Se déconnecter"
+	},
+	"home": {
+		"tabs": {
+			"forYou": "Pour toi",
+			"recent": "Récents",
+			"unanswered": "Sans réponse",
+			"signInForYou": "Connectez-vous pour un fil à vos Tags."
+		},
+		"hero": {
+			"eyebrow": "Q&R pour les développeurs d'Afrique et de la diaspora",
+			"title": "Vos questions de code, nos réponses d'ici.",
+			"lead": "Mobile money, USSD, déploiement à petit budget : posez la question, la communauté répond, le fil s'adapte à vos Tags."
+		},
+		"hello": {
+			"morning": "Bonjour {name}",
+			"evening": "Bonsoir {name}",
+			"lead": "Votre fil se construit à partir des Tags que vous suivez."
+		},
+		"empty": {
+			"title": "Aucune question pour l'instant",
+			"visitor": "La communauté démarre. Connectez-vous pour poser la première question.",
+			"member": "Lancez la conversation : votre question sera la première du fil.",
+			"followTags": "Suivre des Tags"
+		},
+		"start": {
+			"title": "Pour commencer",
+			"account": "Compte créé",
+			"tags": "Suivre au moins 3 Tags",
+			"question": "Poser votre première question"
+		},
+		"followed": {
+			"title": "Tags suivis",
+			"none": "Aucun Tag suivi. Ils personnalisent « Pour toi »."
+		},
+		"banner": {
+			"eyebrow": "Hackathon en cours",
+			"days": "jours",
+			"hours": "heures",
+			"remaining": "{days} jours avant la clôture · affiché dans votre fuseau horaire",
+			"closes": "Clôture des soumissions le {date}",
+			"timeline": "Calendrier du hackathon",
+			"see": "Voir le Hackathon",
+			"soon": "Disponible avec la page Hackathon"
+		},
+		"loadError": "Impossible de charger le Hackathon."
+	},
+	"admin": {
+		"role": "Administrateur",
+		"moderation": "Modération",
+		"kpi": "KPI",
+		"audit": "Journal d'audit",
+		"backToSite": "Retour au site",
+		"signOut": "Se déconnecter"
 	}
 }

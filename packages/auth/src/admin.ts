@@ -16,3 +16,16 @@ export function isAdminEmail(
 ): boolean {
 	return emailVerified && admins.has(email.trim().toLowerCase());
 }
+
+export type Role = "admin" | "member";
+
+// The role a human Member must hold right now. Re-evaluated at every sign-in, so adding an
+// email to ADMIN_EMAILS promotes at the next sign-in and removing it demotes (#120).
+export function roleFor(
+	user: { email: string; emailVerified: boolean },
+	admins: ReadonlySet<string>,
+): Role {
+	return isAdminEmail(user.email, user.emailVerified, admins)
+		? "admin"
+		: "member";
+}
