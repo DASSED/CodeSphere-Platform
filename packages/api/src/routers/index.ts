@@ -3,7 +3,7 @@ import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import type * as z from "zod";
 
 import { requireAdmin } from "../authorization";
@@ -44,7 +44,19 @@ const isAdmin = impl.middleware(async ({ context, next }) => {
 
 export const appRouter = impl.use(unexpectedErrors).router({
 	health: {
-		check: impl.health.check.handler(() => ({ status: "ok" as const })),
+		check: impl.health.check.handler(({ context }) => ({
+			status: "ok" as const,
+			...context.release,
+		})),
+		ready: impl.health.ready.handler(async ({ context, errors }) => {
+			try {
+				await context.db.execute(sql`select 1`);
+			} catch (error) {
+				context.logger.warn({ err: error }, "database not reachable");
+				throw errors.SERVICE_UNAVAILABLE();
+			}
+			return { status: "ready" as const };
+		}),
 	},
 	members: {
 		me: impl.members.me.handler(async ({ context, errors }) => {
