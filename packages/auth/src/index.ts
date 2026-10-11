@@ -5,6 +5,7 @@ import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
 
 import { isAdminEmail, parseAdminEmails } from "./admin";
+import { readConsent } from "./consent";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
 
 export type AuthConfig = SocialProviderEnv & {
@@ -12,6 +13,8 @@ export type AuthConfig = SocialProviderEnv & {
 	BETTER_AUTH_SECRET: string;
 	CORS_ORIGIN: string;
 	ADMIN_EMAILS?: string;
+	/** Version of the consent text the sign-in page shows (spec §4). */
+	CONSENT_VERSION: string;
 };
 
 export function createAuth(
@@ -37,14 +40,27 @@ export function createAuth(
 		databaseHooks: {
 			user: {
 				create: {
-					before: async (user) => ({
-						data: {
-							...user,
-							role: isAdminEmail(user.email, user.emailVerified, admins)
-								? "admin"
-								: "member",
-						},
-					}),
+					before: async (user, ctx) => {
+						// No consent, no account (spec §3).
+						const consent = readConsent(
+							ctx?.headers?.get("cookie"),
+							env.CONSENT_VERSION,
+							new Date(),
+						);
+						if (!consent.accepted) {
+							return false;
+						}
+						return {
+							data: {
+								...user,
+								role: isAdminEmail(user.email, user.emailVerified, admins)
+									? "admin"
+									: "member",
+								consentVersion: consent.consentVersion,
+								consentAcceptedAt: consent.consentAcceptedAt,
+							},
+						};
+					},
 				},
 			},
 		},
