@@ -13,6 +13,8 @@
 	// Pull request previews: `wrangler preview --name pr-<n>` is served at
 	// pr-<n>.preview.codesphereplatform.xyz (previews_enabled creates the wildcard DNS record
 	// and certificate). The staging domain is a separate decision.
+	// Required by `wrangler preview`, even empty: settings overridden for previews only.
+	"previews": {},
 	"routes": [
 		{
 			"pattern": "preview.codesphereplatform.xyz",
