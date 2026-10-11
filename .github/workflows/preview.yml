@@ -108,19 +108,27 @@ jobs:
           echo "url=$ORIGIN" >> "$GITHUB_OUTPUT"
 
       # wrangler preview succeeds even when the Preview has no reachable URL (missing route,
-      # DNS or certificate still provisioning): only a ready API proves the preview works.
-      - name: Wait for the preview to be ready
+      # DNS or certificate still provisioning). Bot Fight Mode challenges GitHub runners and
+      # cannot be bypassed on the free plan: a Cloudflare challenge (403 + cf-mitigated) still
+      # proves DNS, certificate and routing work, though not that the API is ready.
+      - name: Wait for the preview to be reachable
         env:
           PREVIEW_URL: ${{ steps.deploy.outputs.url }}
         run: |
           for attempt in $(seq 1 30); do
-            if curl -fsS -m 10 "$PREVIEW_URL/api/v1/ready" > /dev/null; then
+            headers=$(curl -sS -m 10 -o /dev/null -D - "$PREVIEW_URL/api/v1/ready" || true)
+            status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP/ {code=$2} END {print code}')
+            if [ "${status:0:1}" = "2" ]; then
               echo "ready after $attempt attempt(s)"
+              exit 0
+            fi
+            if [ "$status" = "403" ] && printf '%s' "$headers" | grep -qi '^cf-mitigated: *challenge'; then
+              echo "::notice::reachable, readiness not checked: Cloudflare challenged the runner"
               exit 0
             fi
             sleep 10
           done
-          echo "::error::$PREVIEW_URL/api/v1/ready did not answer 2xx within 5 minutes"
+          echo "::error::$PREVIEW_URL is not reachable after 5 minutes (last status: ${status:-none})"
           exit 1
 
       - name: Comment the preview URL
