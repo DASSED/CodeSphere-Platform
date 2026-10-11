@@ -1,6 +1,7 @@
 import type { Context as ApiContext } from "@codesphere/api/context";
 import type { LoggerEnv } from "@codesphere/logger";
 import type { Context as HonoContext } from "hono";
+import { ENV } from "./env.server";
 import { auth, db } from "./services";
 
 export type CreateContextOptions = {
@@ -20,6 +21,7 @@ export async function createContext({
 		session,
 		logger: context.get("logger"),
 		requestId: context.get("requestId"),
+		release: { version: ENV.APP_VERSION, commit: ENV.GIT_SHA },
 	};
 }
 

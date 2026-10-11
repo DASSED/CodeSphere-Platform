@@ -1,21 +1,15 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import type { Session } from "@codesphere/auth";
-import { createLogger } from "@codesphere/logger";
 import { createRouterClient } from "@orpc/server";
 
-import type { Context } from "./context";
 import { appRouter } from "./routers";
+import { testContext } from "./test-context";
 
 function client(session: Session | null = null) {
 	return createRouterClient(appRouter, {
-		context: {
-			session,
-			// Every query fails: stands in for a database outage.
-			db: {} as Context["db"],
-			logger: createLogger({ level: "silent" }),
-			requestId: "req-42",
-		},
+		// The default database fails on every query: it stands in for an outage.
+		context: testContext({ session, requestId: "req-42" }),
 	});
 }
 

@@ -9,4 +9,6 @@ export type Context = {
 	logger: Logger;
 	/** Id of the HTTP request, returned in `x-request-id` and in INTERNAL_SERVER_ERROR. */
 	requestId: string;
+	/** Build identity injected at build time (APP_VERSION, GIT_SHA). */
+	release: { version: string; commit: string };
 };
