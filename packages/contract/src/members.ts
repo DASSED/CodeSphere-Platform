@@ -13,6 +13,8 @@ export const MemberSummary = z.object({
 
 /** What anyone may see of a Member: never the email, and the city only when made public. */
 export const PublicProfile = MemberSummary.extend({
+	/** Avatar URL from the SSO provider. */
+	image: z.string().nullable(),
 	country: Region.shape.country.nullable(),
 	city: z.string().nullable(),
 });

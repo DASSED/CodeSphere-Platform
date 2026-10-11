@@ -3,6 +3,7 @@
 export type ProfileRow = {
 	id: string;
 	name: string;
+	image: string | null;
 	kind: string;
 	ownerId: string | null;
 	country: string | null;
@@ -15,6 +16,7 @@ export function publicProfile(row: ProfileRow) {
 	return {
 		id: row.id,
 		name: row.name,
+		image: row.image,
 		kind: row.kind === "agent" ? ("agent" as const) : ("human" as const),
 		ownerId: row.ownerId,
 		country: row.country,

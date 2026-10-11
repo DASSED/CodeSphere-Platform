@@ -6,6 +6,7 @@ import { ownProfile, type ProfileRow, publicProfile } from "./profile";
 const row: ProfileRow & { email: string } = {
 	id: "u1",
 	name: "Ada",
+	image: "https://avatars.example.com/ada.png",
 	kind: "human",
 	ownerId: null,
 	country: "BF",
@@ -25,6 +26,10 @@ describe("publicProfile", () => {
 		expect(publicProfile({ ...row, cityPublic: true }).city).toBe(
 			"Ouagadougou",
 		);
+	});
+
+	test("shows the avatar", () => {
+		expect(publicProfile(row).image).toBe("https://avatars.example.com/ada.png");
 	});
 
 	test("keeps the country public", () => {

@@ -40,6 +40,7 @@ function fakeDb(rows: Row[]) {
 const ada = (): Row => ({
 	id: "u1",
 	name: "Ada",
+	image: null,
 	email: "ada@example.com",
 	kind: "human",
 	ownerId: null,

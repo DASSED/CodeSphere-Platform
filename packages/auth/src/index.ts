@@ -6,6 +6,7 @@ import { betterAuth } from "better-auth";
 
 import { isAdminEmail, parseAdminEmails } from "./admin";
 import { readConsent } from "./consent";
+import { withoutOAuthTokens } from "./tokens";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
 
 export type AuthConfig = SocialProviderEnv & {
@@ -16,6 +17,10 @@ export type AuthConfig = SocialProviderEnv & {
 	/** Version of the consent text the sign-in page shows (spec §4). */
 	CONSENT_VERSION: string;
 };
+
+const stripTokens = async <T extends object>(account: T) => ({
+	data: withoutOAuthTokens(account),
+});
 
 export function createAuth(
 	env: AuthConfig,
@@ -38,6 +43,11 @@ export function createAuth(
 			accountLinking: { enabled: true, trustedProviders: [] },
 		},
 		databaseHooks: {
+			account: {
+				// First sign-in and linking create the account; a later sign-in updates its tokens.
+				create: { before: stripTokens },
+				update: { before: stripTokens },
+			},
 			user: {
 				create: {
 					before: async (user, ctx) => {
