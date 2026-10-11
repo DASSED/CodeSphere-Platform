@@ -11,14 +11,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { useAdminIdentity } from "@/components/admin-identity";
 import { authClient } from "@/lib/auth-client";
 
 const NAV = [
-	{ label: "Modération", href: "/admin", icon: ShieldIcon },
-	{ label: "KPI", href: "/admin/kpi", icon: BarChart3Icon },
-	{ label: "Journal d'audit", href: "/admin/audit", icon: ScrollTextIcon },
+	{ key: "moderation", href: "/admin", icon: ShieldIcon },
+	{ key: "kpi", href: "/admin/kpi", icon: BarChart3Icon },
+	{ key: "audit", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;
 
 /** The back-office layout with the navigation wired to the router and the signed-in Admin. */
@@ -36,6 +37,7 @@ export default function AdminFrame({
 	const pathname = usePathname();
 	const router = useRouter();
 	const identity = useAdminIdentity();
+	const t = useTranslations("admin");
 
 	const signOut = () =>
 		authClient.signOut({
@@ -48,9 +50,19 @@ export default function AdminFrame({
 			description={description}
 			LinkComponent={Link}
 			user={
-				identity ? { name: identity.name, role: identity.email } : undefined
+				identity
+					? {
+							name: identity.name,
+							email: identity.email,
+							role: identity.role === "admin" ? t("role") : identity.role,
+						}
+					: undefined
 			}
-			nav={NAV.map((item) => ({ ...item, active: pathname === item.href }))}
+			nav={NAV.map(({ key, ...item }) => ({
+				...item,
+				label: t(key),
+				active: pathname === item.href,
+			}))}
 			actions={
 				<>
 					{actions}
@@ -61,11 +73,11 @@ export default function AdminFrame({
 						nativeButton={false}
 					>
 						<ArrowLeftIcon />
-						Retour au site
+						{t("backToSite")}
 					</Button>
 					<Button variant="ghost" size="sm" onClick={signOut}>
 						<LogOutIcon />
-						Se déconnecter
+						{t("signOut")}
 					</Button>
 				</>
 			}

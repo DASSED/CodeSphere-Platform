@@ -102,5 +102,13 @@
 			"soon": "Available with the Hackathon page"
 		},
 		"loadError": "Could not load the Hackathon."
+	},
+	"admin": {
+		"role": "Administrator",
+		"moderation": "Moderation",
+		"kpi": "KPIs",
+		"audit": "Audit log",
+		"backToSite": "Back to the site",
+		"signOut": "Sign out"
 	}
 }

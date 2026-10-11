@@ -102,5 +102,13 @@
 			"soon": "Disponible avec la page Hackathon"
 		},
 		"loadError": "Impossible de charger le Hackathon."
+	},
+	"admin": {
+		"role": "Administrateur",
+		"moderation": "Modération",
+		"kpi": "KPI",
+		"audit": "Journal d'audit",
+		"backToSite": "Retour au site",
+		"signOut": "Se déconnecter"
 	}
 }

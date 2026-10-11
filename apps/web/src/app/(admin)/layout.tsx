@@ -17,7 +17,11 @@ export default async function AdminLayout({
 	}
 	return (
 		<AdminIdentityProvider
-			identity={{ name: session.user.name, email: session.user.email }}
+			identity={{
+				name: session.user.name,
+				email: session.user.email,
+				role: session.user.role ?? "member",
+			}}
 		>
 			{children}
 		</AdminIdentityProvider>

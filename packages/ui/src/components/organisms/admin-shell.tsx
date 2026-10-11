@@ -17,7 +17,7 @@ type AdminShellProps = Omit<React.ComponentProps<"div">, "title"> & {
 	/** The router's link component (next/link). Defaults to a plain `a`. */
 	LinkComponent?: React.ElementType;
 	/** Shown at the bottom of the sidebar. */
-	user?: { name: string; role: string };
+	user?: { name: string; role: string; email?: string };
 	/** Page-level actions, rendered next to the title. */
 	actions?: React.ReactNode;
 };
@@ -75,6 +75,11 @@ function AdminShell({
 				{user && (
 					<div className="mt-auto hidden flex-col text-xs md:flex">
 						<span className="font-medium">{user.name}</span>
+						{user.email && (
+							<span className="truncate text-muted-foreground">
+								{user.email}
+							</span>
+						)}
 						<span className="text-muted-foreground">{user.role}</span>
 					</div>
 				)}
