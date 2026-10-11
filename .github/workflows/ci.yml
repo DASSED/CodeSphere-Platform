@@ -20,6 +20,9 @@ jobs:
   quality:
     name: Lint, types, unit tests
     runs-on: ubuntu-latest
+    env:
+      # Required by the web env schema for type generation; no server is contacted.
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
         with:
