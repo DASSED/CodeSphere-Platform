@@ -1,0 +1,19 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// One Worker serves the web and the API on one origin (#86, #90): cookies stay first-party.
+	"name": "codesphere",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-09-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+	// Pull request previews: `wrangler preview --name pr-<n>` is served at
+	// pr-<n>.preview.codesphereplatform.xyz (previews_enabled creates the wildcard DNS record
+	// and certificate). The staging domain is a separate decision.
+	"routes": [
+		{
+			"pattern": "preview.codesphereplatform.xyz",
+			"custom_domain": true,
+			"previews_enabled": true
+		}
+	]
+}
