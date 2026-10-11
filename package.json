@@ -48,6 +48,7 @@
 		"db:studio": "turbo run db:studio -F @codesphere/db --",
 		"db:generate": "turbo run db:generate -F @codesphere/db --",
 		"db:migrate": "turbo run db:migrate -F @codesphere/db --",
+		"db:seed": "bun run --cwd packages/db db:seed",
 		"db:start": "docker compose up -d postgres",
 		"db:watch": "docker compose up postgres",
 		"db:stop": "docker compose stop postgres",
