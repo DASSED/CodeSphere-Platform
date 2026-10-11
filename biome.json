@@ -17,6 +17,7 @@
       "!**/.zed",
       "!**/.vscode",
       "!**/routeTree.gen.ts",
+      "!packages/db/src/migrations",
       "!**/src-tauri",
       "!**/.nuxt",
       "!bts.jsonc",
