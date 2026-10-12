@@ -14,9 +14,8 @@ const PERSISTED_ROOTS = new Set(["hackathons", "feed", "questions", "answers", "
 export const PERSIST_MAX_AGE = SEVEN_DAYS;
 
 /**
- * Persist the Query cache to IndexedDB, in the browser only. It reuses the
- * QueryClient created by the router so it sits next to
- * `setupRouterSsrQueryIntegration` without a second provider.
+ * Persist the Query cache to IndexedDB, in the browser only. Call it once from
+ * the client `Providers` with the QueryClient it created.
  */
 export function setupPersistence(queryClient: QueryClient) {
   if (typeof window === "undefined" || !("indexedDB" in window)) {

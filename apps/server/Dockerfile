@@ -10,6 +10,10 @@ RUN --mount=type=secret,id=web_env,target=/app/apps/web/.env.local --mount=type=
 FROM oven/bun:1 AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+# Build identity reported by GET /health (#60): CI passes main-<sha> or the vX.Y.Z tag.
+ARG APP_VERSION=dev
+ARG GIT_SHA=dev
+ENV APP_VERSION=$APP_VERSION GIT_SHA=$GIT_SHA
 COPY --from=builder /app /app
 
 EXPOSE 3000

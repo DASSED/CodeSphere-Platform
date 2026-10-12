@@ -1,60 +1,213 @@
+import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
+import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
-import { apiKey } from "@better-auth/api-key";
 import { betterAuth } from "better-auth";
+import { emailOTP, oAuthProxy } from "better-auth/plugins";
+import { eq } from "drizzle-orm";
 
-export type AuthConfig = {
-  BETTER_AUTH_URL: string;
-  BETTER_AUTH_SECRET: string;
-  CORS_ORIGIN: string;
+import { parseAdminEmails, roleFor } from "./admin";
+import { readConsent } from "./consent";
+import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
+import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
+import { withoutOAuthTokens } from "./tokens";
+
+export type AuthConfig = SocialProviderEnv &
+	OAuthProxyEnv & {
+		BETTER_AUTH_URL: string;
+		BETTER_AUTH_SECRET: string;
+		CORS_ORIGIN: string;
+		ADMIN_EMAILS?: string;
+		/** Sign in with a one-time code sent by email: for local development and previews, where SSO cannot work. */
+		EMAIL_OTP_SIGNIN?: boolean;
+	};
+
+const stripTokens = async <T extends object>(account: T) => ({
+	data: withoutOAuthTokens(account),
+});
+
+/** What the auth layer tells the outside world about a new account: no email client here. */
+export type NewMember = { id: string; email: string; name: string };
+
+export type AuthHooks = {
+	/**
+	 * Called once, after a human account is created (never for an Agent). `acceptLanguage` is the
+	 * header of the sign-in request. A failure never blocks the sign-in.
+	 */
+	onMemberCreated?: (
+		member: NewMember,
+		acceptLanguage: string | null,
+	) => Promise<void>;
+	/** Delivers a sign-in code. Only called when `EMAIL_OTP_SIGNIN` is on. */
+	sendSignInOtp?: (
+		email: string,
+		otp: string,
+		acceptLanguage: string | null,
+	) => Promise<void>;
 };
 
 export function createAuth(
-  env: AuthConfig,
-  database: Database,
-  desktopOrigins: readonly string[] = [],
+	env: AuthConfig,
+	database: Database,
+	desktopOrigins: readonly string[] = [],
+	hooks: AuthHooks = {},
 ) {
-  return betterAuth({
-    database: drizzleAdapter(database, {
-      provider: "pg",
-      schema,
-    }),
-    trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
-    emailAndPassword: { enabled: true },
-    secret: env.BETTER_AUTH_SECRET,
-    baseURL: env.BETTER_AUTH_URL,
-    advanced: {
-      defaultCookieAttributes: {
-        sameSite: "none",
-        secure: true,
-        httpOnly: true,
-      },
-    },
-    user: {
-      additionalFields: {
-        // "human" | "agent"; set server-side only, never by the client.
-        kind: { type: ["human", "agent"], required: false, defaultValue: "human", input: false },
-        // For agents: the human Member who owns and answers for them.
-        ownerId: { type: "string", required: false, input: false },
-      },
-    },
-    plugins: [
-      apiKey({
-        enableSessionForAPIKeys: true,
-        // Accept the key as `x-api-key` (default) or `Authorization: Bearer <key>` (MCP clients).
-        customAPIKeyGetter: (ctx) => {
-          const direct = ctx.headers?.get("x-api-key");
-          if (direct) {
-            return direct;
-          }
-          const authorization = ctx.headers?.get("authorization");
-          return authorization?.startsWith("Bearer ") ? authorization.slice(7) : null;
-        },
-        rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
-      }),
-    ],
-  });
+	const admins = parseAdminEmails(env.ADMIN_EMAILS);
+	const proxy = oauthProxyFrom(env);
+
+	return betterAuth({
+		database: drizzleAdapter(database, {
+			provider: "pg",
+			schema,
+		}),
+		trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
+		// SSO in production: no email/password sign-in (#59, spec §3). The email code below is
+		// opt-in (EMAIL_OTP_SIGNIN), for local development and previews only.
+		socialProviders: socialProvidersFrom(env),
+		account: {
+			// Link provider accounts on a verified email only: no trusted providers, so an
+			// unverified address is rejected instead of being merged (spec §3).
+			accountLinking: { enabled: true, trustedProviders: [] },
+		},
+		databaseHooks: {
+			account: {
+				// First sign-in and linking create the account; a later sign-in updates its tokens.
+				create: { before: stripTokens },
+				update: { before: stripTokens },
+			},
+			session: {
+				create: {
+					// Every sign-in re-derives the role from ADMIN_EMAILS (#120), for humans only:
+					// an Agent is never an Admin.
+					before: async (session) => {
+						const [row] = await database
+							.select({
+								email: schema.user.email,
+								emailVerified: schema.user.emailVerified,
+								kind: schema.user.kind,
+								role: schema.user.role,
+							})
+							.from(schema.user)
+							.where(eq(schema.user.id, session.userId));
+						if (row && row.kind === "human") {
+							const role = roleFor(row, admins);
+							if (role !== row.role) {
+								await database
+									.update(schema.user)
+									.set({ role })
+									.where(eq(schema.user.id, session.userId));
+							}
+						}
+						return { data: session };
+					},
+				},
+			},
+			user: {
+				create: {
+					before: async (user, ctx) => {
+						// No consent, no account (spec §3).
+						const consent = readConsent(
+							ctx?.headers?.get("cookie"),
+							CONSENT_VERSION,
+							new Date(),
+						);
+						if (!consent.accepted) {
+							return false;
+						}
+						return {
+							data: {
+								...user,
+								role: roleFor(user, admins),
+								consentVersion: consent.consentVersion,
+								consentAcceptedAt: consent.consentAcceptedAt,
+							},
+						};
+					},
+					after: async (user, ctx) => {
+						const { kind } = user as { kind?: string };
+						if (!hooks.onMemberCreated || kind === "agent") {
+							return;
+						}
+						try {
+							await hooks.onMemberCreated(
+								{ id: user.id, email: user.email, name: user.name },
+								ctx?.headers?.get("accept-language") ?? null,
+							);
+						} catch {
+							// A notification must never undo or block a sign-in.
+						}
+					},
+				},
+			},
+		},
+		secret: env.BETTER_AUTH_SECRET,
+		baseURL: env.BETTER_AUTH_URL,
+		advanced: {
+			defaultCookieAttributes: {
+				sameSite: "none",
+				secure: true,
+				httpOnly: true,
+			},
+		},
+		user: {
+			additionalFields: {
+				// "human" | "agent"; set server-side only, never by the client.
+				kind: {
+					type: ["human", "agent"],
+					required: false,
+					defaultValue: "human",
+					input: false,
+				},
+				// For agents: the human Member who owns and answers for them.
+				ownerId: { type: "string", required: false, input: false },
+				// "admin" | "member"; derived from ADMIN_EMAILS at account creation, never by the client.
+				role: {
+					type: "string",
+					required: false,
+					defaultValue: "member",
+					input: false,
+				},
+			},
+		},
+		plugins: [
+			...(proxy ? [oAuthProxy(proxy)] : []),
+			...(env.EMAIL_OTP_SIGNIN && hooks.sendSignInOtp
+				? [
+						emailOTP({
+							otpLength: 6,
+							expiresIn: 300,
+							// Awaited so a failed delivery surfaces as an error instead of a silent wait.
+							async sendVerificationOTP({ email, otp, type }, ctx) {
+								if (type !== "sign-in") {
+									return;
+								}
+								await hooks.sendSignInOtp?.(
+									email,
+									otp,
+									ctx?.headers?.get("accept-language") ?? null,
+								);
+							},
+						}),
+					]
+				: []),
+			apiKey({
+				enableSessionForAPIKeys: true,
+				// Accept the key as `x-api-key` (default) or `Authorization: Bearer <key>` (MCP clients).
+				customAPIKeyGetter: (ctx) => {
+					const direct = ctx.headers?.get("x-api-key");
+					if (direct) {
+						return direct;
+					}
+					const authorization = ctx.headers?.get("authorization");
+					return authorization?.startsWith("Bearer ")
+						? authorization.slice(7)
+						: null;
+				},
+				rateLimit: { enabled: true, timeWindow: 60_000, maxRequests: 120 },
+			}),
+		],
+	});
 }
 
 export type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];

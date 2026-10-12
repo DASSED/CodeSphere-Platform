@@ -6,7 +6,7 @@ import type { RouterContractClient } from "@orpc/contract";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { ENV } from "../env";
+import { getServerUrl } from "../lib/server-url";
 import { PERSIST_MAX_AGE } from "../lib/persist";
 
 export function createQueryClient() {
@@ -27,29 +27,23 @@ export function createQueryClient() {
   });
 }
 
-function getServerUrl(url: string) {
-  const processEnv = (
-    globalThis as {
-      process?: { env?: Record<string, string | undefined> };
-    }
-  ).process?.env;
-  if (typeof window === "undefined" && processEnv?.SERVER_URL) {
-    return processEnv.SERVER_URL.endsWith("/")
-      ? processEnv.SERVER_URL.slice(0, -1)
-      : processEnv.SERVER_URL;
-  }
-
-  return url.endsWith("/") ? url.slice(0, -1) : url;
-}
-
 const link = new RPCLink({
-  origin: getServerUrl(ENV.VITE_SERVER_URL),
+  origin: getServerUrl(),
   url: "/rpc",
   fetch(url, options) {
     return fetch(url, {
       ...options,
       credentials: "include",
     });
+  },
+  headers: async () => {
+    if (typeof window !== "undefined") {
+      return {};
+    }
+
+    // Server-side render: forward the visitor's cookies to the API.
+    const { headers } = await import("next/headers");
+    return Object.fromEntries(await headers());
   },
 });
 

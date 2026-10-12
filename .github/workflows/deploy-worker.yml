@@ -1,0 +1,77 @@
+name: Deploy Worker
+
+# Publishes the base "codesphere" Worker from develop. `wrangler preview` never applies routes:
+# this deploy is what creates the preview.codesphereplatform.xyz custom domain and, through
+# previews_enabled, the *.preview wildcard every pull request preview is served on (#86).
+# Runs on develop when the Worker config or this file changes; workflow_dispatch only works
+# once this file is on the default branch (main).
+# The base Worker has no database or OAuth secrets: only the previews serve the app.
+on:
+  push:
+    branches: [develop]
+    paths:
+      - apps/web/wrangler.jsonc
+      - .github/workflows/deploy-worker.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-worker
+  cancel-in-progress: false
+
+env:
+  PREVIEW_DOMAIN: ${{ vars.PREVIEW_DOMAIN || 'preview.codesphereplatform.xyz' }}
+
+jobs:
+  # Deploys only once CI passed for the pushed commit. A manual run (workflow_dispatch)
+  # skips the wait: it is an explicit decision, possibly on a commit CI never saw.
+  gate:
+    name: CI passed
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/wait-for-ci
+        with:
+          sha: ${{ github.sha }}
+          event: push
+          workflows: ci.yml
+
+  deploy:
+    name: Deploy the base Worker
+    needs: gate
+    # A skipped gate (manual run) lets it through; a failed or cancelled one never does.
+    if: >
+      !cancelled() &&
+      (needs.gate.result == 'success' || needs.gate.result == 'skipped') &&
+      github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - run: bun install --frozen-lockfile --ignore-scripts
+      - run: bun run env:generate
+
+      - name: Build the Worker
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_SERVER_URL: https://${{ env.PREVIEW_DOMAIN }}
+        run: bunx opennextjs-cloudflare build
+
+      - name: Deploy
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bunx wrangler deploy --message "${GITHUB_SHA::7}"

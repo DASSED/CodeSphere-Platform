@@ -1,43 +1,53 @@
 {
-  "name": "server",
-  "type": "module",
-  "main": "src/index.ts",
-  "scripts": {
-    "build": "tsc -b ../../packages/api && tsdown",
-    "check-types": "tsc -b ../../packages/api && tsc --noEmit",
-    "compile": "bun build --compile --no-compile-autoload-dotenv --minify --sourcemap --bytecode ./src/index.ts --outfile server",
-    "dev": "bun run --hot src/index.ts",
-    "start": "bun run dist/index.mjs",
-    "env:generate": "varlock codegen",
-    "auth:generate": "varlock run -- bun x auth@latest generate --config src/services.ts --output ../../packages/db/src/schema/auth.ts --yes"
-  },
-  "dependencies": {
-    "@codesphere/api": "workspace:*",
-    "@codesphere/auth": "workspace:*",
-    "@codesphere/db": "workspace:*",
-    "@opentelemetry/api": "^1.9.1",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
-    "@opentelemetry/instrumentation": "^0.222.0",
-    "@opentelemetry/resources": "^2.11.0",
-    "@opentelemetry/sdk-trace-base": "^2.11.0",
-    "@opentelemetry/sdk-trace-node": "^2.11.0",
-    "@opentelemetry/semantic-conventions": "^1.43.0",
-    "@orpc/json-schema": "catalog:",
-    "@orpc/openapi": "catalog:",
-    "@orpc/opentelemetry": "catalog:",
-    "@orpc/server": "catalog:",
-    "@orpc/shared": "catalog:",
-    "@orpc/zod": "catalog:",
-    "better-auth": "catalog:",
-    "hono": "^4.13.7",
-    "orpc-mcp": "catalog:",
-    "varlock": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@codesphere/config": "workspace:*",
-    "@types/bun": "catalog:",
-    "tsdown": "^0.23.0",
-    "typescript": "catalog:"
-  }
+	"name": "server",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"build": "tsc -b ../../packages/api && tsdown",
+		"check-types": "tsc -b ../../packages/api && tsc --noEmit",
+		"compile": "bun build --compile --no-compile-autoload-dotenv --minify --sourcemap --bytecode ./src/index.ts --outfile server",
+		"dev": "bun run --hot src/index.ts",
+		"start": "bun run dist/index.mjs",
+		"env:generate": "varlock codegen",
+		"auth:generate": "varlock run -- bun x auth@latest generate --config src/services.ts --output ../../packages/db/src/schema/auth.ts --yes"
+	},
+	"dependencies": {
+		"@codesphere/api": "workspace:*",
+		"@codesphere/auth": "workspace:*",
+		"@codesphere/db": "workspace:*",
+		"@codesphere/email": "workspace:*",
+		"@codesphere/logger": "workspace:*",
+		"@opentelemetry/api": "^1.9.1",
+		"@opentelemetry/exporter-trace-otlp-http": "^0.222.0",
+		"@opentelemetry/instrumentation": "^0.222.0",
+		"@opentelemetry/resources": "^2.11.0",
+		"@opentelemetry/sdk-trace-base": "^2.11.0",
+		"@opentelemetry/sdk-trace-node": "^2.11.0",
+		"@opentelemetry/semantic-conventions": "^1.43.0",
+		"@orpc/json-schema": "catalog:",
+		"@orpc/openapi": "catalog:",
+		"@orpc/opentelemetry": "catalog:",
+		"@orpc/server": "catalog:",
+		"@orpc/shared": "catalog:",
+		"@orpc/zod": "catalog:",
+		"better-auth": "catalog:",
+		"hono": "catalog:",
+		"orpc-mcp": "catalog:",
+		"varlock": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@codesphere/config": "workspace:*",
+		"@types/bun": "catalog:",
+		"tsdown": "^0.23.0",
+		"typescript": "catalog:"
+	},
+	"volta": {
+		"extends": "../../package.json"
+	},
+	"exports": {
+		".": "./src/index.ts",
+		"./app": "./src/app.ts",
+		"./worker": "./src/worker.ts"
+	}
 }

@@ -1,0 +1,36 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// One Worker serves the web and the API on one origin (#86, #90): cookies stay first-party.
+	"name": "codesphere",
+	"main": "worker.ts",
+	"compatibility_date": "2026-09-01",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+	// workerd resolves pino to its browser build, which ignores `redact` and a custom destination:
+	// emails, cookies and tokens would reach Workers Logs in clear. Force the Node build
+	// (guarded by packages/logger/src/worker-build.test.ts).
+	"alias": { "pino": "pino/pino.js" },
+	// Pull request previews: `wrangler preview --name pr-<n>` is served at
+	// pr-<n>.preview.codesphereplatform.xyz (previews_enabled creates the wildcard DNS record
+	// and certificate).
+	// Required by `wrangler preview`, even empty: settings overridden for previews only.
+	"previews": {},
+	"routes": [
+		{
+			"pattern": "preview.codesphereplatform.xyz",
+			"custom_domain": true,
+			"previews_enabled": true
+		}
+	],
+	"env": {
+		// Staging until the Systalink Cloud Server exists (spec §Environnements): a separate
+		// Worker deployed from develop by .github/workflows/staging.yml. Its origin is the only
+		// OAuth callback the identity providers know (OAuth proxy, #100).
+		"staging": {
+			"name": "codesphere-staging",
+			"routes": [
+				{ "pattern": "staging.codesphereplatform.xyz", "custom_domain": true }
+			]
+		}
+	}
+}

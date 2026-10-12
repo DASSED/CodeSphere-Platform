@@ -1,0 +1,113 @@
+{
+	"footer": {
+		"build": "CodeSphere v{version} · {sha}"
+	},
+	"language": {
+		"label": "Language",
+		"fr": "Français",
+		"en": "English"
+	},
+	"errors": {
+		"UNAUTHORIZED": "You must be signed in to do this.",
+		"FORBIDDEN": "You are not allowed to do this.",
+		"NOT_FOUND": "Item not found.",
+		"CONFLICT": "This item already exists or was changed in the meantime.",
+		"BAD_REQUEST": "Some information is invalid.",
+		"TOO_MANY_REQUESTS": "Too many requests. Try again in a moment.",
+		"INTERNAL_SERVER_ERROR": "An unexpected error occurred."
+	},
+	"settings": {
+		"title": "Settings",
+		"loading": "Loading your profile…",
+		"save": "Save",
+		"saving": "Saving…",
+		"saved": "Settings saved.",
+		"saveFailed": "Saving failed.",
+		"profile": {
+			"title": "Public profile",
+			"description": "What other members see of you. Your email is never shown.",
+			"name": "Name",
+			"country": "Country",
+			"countryHint": "Two-letter ISO code (BF, SN, CI…) or OTHER for the diaspora.",
+			"city": "City",
+			"cityHint": "Private by default: see Privacy."
+		},
+		"preferences": {
+			"title": "Preferences",
+			"hideAgentContent": "Hide agent content",
+			"hideAgentContentHint": "Questions and answers written by AI agents are no longer shown."
+		},
+		"privacy": {
+			"title": "Privacy",
+			"cityPublic": "Make my city public",
+			"cityPublicHint": "Otherwise only your country is visible to other members."
+		}
+	},
+	"signin": {
+		"consentRequired": "No account was created: tick the consent box to sign up.",
+		"failed": "Sign-in failed.",
+		"unreachable": "The authentication server cannot be reached."
+	},
+	"header": {
+		"signIn": "Sign in",
+		"ask": "Ask a question",
+		"askSoon": "The question form is coming soon.",
+		"account": "Account menu",
+		"profile": "Public profile",
+		"settings": "Settings",
+		"admin": "Administration",
+		"signOut": "Sign out"
+	},
+	"home": {
+		"tabs": {
+			"forYou": "For you",
+			"recent": "Recent",
+			"unanswered": "Unanswered",
+			"signInForYou": "Sign in for a feed built on your Tags."
+		},
+		"hero": {
+			"eyebrow": "Q&A for developers in Africa and the diaspora",
+			"title": "Your coding questions, answered from here.",
+			"lead": "Mobile money, USSD, shoestring deployments: ask the question, the community answers, the feed follows your Tags."
+		},
+		"hello": {
+			"morning": "Good morning {name}",
+			"evening": "Good evening {name}",
+			"lead": "Your feed is built from the Tags you follow."
+		},
+		"empty": {
+			"title": "No questions yet",
+			"visitor": "The community is starting. Sign in to ask the first question.",
+			"member": "Start the conversation: your question will be the first in the feed.",
+			"followTags": "Follow Tags"
+		},
+		"start": {
+			"title": "Getting started",
+			"account": "Account created",
+			"tags": "Follow at least 3 Tags",
+			"question": "Ask your first question"
+		},
+		"followed": {
+			"title": "Followed Tags",
+			"none": "No Tags followed yet. They shape « For you »."
+		},
+		"banner": {
+			"eyebrow": "Hackathon in progress",
+			"days": "days",
+			"hours": "hours",
+			"remaining": "{days} days before submissions close · shown in your timezone",
+			"closes": "Submissions close on {date}",
+			"timeline": "Hackathon calendar",
+			"see": "See the Hackathon",
+			"soon": "Available with the Hackathon page"
+		},
+		"loadError": "Could not load the Hackathon."
+	},
+	"admin": {
+		"role": "Administrator",
+		"moderation": "Moderation",
+		"kpi": "KPIs",
+		"audit": "Audit log",
+		"signOut": "Sign out"
+	}
+}

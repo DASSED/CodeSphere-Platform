@@ -1,25 +1,193 @@
 name: Staging
 
-# Stub: it only registers the manual trigger.
+# Deploys develop to https://staging.codesphereplatform.xyz: the "codesphere-staging" Worker
+# (wrangler env staging) on the Neon branch the previews fork from. Staging is the OAuth proxy
+# production URL: the identity providers only know its callback (#100).
 #
-# GitHub shows the "Run workflow" button and accepts `gh workflow run` only for workflows that
-# exist on the default branch. The real staging deploy lives on develop and is the file that
-# runs when the branch picked at launch is develop:
+# Pipeline, same shape as the other services' staging config:
+#   test    gate   -> the commit's CI run (ci.yml) must have passed
+#   build          -> OpenNext build, handed to deploy as an artifact (build once, deploy that)
+#   deploy         -> migrate, seed, wrangler deploy, reachability check
+# Each stage needs the previous one: a red test or a failed build never reaches deploy.
 #
-#   gh workflow run staging.yml --ref develop
+# Manual only (Actions > Staging > Run workflow, branch develop, or
+# `gh workflow run staging.yml --ref develop`); the previews stay automatic. A push to develop
+# does not deploy. The run refuses a commit whose CI did not pass.
 #
-# Do not add deploy logic here.
+# The Run workflow button needs this file on the default branch (main): GitHub registers
+# workflow_dispatch from there. The run itself uses the file of the branch picked.
+#
+# Variables: NEON_PROJECT_ID, NEON_PARENT_BRANCH (the staging branch), EMAIL_FROM
+# Secrets (environment "preview", shared with the previews): CLOUDFLARE_API_TOKEN,
+#   CLOUDFLARE_ACCOUNT_ID, NEON_API_KEY, PREVIEW_BETTER_AUTH_SECRET, PREVIEW_OAUTH_PROXY_SECRET,
+#   PREVIEW_{GITHUB,GITLAB,GOOGLE}_CLIENT_{ID,SECRET}, RESEND_API_KEY
 on:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# Deploys run one after the other; a newer run does not cancel a migration halfway.
+concurrency:
+  group: staging
+  cancel-in-progress: false
+
+env:
+  ORIGIN: https://staging.codesphereplatform.xyz
+
 jobs:
-  stub:
-    name: Run this workflow from develop
+  # TEST: waits for the push run of ci.yml on this commit; fails when it failed, was cancelled,
+  # or never ran. Blocking: nothing below starts without it.
+  gate:
+    name: CI passed
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
     steps:
-      - run: |
-          echo "::error::Staging is deployed from develop: gh workflow run staging.yml --ref develop"
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/wait-for-ci
+        with:
+          sha: ${{ github.sha }}
+          event: push
+          workflows: ci.yml
+
+  # BUILD: once, on the commit the gate approved. The artifact is what gets deployed.
+  build:
+    name: Build the Worker
+    needs: gate
+    # Only develop is ever deployed to staging, whatever branch the run was started from.
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      # Retried: a cold cache re-downloads everything and can hit rate limits (infra, not code).
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
+      - run: bun run env:generate
+      - name: Build
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_SERVER_URL: ${{ env.ORIGIN }}
+        run: bunx opennextjs-cloudflare build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: staging-worker
+          path: apps/web/.open-next
+          retention-days: 7
+          if-no-files-found: error
+
+  # DEPLOY: migrations, seed, then the Worker. Blocking on every step.
+  deploy:
+    name: Deploy staging
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
+      - run: bun run env:generate
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: staging-worker
+          path: apps/web/.open-next
+
+      - name: Staging database URL
+        id: neon
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          BRANCH: ${{ vars.NEON_PARENT_BRANCH || 'staging' }}
+        run: |
+          url=$(bunx neonctl@2 connection-string "$BRANCH" --project-id "$PROJECT_ID" --api-key "$NEON_API_KEY")
+          echo "::add-mask::$url"
+          echo "db_url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Migrate the staging database
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+        run: bunx drizzle-kit migrate
+
+      # Idempotent: creates the CADEV 2026 once and never overwrites what an Admin edited (#61).
+      - name: Seed the staging database
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+        run: bun src/seed/index.ts
+
+      - name: Deploy
+        working-directory: apps/web
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DATABASE_URL: ${{ steps.neon.outputs.db_url }}
+          BETTER_AUTH_SECRET: ${{ secrets.PREVIEW_BETTER_AUTH_SECRET }}
+          OAUTH_PROXY_SECRET: ${{ secrets.PREVIEW_OAUTH_PROXY_SECRET }}
+          GITHUB_CLIENT_ID: ${{ secrets.PREVIEW_GITHUB_CLIENT_ID }}
+          GITHUB_CLIENT_SECRET: ${{ secrets.PREVIEW_GITHUB_CLIENT_SECRET }}
+          GITLAB_CLIENT_ID: ${{ secrets.PREVIEW_GITLAB_CLIENT_ID }}
+          GITLAB_CLIENT_SECRET: ${{ secrets.PREVIEW_GITLAB_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.PREVIEW_GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.PREVIEW_GOOGLE_CLIENT_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Sender on the domain verified in Resend; unset = email stays disabled. Written to the
+          # secrets file, not --var: its "<address>" breaks when wrangler is re-run by a shell.
+          EMAIL_FROM: ${{ vars.EMAIL_FROM }}
+        run: |
+          # Secrets go through a file, never the command line; removed right after.
+          umask 077
+          node ../../scripts/preview-secrets.mjs staging-secrets.json
+          bunx wrangler deploy --env staging \
+            --message "${GITHUB_SHA::7}" \
+            --var "BETTER_AUTH_URL:$ORIGIN" \
+            --var "CORS_ORIGIN:$ORIGIN" \
+            --var "OAUTH_PROXY_PRODUCTION_URL:$ORIGIN" \
+            --var "GIT_SHA:${GITHUB_SHA::7}" \
+            --secrets-file staging-secrets.json
+          rm -f staging-secrets.json
+
+      # Bot Fight Mode challenges GitHub runners (403 + cf-mitigated): reachable, not checked.
+      - name: Wait for staging to be reachable
+        run: |
+          for attempt in $(seq 1 30); do
+            headers=$(curl -sS -m 10 -o /dev/null -D - "$ORIGIN/api/v1/ready" || true)
+            status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP/ {code=$2} END {print code}')
+            if [ "${status:0:1}" = "2" ]; then
+              echo "ready after $attempt attempt(s)"
+              exit 0
+            fi
+            if [ "$status" = "403" ] && printf '%s' "$headers" | grep -qi '^cf-mitigated: *challenge'; then
+              echo "::notice::reachable, readiness not checked: Cloudflare challenged the runner"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$ORIGIN is not reachable after 5 minutes (last status: ${status:-none})"
           exit 1
