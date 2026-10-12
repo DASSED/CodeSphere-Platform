@@ -11,7 +11,7 @@ export default function SsoLoginDialog({
 }: {
 	trigger?: React.ReactElement;
 }) {
-	const { pending, error, onProviderSelect } = useSsoSignIn();
+	const { pending, error, onProviderSelect, emailSignIn } = useSsoSignIn();
 	return (
 		<LoginDialog
 			trigger={trigger}
@@ -19,6 +19,7 @@ export default function SsoLoginDialog({
 			pendingProvider={pending}
 			error={error}
 			onProviderSelect={onProviderSelect}
+			emailSignIn={emailSignIn}
 		/>
 	);
 }

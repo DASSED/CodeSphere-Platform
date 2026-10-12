@@ -10,4 +10,9 @@ export const logger = createLogger({
 	level: ENV.LOG_LEVEL,
 	pretty: ENV.NODE_ENV === "development",
 });
-export const auth = createAuth(ENV, db, [], createMailHooks(ENV, logger));
+export const auth = createAuth(
+	ENV,
+	db,
+	[],
+	createMailHooks(ENV, logger, ENV.NODE_ENV === "development"),
+);

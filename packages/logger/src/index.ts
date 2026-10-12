@@ -1,3 +1,5 @@
+import { createRequire } from "node:module";
+
 import type { MiddlewareHandler } from "hono";
 import pino, {
 	type DestinationStream,
@@ -35,12 +37,17 @@ const REDACT = [
 	"*.*.email",
 ];
 
+// pino resolves a transport target from its own directory, where a package manager with isolated
+// node_modules (Bun's) does not link pino-pretty: resolve it here, from the package that owns it.
+const prettyTarget = () =>
+	createRequire(import.meta.url).resolve("pino-pretty");
+
 export function createLogger(options: LoggerOptions = {}): Logger {
 	const settings = {
 		level: options.level ?? "info",
 		redact: { paths: REDACT, censor: "[redacted]" },
 		...(options.pretty && !options.destination
-			? { transport: { target: "pino-pretty" } }
+			? { transport: { target: prettyTarget() } }
 			: {}),
 	};
 	return options.destination

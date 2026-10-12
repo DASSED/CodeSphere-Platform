@@ -3,7 +3,6 @@
 import { Button } from "@codesphere/ui/components/atoms/button";
 import { AdminShell } from "@codesphere/ui/components/organisms/admin-shell";
 import {
-	ArrowLeftIcon,
 	BarChart3Icon,
 	LogOutIcon,
 	ScrollTextIcon,
@@ -14,6 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { useAdminIdentity } from "@/components/admin-identity";
+import LocaleSwitcher from "@/components/locale-switcher";
 import { authClient } from "@/lib/auth-client";
 
 const NAV = [
@@ -65,16 +65,8 @@ export default function AdminFrame({
 			}))}
 			actions={
 				<>
+					<LocaleSwitcher />
 					{actions}
-					<Button
-						variant="ghost"
-						size="sm"
-						render={<Link href="/" />}
-						nativeButton={false}
-					>
-						<ArrowLeftIcon />
-						{t("backToSite")}
-					</Button>
 					<Button variant="ghost" size="sm" onClick={signOut}>
 						<LogOutIcon />
 						{t("signOut")}

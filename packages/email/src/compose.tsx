@@ -23,6 +23,11 @@ import {
 	type MemberSuspendedProps,
 } from "./templates/member-suspended";
 import {
+	SIGN_IN_CODE_SUBJECTS,
+	SignInCode,
+	type SignInCodeProps,
+} from "./templates/sign-in-code";
+import {
 	WELCOME_SUBJECTS,
 	Welcome,
 	type WelcomeProps,
@@ -34,7 +39,8 @@ export type EmailMessage =
 	| { kind: "account-deleted"; props: AccountDeletedProps }
 	| { kind: "member-suspended"; props: MemberSuspendedProps }
 	| { kind: "member-reactivated"; props: MemberReactivatedProps }
-	| { kind: "api-key-created"; props: ApiKeyCreatedProps };
+	| { kind: "api-key-created"; props: ApiKeyCreatedProps }
+	| { kind: "sign-in-code"; props: SignInCodeProps };
 
 /** The subject and the body of a message, in the language of its props. */
 export function composeEmail(message: EmailMessage): {
@@ -67,6 +73,11 @@ export function composeEmail(message: EmailMessage): {
 			return {
 				subject: API_KEY_CREATED_SUBJECTS[locale],
 				template: <ApiKeyCreated {...message.props} />,
+			};
+		case "sign-in-code":
+			return {
+				subject: SIGN_IN_CODE_SUBJECTS[locale],
+				template: <SignInCode {...message.props} />,
 			};
 	}
 }

@@ -25,9 +25,34 @@ env:
   ORIGIN: https://staging.codesphereplatform.xyz
 
 jobs:
+  # Deploys only once CI passed for the pushed commit. A manual run (workflow_dispatch)
+  # skips the wait: it is an explicit decision, possibly on a commit CI never saw.
+  gate:
+    name: CI passed
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/wait-for-ci
+        with:
+          sha: ${{ github.sha }}
+          event: push
+          workflows: ci.yml
+
   deploy:
     name: Deploy staging
-    if: github.ref == 'refs/heads/develop'
+    needs: gate
+    # A skipped gate (manual run) lets it through; a failed or cancelled one never does.
+    if: >
+      !cancelled() &&
+      (needs.gate.result == 'success' || needs.gate.result == 'skipped') &&
+      github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: preview
     steps:

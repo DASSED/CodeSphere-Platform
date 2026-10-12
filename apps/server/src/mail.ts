@@ -13,10 +13,31 @@ import type { Logger } from "@codesphere/logger";
  */
 export function createMailHooks(
 	env: EmailEnv,
-	logger: Pick<Logger, "warn">,
+	logger: Pick<Logger, "warn" | "info">,
+	development = false,
 ): AuthHooks {
 	const mail = createEmailClient(env);
 	return {
+		async sendSignInOtp(email, otp, acceptLanguage) {
+			const result = await mail.send({
+				to: email,
+				...composeEmail({
+					kind: "sign-in-code",
+					props: {
+						code: otp,
+						locale: localeFromAcceptLanguage(acceptLanguage),
+					},
+				}),
+			});
+			if (result.status === "failed") {
+				logger.warn({ message: result.message }, "sign-in code not sent");
+			}
+			// Local development: the code is also in the server log, whatever the mail provider
+			// says (no address, spec §4). Never outside development.
+			if (development) {
+				logger.info({ otp }, "sign-in code (development)");
+			}
+		},
 		async onMemberCreated(member, acceptLanguage) {
 			const result = await mail.send({
 				to: member.email,

@@ -4,7 +4,7 @@ import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
-import { oAuthProxy } from "better-auth/plugins";
+import { emailOTP, oAuthProxy } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
 import { parseAdminEmails, roleFor } from "./admin";
@@ -19,6 +19,8 @@ export type AuthConfig = SocialProviderEnv &
 		BETTER_AUTH_SECRET: string;
 		CORS_ORIGIN: string;
 		ADMIN_EMAILS?: string;
+		/** Sign in with a one-time code sent by email: for local development and previews, where SSO cannot work. */
+		EMAIL_OTP_SIGNIN?: boolean;
 	};
 
 const stripTokens = async <T extends object>(account: T) => ({
@@ -35,6 +37,12 @@ export type AuthHooks = {
 	 */
 	onMemberCreated?: (
 		member: NewMember,
+		acceptLanguage: string | null,
+	) => Promise<void>;
+	/** Delivers a sign-in code. Only called when `EMAIL_OTP_SIGNIN` is on. */
+	sendSignInOtp?: (
+		email: string,
+		otp: string,
 		acceptLanguage: string | null,
 	) => Promise<void>;
 };
@@ -54,7 +62,8 @@ export function createAuth(
 			schema,
 		}),
 		trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
-		// SSO only: no email/password sign-in (#59, spec §3).
+		// SSO in production: no email/password sign-in (#59, spec §3). The email code below is
+		// opt-in (EMAIL_OTP_SIGNIN), for local development and previews only.
 		socialProviders: socialProvidersFrom(env),
 		account: {
 			// Link provider accounts on a verified email only: no trusted providers, so an
@@ -163,6 +172,25 @@ export function createAuth(
 		},
 		plugins: [
 			...(proxy ? [oAuthProxy(proxy)] : []),
+			...(env.EMAIL_OTP_SIGNIN && hooks.sendSignInOtp
+				? [
+						emailOTP({
+							otpLength: 6,
+							expiresIn: 300,
+							// Awaited so a failed delivery surfaces as an error instead of a silent wait.
+							async sendVerificationOTP({ email, otp, type }, ctx) {
+								if (type !== "sign-in") {
+									return;
+								}
+								await hooks.sendSignInOtp?.(
+									email,
+									otp,
+									ctx?.headers?.get("accept-language") ?? null,
+								);
+							},
+						}),
+					]
+				: []),
 			apiKey({
 				enableSessionForAPIKeys: true,
 				// Accept the key as `x-api-key` (default) or `Authorization: Bearer <key>` (MCP clients).

@@ -5,6 +5,7 @@ import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
 import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 
+import LocaleSwitcher from "@/components/locale-switcher";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import UserMenu from "@/components/user-menu";
 import { authClient } from "@/lib/auth-client";
@@ -33,12 +34,13 @@ export function AskButton({ className }: { className?: string }) {
 	);
 }
 
-/** The site's bar (#129): logo, « Poser une question », then the account. No feed tabs here. */
+/** The site's bar (#129): logo, language, « Poser une question », then the account. No feed tabs here. */
 export default function SiteHeader() {
 	return (
 		<AppHeader
 			actions={
 				<>
+					<LocaleSwitcher />
 					<AskButton />
 					<UserMenu />
 				</>

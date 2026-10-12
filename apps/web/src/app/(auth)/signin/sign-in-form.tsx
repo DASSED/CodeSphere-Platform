@@ -11,7 +11,8 @@ import { useSsoSignIn } from "@/lib/use-sso-sign-in";
 // SSO sign-in form (spec §3: GitHub, GitLab, Google; consent unchecked at first sign-in).
 export default function SignInForm() {
 	const t = useTranslations("signin");
-	const { pending, error, setError, onProviderSelect } = useSsoSignIn();
+	const { pending, error, setError, onProviderSelect, emailSignIn } =
+		useSsoSignIn();
 
 	// A failed OAuth callback comes back here with `?error=<code>`.
 	useEffect(() => {
@@ -30,6 +31,7 @@ export default function SignInForm() {
 				pendingProvider: pending,
 				error,
 				onProviderSelect,
+				emailSignIn,
 			}}
 		/>
 	);

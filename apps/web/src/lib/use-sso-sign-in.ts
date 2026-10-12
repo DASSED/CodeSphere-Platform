@@ -2,6 +2,7 @@
 
 import { CONSENT_COOKIE } from "@codesphere/contract/consent";
 import type { SsoProvider } from "@codesphere/ui/components/molecules/provider-button";
+import type { EmailSignIn } from "@codesphere/ui/components/organisms/login-card";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -43,5 +44,40 @@ export function useSsoSignIn(initialError?: string) {
 		}
 	};
 
-	return { pending, error, setError, onProviderSelect };
+	// Email code sign-in (local development, previews): same consent cookie, same landing.
+	const emailSignIn: EmailSignIn | undefined =
+		process.env.NEXT_PUBLIC_EMAIL_OTP_SIGNIN === "true"
+			? {
+					onRequestCode: async (email, consent) => {
+						document.cookie = `${CONSENT_COOKIE}=${consent.version}; path=/; max-age=${CONSENT_COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+						try {
+							const { error: otpError } =
+								await authClient.emailOtp.sendVerificationOtp({
+									email,
+									type: "sign-in",
+								});
+							return otpError ? (otpError.message ?? t("failed")) : undefined;
+						} catch {
+							return t("unreachable");
+						}
+					},
+					onVerifyCode: async (email, code) => {
+						try {
+							const { error: otpError } = await authClient.signIn.emailOtp({
+								email,
+								otp: code,
+							});
+							if (otpError) {
+								return otpError.message ?? t("failed");
+							}
+							window.location.assign("/post-signin");
+							return undefined;
+						} catch {
+							return t("unreachable");
+						}
+					},
+				}
+			: undefined;
+
+	return { pending, error, setError, onProviderSelect, emailSignIn };
 }

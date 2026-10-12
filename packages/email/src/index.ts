@@ -29,6 +29,11 @@ export {
 	type MemberSuspendedProps,
 } from "./templates/member-suspended";
 export {
+	SIGN_IN_CODE_SUBJECTS,
+	SignInCode,
+	type SignInCodeProps,
+} from "./templates/sign-in-code";
+export {
 	WELCOME_SUBJECT,
 	WELCOME_SUBJECTS,
 	Welcome,
