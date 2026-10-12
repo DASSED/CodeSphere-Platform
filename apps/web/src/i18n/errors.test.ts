@@ -3,17 +3,26 @@ import { describe, expect, test } from "bun:test";
 
 import messagesEn from "../../messages/en.json";
 import messagesFr from "../../messages/fr.json";
-import { ERROR_CODES, type ErrorCode, errorCodeOf, toErrorCode } from "./errors";
+import {
+	ERROR_CODES,
+	type ErrorCode,
+	errorCodeOf,
+	toErrorCode,
+} from "./errors";
 
 const codes: ErrorCode[] = [...ERROR_CODES];
 
 describe("errorCodeOf", () => {
 	test("reads the oRPC code of a thrown error", () => {
-		expect(errorCodeOf({ code: "CONFLICT", message: "taken" })).toBe("CONFLICT");
+		expect(errorCodeOf({ code: "CONFLICT", message: "taken" })).toBe(
+			"CONFLICT",
+		);
 	});
 
 	test("falls back to the generic code when there is no code", () => {
-		expect(errorCodeOf(new Error("network down"))).toBe("INTERNAL_SERVER_ERROR");
+		expect(errorCodeOf(new Error("network down"))).toBe(
+			"INTERNAL_SERVER_ERROR",
+		);
 		expect(errorCodeOf(null)).toBe("INTERNAL_SERVER_ERROR");
 		expect(errorCodeOf("boom")).toBe("INTERNAL_SERVER_ERROR");
 	});

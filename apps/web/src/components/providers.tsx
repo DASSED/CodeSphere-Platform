@@ -12,21 +12,26 @@ import { createQueryClient } from "@/utils/orpc";
 import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("errors");
-  // One QueryClient per mount, never shared between server requests.
-  const [queryClient] = useState(() => {
-    const client = createQueryClient((code) => t(code), t("retry"));
-    setupPersistence(client);
-    return client;
-  });
+	const t = useTranslations("errors");
+	// One QueryClient per mount, never shared between server requests.
+	const [queryClient] = useState(() => {
+		const client = createQueryClient((code) => t(code), t("retry"));
+		setupPersistence(client);
+		return client;
+	});
 
-  return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <QueryClientProvider client={queryClient}>
-        {children}
-        <ReactQueryDevtools />
-      </QueryClientProvider>
-      <Toaster richColors />
-    </ThemeProvider>
-  );
+	return (
+		<ThemeProvider
+			attribute="class"
+			defaultTheme="system"
+			enableSystem
+			disableTransitionOnChange
+		>
+			<QueryClientProvider client={queryClient}>
+				{children}
+				<ReactQueryDevtools />
+			</QueryClientProvider>
+			<Toaster richColors />
+		</ThemeProvider>
+	);
 }
