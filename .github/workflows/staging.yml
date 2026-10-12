@@ -1,0 +1,25 @@
+name: Staging
+
+# Stub: it only registers the manual trigger.
+#
+# GitHub shows the "Run workflow" button and accepts `gh workflow run` only for workflows that
+# exist on the default branch. The real staging deploy lives on develop and is the file that
+# runs when the branch picked at launch is develop:
+#
+#   gh workflow run staging.yml --ref develop
+#
+# Do not add deploy logic here.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  stub:
+    name: Run this workflow from develop
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "::error::Staging is deployed from develop: gh workflow run staging.yml --ref develop"
+          exit 1
