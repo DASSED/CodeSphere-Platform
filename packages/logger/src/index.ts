@@ -39,7 +39,8 @@ const REDACT = [
 
 // pino resolves a transport target from its own directory, where a package manager with isolated
 // node_modules (Bun's) does not link pino-pretty: resolve it here, from the package that owns it.
-const prettyTarget = () => createRequire(import.meta.url).resolve("pino-pretty");
+const prettyTarget = () =>
+	createRequire(import.meta.url).resolve("pino-pretty");
 
 export function createLogger(options: LoggerOptions = {}): Logger {
 	const settings = {
