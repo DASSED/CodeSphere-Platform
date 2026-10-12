@@ -4,19 +4,24 @@ name: Staging
 # (wrangler env staging) on the Neon branch the previews fork from. Staging is the OAuth proxy
 # production URL: the identity providers only know its callback (#100).
 #
+# Manual only (Actions > Staging > Run workflow, branch develop, or
+# `gh workflow run staging.yml --ref develop`); the previews stay automatic. A push to develop
+# does not deploy. The run refuses a commit whose CI did not pass.
+#
+# The Run workflow button needs this file on the default branch (main): GitHub registers
+# workflow_dispatch from there. The run itself uses the file of the branch picked.
+#
 # Variables: NEON_PROJECT_ID, NEON_PARENT_BRANCH (the staging branch)
 # Secrets (environment "preview", shared with the previews): CLOUDFLARE_API_TOKEN,
 #   CLOUDFLARE_ACCOUNT_ID, NEON_API_KEY, PREVIEW_BETTER_AUTH_SECRET, PREVIEW_OAUTH_PROXY_SECRET,
 #   PREVIEW_{GITHUB,GITLAB,GOOGLE}_CLIENT_{ID,SECRET}
 on:
-  push:
-    branches: [develop]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-# Deploys run in push order; a newer push does not cancel a migration halfway.
+# Deploys run one after the other; a newer run does not cancel a migration halfway.
 concurrency:
   group: staging
   cancel-in-progress: false
@@ -25,11 +30,10 @@ env:
   ORIGIN: https://staging.codesphereplatform.xyz
 
 jobs:
-  # Deploys only once CI passed for the pushed commit. A manual run (workflow_dispatch)
-  # skips the wait: it is an explicit decision, possibly on a commit CI never saw.
+  # Deploys only a commit whose CI passed: waits for the push run of ci.yml on that commit
+  # and fails when it failed, was cancelled, or never ran.
   gate:
     name: CI passed
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -48,11 +52,8 @@ jobs:
   deploy:
     name: Deploy staging
     needs: gate
-    # A skipped gate (manual run) lets it through; a failed or cancelled one never does.
-    if: >
-      !cancelled() &&
-      (needs.gate.result == 'success' || needs.gate.result == 'skipped') &&
-      github.ref == 'refs/heads/develop'
+    # Only develop is ever deployed to staging, whatever branch the run was started from.
+    if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
     environment: preview
     steps:
