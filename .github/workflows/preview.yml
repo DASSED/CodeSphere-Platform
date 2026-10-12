@@ -25,7 +25,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PREVIEW_NAME: pr-${{ github.event.number }}
+  PREVIEW_NAME: pr-${{ github.event.number }}-test
   PREVIEW_DOMAIN: ${{ vars.PREVIEW_DOMAIN || 'preview.codesphereplatform.xyz' }}
 
 jobs:
