@@ -19,7 +19,8 @@ const KEYS = [
 	"EMAIL_FROM",
 ];
 
-const REQUIRED = ["DATABASE_URL", "BETTER_AUTH_SECRET"];
+// DATABASE_URL is optional: a preview without the `preview-db` label has no database (#150).
+const REQUIRED = ["BETTER_AUTH_SECRET"];
 
 const target = process.argv[2];
 if (!target) {
