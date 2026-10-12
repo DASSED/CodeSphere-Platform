@@ -89,6 +89,8 @@ jobs:
           path: apps/web/.open-next
           retention-days: 7
           if-no-files-found: error
+          # .open-next is a dot directory: upload-artifact skips hidden files by default.
+          include-hidden-files: true
 
   # DEPLOY: migrations, seed, then the Worker. Blocking on every step.
   deploy:
