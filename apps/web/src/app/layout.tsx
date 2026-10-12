@@ -5,7 +5,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 
 import "../index.css";
-import LocaleSwitcher from "@/components/locale-switcher";
 import Providers from "@/components/providers";
 
 // Google Fonts only (CADEV rule), self-hosted at build time by next/font.
@@ -46,9 +45,6 @@ export default async function RootLayout({
 				<NextIntlClientProvider locale={locale} messages={messages}>
 					<Providers>
 						{children}
-						<div className="flex justify-end px-4 md:px-8">
-							<LocaleSwitcher />
-						</div>
 						<AppFooter
 							version={process.env.APP_VERSION ?? "0.0.0"}
 							sha={process.env.GIT_SHA ?? "dev"}
