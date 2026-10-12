@@ -1,0 +1,63 @@
+name: Wait for CI
+description: >
+  Blocks until the given workflows have finished for a commit, and fails unless every one
+  succeeded. A deploy lists this job in `needs`, so it starts only once CI is green and
+  never in parallel with it.
+
+inputs:
+  sha:
+    description: Commit the workflows ran for (the pull request head, or the pushed commit).
+    required: true
+  event:
+    description: Event that triggered those workflows (push or pull_request).
+    required: true
+  workflows:
+    description: Space-separated workflow files to wait for, e.g. "ci.yml licenses.yml".
+    required: true
+  timeout-minutes:
+    description: How long to wait for a workflow to appear and finish.
+    default: "25"
+  token:
+    description: "Token allowed to read workflow runs (actions: read)."
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.token }}
+        REPO: ${{ github.repository }}
+        SHA: ${{ inputs.sha }}
+        EVENT: ${{ inputs.event }}
+        WORKFLOWS: ${{ inputs.workflows }}
+        TIMEOUT_MIN: ${{ inputs.timeout-minutes }}
+      run: |
+        set -euo pipefail
+        deadline=$(( $(date +%s) + TIMEOUT_MIN * 60 ))
+        for wf in $WORKFLOWS; do
+          while :; do
+            # Latest run of this workflow for the commit (a re-run is a newer run).
+            run=$(gh api "repos/$REPO/actions/workflows/$wf/runs?head_sha=$SHA&event=$EVENT&per_page=20" \
+              --jq '[.workflow_runs[]] | sort_by(.created_at) | last // empty | [.status, (.conclusion // ""), .html_url] | @tsv')
+            if [ -n "$run" ]; then
+              IFS=$'\t' read -r status conclusion url <<< "$run"
+              if [ "$status" = "completed" ]; then
+                if [ "$conclusion" = "success" ]; then
+                  echo "$wf: success ($url)"
+                  break
+                fi
+                echo "::error::$wf finished with '$conclusion', nothing is deployed: $url"
+                exit 1
+              fi
+              echo "$wf: $status, waiting"
+            else
+              echo "$wf: no run yet for $SHA, waiting"
+            fi
+            if [ "$(date +%s)" -ge "$deadline" ]; then
+              echo "::error::$wf did not finish within $TIMEOUT_MIN minutes"
+              exit 1
+            fi
+            sleep 15
+          done
+        done

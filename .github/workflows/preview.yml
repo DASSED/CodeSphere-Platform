@@ -29,8 +29,32 @@ env:
   PREVIEW_DOMAIN: ${{ vars.PREVIEW_DOMAIN || 'preview.codesphereplatform.xyz' }}
 
 jobs:
+  # The preview migrates a database and publishes a Worker: it starts only once CI and the
+  # licence check of the same commit passed, never in parallel with them.
+  gate:
+    name: CI passed
+    if: >
+      github.event.action != 'closed' &&
+      vars.PREVIEW_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/wait-for-ci
+        with:
+          sha: ${{ github.event.pull_request.head.sha }}
+          event: pull_request
+          workflows: ci.yml licenses.yml
+
   deploy:
     name: Deploy preview
+    needs: gate
     if: >
       github.event.action != 'closed' &&
       vars.PREVIEW_ENABLED == 'true' &&
