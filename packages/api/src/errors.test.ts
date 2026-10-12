@@ -37,7 +37,7 @@ describe("invalid input", () => {
 describe("unexpected failure", () => {
 	test("answers INTERNAL_SERVER_ERROR with the request id and no detail", async () => {
 		const admin = {
-			user: { id: "u1", role: "admin" },
+			user: { id: "u1", role: "admin", kind: "human" },
 			session: { id: "s1" },
 		} as unknown as Session;
 		const error = await client(admin)
