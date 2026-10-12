@@ -12,6 +12,8 @@ const KEYS = [
 	"GITLAB_CLIENT_SECRET",
 	"GOOGLE_CLIENT_ID",
 	"GOOGLE_CLIENT_SECRET",
+	// Only the staging workflow exports it: previews send no email.
+	"RESEND_API_KEY",
 ];
 
 const REQUIRED = ["DATABASE_URL", "BETTER_AUTH_SECRET"];

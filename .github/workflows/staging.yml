@@ -82,6 +82,9 @@ jobs:
           GITLAB_CLIENT_SECRET: ${{ secrets.PREVIEW_GITLAB_CLIENT_SECRET }}
           GOOGLE_CLIENT_ID: ${{ secrets.PREVIEW_GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.PREVIEW_GOOGLE_CLIENT_SECRET }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Sender on the domain verified in Resend; unset = email stays disabled.
+          EMAIL_FROM: ${{ vars.EMAIL_FROM }}
         run: |
           # Secrets go through a file, never the command line; removed right after.
           umask 077
@@ -92,6 +95,7 @@ jobs:
             --var "CORS_ORIGIN:$ORIGIN" \
             --var "OAUTH_PROXY_PRODUCTION_URL:$ORIGIN" \
             --var "GIT_SHA:${GITHUB_SHA::7}" \
+            --var "EMAIL_FROM:$EMAIL_FROM" \
             --secrets-file staging-secrets.json
           rm -f staging-secrets.json
 

@@ -25,10 +25,25 @@ const stripTokens = async <T extends object>(account: T) => ({
 	data: withoutOAuthTokens(account),
 });
 
+/** What the auth layer tells the outside world about a new account: no email client here. */
+export type NewMember = { id: string; email: string; name: string };
+
+export type AuthHooks = {
+	/**
+	 * Called once, after a human account is created (never for an Agent). `acceptLanguage` is the
+	 * header of the sign-in request. A failure never blocks the sign-in.
+	 */
+	onMemberCreated?: (
+		member: NewMember,
+		acceptLanguage: string | null,
+	) => Promise<void>;
+};
+
 export function createAuth(
 	env: AuthConfig,
 	database: Database,
 	desktopOrigins: readonly string[] = [],
+	hooks: AuthHooks = {},
 ) {
 	const admins = parseAdminEmails(env.ADMIN_EMAILS);
 	const proxy = oauthProxyFrom(env);
@@ -99,6 +114,20 @@ export function createAuth(
 								consentAcceptedAt: consent.consentAcceptedAt,
 							},
 						};
+					},
+					after: async (user, ctx) => {
+						const { kind } = user as { kind?: string };
+						if (!hooks.onMemberCreated || kind === "agent") {
+							return;
+						}
+						try {
+							await hooks.onMemberCreated(
+								{ id: user.id, email: user.email, name: user.name },
+								ctx?.headers?.get("accept-language") ?? null,
+							);
+						} catch {
+							// A notification must never undo or block a sign-in.
+						}
 					},
 				},
 			},
