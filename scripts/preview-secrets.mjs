@@ -12,8 +12,11 @@ const KEYS = [
 	"GITLAB_CLIENT_SECRET",
 	"GOOGLE_CLIENT_ID",
 	"GOOGLE_CLIENT_SECRET",
-	// Only the staging workflow exports it: previews send no email.
+	// Only the staging workflow exports them: previews send no email.
 	"RESEND_API_KEY",
+	// Not a secret, but "Name <address>" cannot go on the command line: opennextjs-cloudflare
+	// re-runs wrangler through /bin/sh, which reads the "<" as a redirection.
+	"EMAIL_FROM",
 ];
 
 const REQUIRED = ["DATABASE_URL", "BETTER_AUTH_SECRET"];
