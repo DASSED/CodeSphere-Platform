@@ -1,7 +1,7 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 
-import { apiFetch, withoutDatabase, type WorkerEnv } from "./worker";
+import { apiFetch, type WorkerEnv, withoutDatabase } from "./worker";
 
 // A preview deployed without a database (map #86, #150): the Worker must start, and readiness
 // must answer 503 instead of the whole Worker refusing to boot.

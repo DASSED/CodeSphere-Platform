@@ -80,7 +80,9 @@ function buildApp(env: WorkerEnv) {
 	if (missing.length > 0) {
 		throw new Error(`Worker is missing bindings: ${missing.join(", ")}`);
 	}
-	const db = env.DATABASE_URL ? createEdgeDb({ DATABASE_URL: env.DATABASE_URL }) : withoutDatabase();
+	const db = env.DATABASE_URL
+		? createEdgeDb({ DATABASE_URL: env.DATABASE_URL })
+		: withoutDatabase();
 	const logger = createLogger({
 		level: env.LOG_LEVEL ?? "info",
 		// Console, not stdout: there is no file descriptor to write to on Workers.
