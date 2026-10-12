@@ -1,0 +1,56 @@
+name: Preview sweep
+
+# Weekly cleanup of Neon branches left behind by closed pull requests (map #86, decision #147).
+# A branch lives only as long as its pull request is open. Only names of the form
+# preview/pr-<number> are touched, and the branch of an open pull request is always kept.
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: preview-sweep
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    name: Remove orphaned preview branches
+    runs-on: ubuntu-latest
+    environment: preview
+    steps:
+      - name: Open pull requests
+        id: open
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 500 --json number --jq '.[].number' > open-prs.txt
+          echo "open pull requests: $(wc -l < open-prs.txt)"
+
+      - name: Delete orphaned Neon branches
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+        run: |
+          api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
+          curl -sSf -H "Authorization: Bearer $NEON_API_KEY" "$api" > branches.json
+          jq -r '.branches[].name' branches.json | while read -r name; do
+            case "$name" in
+              preview/pr-[0-9]*) ;;
+              *) continue ;;
+            esac
+            number="${name#preview/pr-}"
+            if ! [[ "$number" =~ ^[0-9]+$ ]]; then
+              continue
+            fi
+            if grep -qx "$number" open-prs.txt; then
+              echo "keep    $name (pull request open)"
+              continue
+            fi
+            id=$(jq -r --arg n "$name" '.branches[] | select(.name == $n) | .id' branches.json)
+            echo "delete  $name ($id)"
+            curl -sSf -X DELETE -H "Authorization: Bearer $NEON_API_KEY" "$api/$id" > /dev/null
+          done
