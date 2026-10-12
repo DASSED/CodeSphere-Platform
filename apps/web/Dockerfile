@@ -6,6 +6,10 @@ RUN --mount=type=secret,id=web_env,target=/app/apps/web/.env.local --mount=type=
 
 ARG NEXT_PUBLIC_SERVER_URL
 ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+# Footer build identity (#42): .git is excluded from the context, so the build args carry the values.
+# No defaults here: an unset arg lets next.config.ts fall back to package.json and git.
+ARG APP_VERSION
+ARG GIT_SHA
 ENV NODE_ENV=production
 RUN --mount=type=secret,id=web_env,target=/app/apps/web/.env.local --mount=type=secret,id=server_env,target=/app/apps/server/.env.local cd apps/web && bun run build
 

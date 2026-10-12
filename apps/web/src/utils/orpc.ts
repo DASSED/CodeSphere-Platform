@@ -6,16 +6,18 @@ import type { RouterContractClient } from "@orpc/contract";
 import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { errorCodeOf, type ErrorCode } from "../i18n/errors";
 import { getServerUrl } from "../lib/server-url";
 import { PERSIST_MAX_AGE } from "../lib/persist";
 
-export function createQueryClient() {
+// `translate` maps an oRPC error code to the visitor's language (see messages/<locale>.json "errors").
+export function createQueryClient(translate: (code: ErrorCode) => string, retryLabel: string) {
   return new QueryClient({
     queryCache: new QueryCache({
       onError: (error, query) => {
-        toast.error(`Error: ${error.message}`, {
+        toast.error(translate(errorCodeOf(error)), {
           action: {
-            label: "retry",
+            label: retryLabel,
             onClick: () => {
               query.invalidate();
             },
