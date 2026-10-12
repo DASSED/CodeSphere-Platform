@@ -4,6 +4,12 @@ name: Staging
 # (wrangler env staging) on the Neon branch the previews fork from. Staging is the OAuth proxy
 # production URL: the identity providers only know its callback (#100).
 #
+# Pipeline, same shape as the other services' staging config:
+#   test    gate   -> the commit's CI run (ci.yml) must have passed
+#   build          -> OpenNext build, handed to deploy as an artifact (build once, deploy that)
+#   deploy         -> migrate, seed, wrangler deploy, reachability check
+# Each stage needs the previous one: a red test or a failed build never reaches deploy.
+#
 # Manual only (Actions > Staging > Run workflow, branch develop, or
 # `gh workflow run staging.yml --ref develop`); the previews stay automatic. A push to develop
 # does not deploy. The run refuses a commit whose CI did not pass.
@@ -11,10 +17,10 @@ name: Staging
 # The Run workflow button needs this file on the default branch (main): GitHub registers
 # workflow_dispatch from there. The run itself uses the file of the branch picked.
 #
-# Variables: NEON_PROJECT_ID, NEON_PARENT_BRANCH (the staging branch)
+# Variables: NEON_PROJECT_ID, NEON_PARENT_BRANCH (the staging branch), EMAIL_FROM
 # Secrets (environment "preview", shared with the previews): CLOUDFLARE_API_TOKEN,
 #   CLOUDFLARE_ACCOUNT_ID, NEON_API_KEY, PREVIEW_BETTER_AUTH_SECRET, PREVIEW_OAUTH_PROXY_SECRET,
-#   PREVIEW_{GITHUB,GITLAB,GOOGLE}_CLIENT_{ID,SECRET}
+#   PREVIEW_{GITHUB,GITLAB,GOOGLE}_CLIENT_{ID,SECRET}, RESEND_API_KEY
 on:
   workflow_dispatch:
 
@@ -30,8 +36,8 @@ env:
   ORIGIN: https://staging.codesphereplatform.xyz
 
 jobs:
-  # Deploys only a commit whose CI passed: waits for the push run of ci.yml on that commit
-  # and fails when it failed, was cancelled, or never ran.
+  # TEST: waits for the push run of ci.yml on this commit; fails when it failed, was cancelled,
+  # or never ran. Blocking: nothing below starts without it.
   gate:
     name: CI passed
     runs-on: ubuntu-latest
@@ -49,20 +55,68 @@ jobs:
           event: push
           workflows: ci.yml
 
-  deploy:
-    name: Deploy staging
+  # BUILD: once, on the commit the gate approved. The artifact is what gets deployed.
+  build:
+    name: Build the Worker
     needs: gate
     # Only develop is ever deployed to staging, whatever branch the run was started from.
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      # Retried: a cold cache re-downloads everything and can hit rate limits (infra, not code).
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
+      - run: bun run env:generate
+      - name: Build
+        working-directory: apps/web
+        env:
+          NEXT_PUBLIC_SERVER_URL: ${{ env.ORIGIN }}
+        run: bunx opennextjs-cloudflare build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: staging-worker
+          path: apps/web/.open-next
+          retention-days: 7
+          if-no-files-found: error
+
+  # DEPLOY: migrations, seed, then the Worker. Blocking on every step.
+  deploy:
+    name: Deploy staging
+    needs: build
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: preview
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
-      - run: bun install --frozen-lockfile --ignore-scripts
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
       - run: bun run env:generate
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: staging-worker
+          path: apps/web/.open-next
 
       - name: Staging database URL
         id: neon
@@ -87,12 +141,6 @@ jobs:
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: bun src/seed/index.ts
-
-      - name: Build the Worker
-        working-directory: apps/web
-        env:
-          NEXT_PUBLIC_SERVER_URL: ${{ env.ORIGIN }}
-        run: bunx opennextjs-cloudflare build
 
       - name: Deploy
         working-directory: apps/web
