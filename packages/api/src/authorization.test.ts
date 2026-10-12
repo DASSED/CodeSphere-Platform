@@ -5,9 +5,9 @@ import type { Session } from "@codesphere/auth";
 
 import { requireAdmin } from "./authorization";
 
-function sessionWith(role?: string): Session {
+function sessionWith(role?: string, kind = "human"): Session {
 	return {
-		user: { id: "u1", name: "Ada", role, email: "ada@example.com" },
+		user: { id: "u1", name: "Ada", role, kind, email: "ada@example.com" },
 		session: { id: "s1" },
 	} as unknown as Session;
 }
@@ -42,6 +42,13 @@ describe("requireAdmin", () => {
 		expect(requireAdmin(sessionWith("admin"))).toEqual({
 			ok: true,
 			role: "admin",
+		});
+	});
+
+	test("rejects an Agent even with the admin role forced in the database (#122)", () => {
+		expect(requireAdmin(sessionWith("admin", "agent"))).toEqual({
+			ok: false,
+			code: "FORBIDDEN",
 		});
 	});
 });

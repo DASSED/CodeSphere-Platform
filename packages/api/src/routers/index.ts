@@ -3,9 +3,10 @@ import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 
 import { requireAdmin } from "../authorization";
+import { decodeCursor, encodeCursor } from "../cursor";
 import { unexpectedErrors } from "../errors";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
@@ -95,22 +96,54 @@ export const appRouter = impl.use(unexpectedErrors).router({
 		auditLog: {
 			list: impl.admin.auditLog.list
 				.use(isAdmin)
-				.handler(async ({ context, input }) => {
+				.handler(async ({ context, input, errors }) => {
+					const position = input.cursor ? decodeCursor(input.cursor) : null;
+					if (input.cursor && !position) {
+						throw errors.BAD_REQUEST({
+							data: {
+								issues: [{ path: ["cursor"], message: "Invalid cursor" }],
+							},
+						});
+					}
 					const rows = await context.db
 						.select()
 						.from(auditLog)
-						.orderBy(desc(auditLog.createdAt))
-						.limit(input.limit);
+						.where(
+							and(
+								input.action ? eq(auditLog.action, input.action) : undefined,
+								input.actorId ? eq(auditLog.actorId, input.actorId) : undefined,
+								input.targetType
+									? eq(auditLog.targetType, input.targetType)
+									: undefined,
+								position
+									? or(
+											lt(auditLog.createdAt, position.createdAt),
+											and(
+												eq(auditLog.createdAt, position.createdAt),
+												lt(auditLog.id, position.id),
+											),
+										)
+									: undefined,
+							),
+						)
+						.orderBy(desc(auditLog.createdAt), desc(auditLog.id))
+						.limit(input.limit + 1);
+					const page = rows.slice(0, input.limit);
+					const last = page.at(-1);
 					return {
-						items: rows.map((row) => ({
+						items: page.map((row) => ({
 							id: row.id,
 							actorId: row.actorId,
 							action: row.action,
 							targetType: row.targetType,
 							targetId: row.targetId,
+							details: row.details ?? null,
 							createdAt: row.createdAt.toISOString(),
 						})),
-						nextCursor: null,
+						nextCursor:
+							rows.length > input.limit && last
+								? encodeCursor(last.createdAt, last.id)
+								: null,
 					};
 				}),
 		},

@@ -1,3 +1,4 @@
+import { exposedOverOpenAPI } from "@codesphere/api/exposure";
 import { appRouter } from "@codesphere/api/routers/index";
 import type { createAuth } from "@codesphere/auth";
 import type { Database } from "@codesphere/db";
@@ -29,12 +30,15 @@ const openapiGenerator = new OpenAPIGenerator({
 
 let openapiSpec: ReturnType<typeof openapiGenerator.generate> | undefined;
 
+// Admin mutations stay off the REST surface and its spec: they are served over /rpc only (#122).
 const apiHandler = new OpenAPIHandler(appRouter, {
+	filter: exposedOverOpenAPI,
 	plugins: [
 		new OpenAPIReferenceHandlerPlugin({
 			// The spec only depends on the router: generate it once, not per request.
 			spec: () => {
 				openapiSpec ??= openapiGenerator.generate(appRouter, {
+					filter: exposedOverOpenAPI,
 					base: { info: { title: "CodeSphere API", version: "1.0.0" } },
 				});
 				return openapiSpec;

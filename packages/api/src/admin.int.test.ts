@@ -18,12 +18,12 @@ describe.skipIf(!url)("admin.auditLog.list on Postgres", () => {
 	const db = createDb({ DATABASE_URL: url ?? "" });
 	const adminId = `it-admin-${crypto.randomUUID()}`;
 
-	const clientAs = (role: string) =>
+	const clientAs = (role: string, kind = "human") =>
 		createRouterClient(appRouter, {
 			context: testContext({
 				db,
 				session: {
-					user: { id: adminId, role },
+					user: { id: adminId, role, kind },
 					session: { id: "s1" },
 				} as unknown as Session,
 			}),
@@ -41,6 +41,16 @@ describe.skipIf(!url)("admin.auditLog.list on Postgres", () => {
 			action: "it.check",
 			targetType: "test",
 		});
+		// Three events in the same millisecond: paging must break the tie on id (#122).
+		const at = new Date();
+		await db.insert(auditLog).values(
+			[1, 2, 3].map(() => ({
+				actorId: adminId,
+				action: "it.page",
+				targetType: "test",
+				createdAt: at,
+			})),
+		);
 	});
 
 	afterAll(async () => {
@@ -57,5 +67,30 @@ describe.skipIf(!url)("admin.auditLog.list on Postgres", () => {
 		await expect(
 			clientAs("member").admin.auditLog.list({ limit: 5 }),
 		).rejects.toMatchObject({ code: "FORBIDDEN" });
+	});
+
+	test("an Agent with the admin role forced in the database gets FORBIDDEN", async () => {
+		await expect(
+			clientAs("admin", "agent").admin.auditLog.list({ limit: 5 }),
+		).rejects.toMatchObject({ code: "FORBIDDEN" });
+	});
+
+	test("pages through filtered events without losing or repeating one", async () => {
+		const list = clientAs("admin").admin.auditLog.list;
+		const filter = { actorId: adminId, action: "it.page", limit: 2 };
+		const first = await list(filter);
+		expect(first.items).toHaveLength(2);
+		expect(first.nextCursor).not.toBeNull();
+		const second = await list({ ...filter, cursor: first.nextCursor ?? "" });
+		expect(second.items).toHaveLength(1);
+		expect(second.nextCursor).toBeNull();
+		const ids = [...first.items, ...second.items].map((event) => event.id);
+		expect(new Set(ids).size).toBe(3);
+	});
+
+	test("a cursor it did not issue gets BAD_REQUEST", async () => {
+		await expect(
+			clientAs("admin").admin.auditLog.list({ limit: 5, cursor: "nope" }),
+		).rejects.toMatchObject({ code: "BAD_REQUEST" });
 	});
 });

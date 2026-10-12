@@ -10,7 +10,21 @@ export const AuditEvent = z.object({
 	action: z.string(),
 	targetType: z.string(),
 	targetId: z.string().nullable(),
+	/** Names of the fields that changed and, for a suspension, the reason: never personal values. */
+	details: z
+		.object({
+			fields: z.array(z.string()).optional(),
+			reason: z.string().max(500).optional(),
+		})
+		.nullable(),
 	createdAt: Timestamp,
+});
+
+export const AuditLogFilter = PageInput.extend({
+	/** Exact action, e.g. "hackathon.update". */
+	action: z.string().min(1).max(64).optional(),
+	actorId: z.string().min(1).optional(),
+	targetType: z.string().min(1).max(64).optional(),
 });
 
 export const adminContract = {
@@ -27,7 +41,7 @@ export const adminContract = {
 					annotations: { readOnlyHint: true },
 				}),
 			)
-			.input(PageInput)
+			.input(AuditLogFilter)
 			.output(Page(AuditEvent)),
 	},
 };

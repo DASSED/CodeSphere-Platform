@@ -24,6 +24,7 @@
 	},
 	"devDependencies": {
 		"@codesphere/config": "workspace:*",
+		"orpc-mcp": "catalog:",
 		"typescript": "catalog:"
 	},
 	"volta": {
