@@ -144,8 +144,10 @@ export function createAuth(
 		secret: env.BETTER_AUTH_SECRET,
 		baseURL: env.BETTER_AUTH_URL,
 		advanced: {
+			// One origin per deployment (map #86): the web and the API share a site, so the session
+			// cookie is first-party. SameSite=None was for the cross-origin layout, now retired.
 			defaultCookieAttributes: {
-				sameSite: "none",
+				sameSite: "lax",
 				secure: true,
 				httpOnly: true,
 			},
