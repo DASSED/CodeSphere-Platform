@@ -57,7 +57,8 @@
 		"profile": "Public profile",
 		"settings": "Settings",
 		"admin": "Administration",
-		"signOut": "Sign out"
+		"signOut": "Sign out",
+		"toggleTheme": "Switch theme"
 	},
 	"home": {
 		"tabs": {

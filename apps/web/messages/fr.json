@@ -57,7 +57,8 @@
 		"profile": "Profil public",
 		"settings": "Réglages",
 		"admin": "Administration",
-		"signOut": "Se déconnecter"
+		"signOut": "Se déconnecter",
+		"toggleTheme": "Changer de thème"
 	},
 	"home": {
 		"tabs": {
