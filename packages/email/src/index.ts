@@ -2,8 +2,35 @@ import { render } from "@react-email/render";
 import type { ReactElement } from "react";
 import { Resend } from "resend";
 
+export { composeEmail, type EmailMessage } from "./compose";
+export {
+	DEFAULT_LOCALE,
+	type Locale,
+	localeFromAcceptLanguage,
+} from "./locale";
+export {
+	ACCOUNT_DELETED_SUBJECTS,
+	AccountDeleted,
+	type AccountDeletedProps,
+} from "./templates/account-deleted";
+export {
+	API_KEY_CREATED_SUBJECTS,
+	ApiKeyCreated,
+	type ApiKeyCreatedProps,
+} from "./templates/api-key-created";
+export {
+	MEMBER_REACTIVATED_SUBJECTS,
+	MemberReactivated,
+	type MemberReactivatedProps,
+} from "./templates/member-reactivated";
+export {
+	MEMBER_SUSPENDED_SUBJECTS,
+	MemberSuspended,
+	type MemberSuspendedProps,
+} from "./templates/member-suspended";
 export {
 	WELCOME_SUBJECT,
+	WELCOME_SUBJECTS,
 	Welcome,
 	type WelcomeProps,
 } from "./templates/welcome";

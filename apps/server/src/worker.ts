@@ -4,6 +4,7 @@ import { createLogger } from "@codesphere/logger";
 import type { ExecutionContext, Hono } from "hono";
 
 import { type AppDeps, createApp } from "./app";
+import { createMailHooks } from "./mail";
 
 /**
  * Cloudflare Worker entry for the API (pull request previews, staging; #103).
@@ -18,6 +19,8 @@ export type WorkerEnv = {
 	BETTER_AUTH_URL: string;
 	CORS_ORIGIN: string;
 	ADMIN_EMAILS?: string;
+	RESEND_API_KEY?: string;
+	EMAIL_FROM?: string;
 	GITHUB_CLIENT_ID?: string;
 	GITHUB_CLIENT_SECRET?: string;
 	GITLAB_CLIENT_ID?: string;
@@ -71,7 +74,7 @@ function buildApp(env: WorkerEnv) {
 		destination: { write: (line) => console.log(line.trimEnd()) },
 	});
 	const deps: AppDeps = {
-		auth: createAuth(env, db),
+		auth: createAuth(env, db, [], createMailHooks(env, logger)),
 		db,
 		logger,
 		corsOrigin: env.CORS_ORIGIN,
