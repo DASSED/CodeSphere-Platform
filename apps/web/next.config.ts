@@ -30,8 +30,9 @@ const nextConfig: NextConfig = {
 	// Next would otherwise generate apps/web/AGENTS.md on every dev start.
 	agentRules: false,
 	env: {
-		APP_VERSION: version,
-		GIT_SHA: process.env.GIT_SHA ?? readGitSha(),
+		// `||`, not `??`: an empty build arg from docker-compose means "not set".
+		APP_VERSION: process.env.APP_VERSION || version,
+		GIT_SHA: process.env.GIT_SHA || readGitSha(),
 	},
 };
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@codesphere/ui/components/atoms/button";
+import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
 import { PlusIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -36,10 +37,12 @@ export function AskButton({ className }: { className?: string }) {
 
 /** The site's bar (#129): logo, language, « Poser une question », then the account. No feed tabs here. */
 export default function SiteHeader() {
+	const t = useTranslations("header");
 	return (
 		<AppHeader
 			actions={
 				<>
+					<ThemeToggle aria-label={t("toggleTheme")} />
 					<LocaleSwitcher />
 					<AskButton />
 					<UserMenu />

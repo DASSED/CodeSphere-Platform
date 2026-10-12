@@ -14,7 +14,8 @@
 		"CONFLICT": "Cet élément existe déjà ou a été modifié entre-temps.",
 		"BAD_REQUEST": "Certaines informations sont invalides.",
 		"TOO_MANY_REQUESTS": "Trop de requêtes. Réessayez dans quelques instants.",
-		"INTERNAL_SERVER_ERROR": "Une erreur inattendue est survenue."
+		"INTERNAL_SERVER_ERROR": "Une erreur inattendue est survenue.",
+		"retry": "Réessayer"
 	},
 	"settings": {
 		"title": "Réglages",
@@ -56,7 +57,8 @@
 		"profile": "Profil public",
 		"settings": "Réglages",
 		"admin": "Administration",
-		"signOut": "Se déconnecter"
+		"signOut": "Se déconnecter",
+		"toggleTheme": "Changer de thème"
 	},
 	"home": {
 		"tabs": {
