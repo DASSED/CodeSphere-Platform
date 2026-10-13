@@ -1,6 +1,5 @@
-import { questionsContract } from "@codesphere/contract/questions";
 import { impl } from "../index";
-import { createQuestionService } from "./service";
+import type { createQuestionService } from "./service";
 
 export function createQuestionsHandlers(
 	service: ReturnType<typeof createQuestionService>,
@@ -45,25 +44,27 @@ export function createQuestionsHandlers(
 			}
 		}),
 
-		update: impl.questions.update.handler(async ({ context, input, errors }) => {
-			const userId = context.session?.user.id;
-			if (!userId) {
-				throw errors.UNAUTHORIZED();
-			}
-
-			try {
-				return await service.updateQuestion(userId, input);
-			} catch (err) {
-				const msg = (err as Error).message;
-				if (msg === "NOT_FOUND") throw errors.NOT_FOUND();
-				if (msg === "UNAUTHORIZED") throw errors.UNAUTHORIZED();
-				if (msg.startsWith("CONFLICT")) {
-					const version = parseInt(msg.match(/\d+/)?.[0] ?? "0");
-					throw errors.CONFLICT({ data: { version } });
+		update: impl.questions.update.handler(
+			async ({ context, input, errors }) => {
+				const userId = context.session?.user.id;
+				if (!userId) {
+					throw errors.UNAUTHORIZED();
 				}
-				throw err;
-			}
-		}),
+
+				try {
+					return await service.updateQuestion(userId, input);
+				} catch (err) {
+					const msg = (err as Error).message;
+					if (msg === "NOT_FOUND") throw errors.NOT_FOUND();
+					if (msg === "UNAUTHORIZED") throw errors.UNAUTHORIZED();
+					if (msg.startsWith("CONFLICT")) {
+						const version = Number.parseInt(msg.match(/\d+/)?.[0] ?? "0");
+						throw errors.CONFLICT({ data: { version } });
+					}
+					throw err;
+				}
+			},
+		),
 
 		close: impl.questions.close.handler(async ({ context, input, errors }) => {
 			const userId = context.session?.user.id;
@@ -81,35 +82,37 @@ export function createQuestionsHandlers(
 				const msg = (err as Error).message;
 				if (msg === "NOT_FOUND") throw errors.NOT_FOUND();
 				if (msg.startsWith("CONFLICT")) {
-					const version = parseInt(msg.match(/\d+/)?.[0] ?? "0");
+					const version = Number.parseInt(msg.match(/\d+/)?.[0] ?? "0");
 					throw errors.CONFLICT({ data: { version } });
 				}
 				throw err;
 			}
 		}),
 
-		delete: impl.questions.delete.handler(async ({ context, input, errors }) => {
-			const userId = context.session?.user.id;
-			if (!userId) {
-				throw errors.UNAUTHORIZED();
-			}
-
-			try {
-				return await service.softDeleteQuestion(
-					userId,
-					input.id,
-					input.expectedVersion,
-				);
-			} catch (err) {
-				const msg = (err as Error).message;
-				if (msg === "NOT_FOUND") throw errors.NOT_FOUND();
-				if (msg === "UNAUTHORIZED") throw errors.UNAUTHORIZED();
-				if (msg.startsWith("CONFLICT")) {
-					const version = parseInt(msg.match(/\d+/)?.[0] ?? "0");
-					throw errors.CONFLICT({ data: { version } });
+		delete: impl.questions.delete.handler(
+			async ({ context, input, errors }) => {
+				const userId = context.session?.user.id;
+				if (!userId) {
+					throw errors.UNAUTHORIZED();
 				}
-				throw err;
-			}
-		}),
+
+				try {
+					return await service.softDeleteQuestion(
+						userId,
+						input.id,
+						input.expectedVersion,
+					);
+				} catch (err) {
+					const msg = (err as Error).message;
+					if (msg === "NOT_FOUND") throw errors.NOT_FOUND();
+					if (msg === "UNAUTHORIZED") throw errors.UNAUTHORIZED();
+					if (msg.startsWith("CONFLICT")) {
+						const version = Number.parseInt(msg.match(/\d+/)?.[0] ?? "0");
+						throw errors.CONFLICT({ data: { version } });
+					}
+					throw err;
+				}
+			},
+		),
 	};
 }

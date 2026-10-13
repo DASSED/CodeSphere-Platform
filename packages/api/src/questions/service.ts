@@ -1,11 +1,11 @@
-import { eq, and } from "drizzle-orm";
-import type { Database } from "@codesphere/db";
-import { questions, idempotencyKeys } from "@codesphere/db/schema/questions";
-import { sanitizeMarkdown } from "../markdown/sanitizer";
 import type {
 	CreateQuestionInput,
 	UpdateQuestionInput,
 } from "@codesphere/contract/questions";
+import type { Database } from "@codesphere/db";
+import { idempotencyKeys, questions } from "@codesphere/db/schema/questions";
+import { and, eq, isNull } from "drizzle-orm";
+import { sanitizeMarkdown } from "../markdown/sanitizer";
 
 export function createQuestionService(db: Database) {
 	return {
@@ -46,7 +46,7 @@ export function createQuestionService(db: Database) {
 
 			await db.insert(idempotencyKeys).values({
 				id: input.idempotencyKey,
-				questionId: q.id,
+				questionId: q!.id,
 			});
 
 			return toDTO(q);
@@ -56,7 +56,7 @@ export function createQuestionService(db: Database) {
 			const [q] = await db
 				.select()
 				.from(questions)
-				.where(and(eq(questions.id, id), eq(questions.deletedAt, null)))
+				.where(and(eq(questions.id, id), isNull(questions.deletedAt)))
 				.limit(1);
 
 			if (!q) {
@@ -70,7 +70,7 @@ export function createQuestionService(db: Database) {
 			const [q] = await db
 				.select()
 				.from(questions)
-				.where(and(eq(questions.id, input.id), eq(questions.deletedAt, null)))
+				.where(and(eq(questions.id, input.id), isNull(questions.deletedAt)))
 				.limit(1);
 
 			if (!q) {
@@ -111,15 +111,11 @@ export function createQuestionService(db: Database) {
 			return toDTO(updated);
 		},
 
-		async closeQuestion(
-			userId: string,
-			id: string,
-			expectedVersion: number,
-		) {
+		async closeQuestion(_userId: string, id: string, expectedVersion: number) {
 			const [q] = await db
 				.select()
 				.from(questions)
-				.where(and(eq(questions.id, id), eq(questions.deletedAt, null)))
+				.where(and(eq(questions.id, id), isNull(questions.deletedAt)))
 				.limit(1);
 
 			if (!q) {
@@ -153,7 +149,7 @@ export function createQuestionService(db: Database) {
 			const [q] = await db
 				.select()
 				.from(questions)
-				.where(and(eq(questions.id, id), eq(questions.deletedAt, null)))
+				.where(and(eq(questions.id, id), isNull(questions.deletedAt)))
 				.limit(1);
 
 			if (!q) {
