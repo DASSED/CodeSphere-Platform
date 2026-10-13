@@ -126,14 +126,14 @@ describe.skipIf(!url)("questions service on Postgres", () => {
 	test("close by a non-author non-admin is FORBIDDEN", async () => {
 		const q = await service.createQuestion(author, input());
 		await expect(
-			service.closeQuestion({ id: other, isAdmin: false }, q.id, 1),
+			service.closeQuestion({ id: other, isStaff: false }, q.id, 1),
 		).rejects.toMatchObject({ code: "FORBIDDEN" });
 	});
 
 	test("close by the author, and by an Admin, succeeds", async () => {
 		const byAuthor = await service.createQuestion(author, input());
 		const closed = await service.closeQuestion(
-			{ id: author, isAdmin: false },
+			{ id: author, isStaff: false },
 			byAuthor.id,
 			1,
 		);
@@ -141,7 +141,7 @@ describe.skipIf(!url)("questions service on Postgres", () => {
 
 		const byAdmin = await service.createQuestion(author, input());
 		const closedByAdmin = await service.closeQuestion(
-			{ id: admin, isAdmin: true },
+			{ id: admin, isStaff: true },
 			byAdmin.id,
 			1,
 		);

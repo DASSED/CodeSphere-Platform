@@ -20,7 +20,9 @@ export type AuthConfig = SocialProviderEnv &
 		BETTER_AUTH_URL: string;
 		BETTER_AUTH_SECRET: string;
 		CORS_ORIGIN: string;
+		SUPER_ADMIN_EMAILS?: string;
 		ADMIN_EMAILS?: string;
+		MODERATOR_EMAILS?: string;
 		/** Sign in with a one-time code sent by email: for local development and previews, where SSO cannot work. */
 		EMAIL_OTP_SIGNIN?: boolean;
 	};
@@ -55,7 +57,11 @@ export function createAuth(
 	desktopOrigins: readonly string[] = [],
 	hooks: AuthHooks = {},
 ) {
-	const admins = parseAdminEmails(env.ADMIN_EMAILS);
+	const staff = {
+		superAdmins: parseAdminEmails(env.SUPER_ADMIN_EMAILS),
+		admins: parseAdminEmails(env.ADMIN_EMAILS),
+		moderators: parseAdminEmails(env.MODERATOR_EMAILS),
+	};
 	const proxy = oauthProxyFrom(env);
 
 	return betterAuth({
@@ -124,7 +130,7 @@ export function createAuth(
 							.from(schema.user)
 							.where(eq(schema.user.id, session.userId));
 						if (row && row.kind === "human") {
-							const role = roleFor(row, admins);
+							const role = roleFor(row, staff);
 							if (role !== row.role) {
 								await database
 									.update(schema.user)
@@ -151,7 +157,7 @@ export function createAuth(
 						return {
 							data: {
 								...user,
-								role: roleFor(user, admins),
+								role: roleFor(user, staff),
 								consentVersion: consent.consentVersion,
 								consentAcceptedAt: consent.consentAcceptedAt,
 							},
@@ -196,7 +202,8 @@ export function createAuth(
 				},
 				// For agents: the human Member who owns and answers for them.
 				ownerId: { type: "string", required: false, input: false },
-				// "admin" | "member"; derived from ADMIN_EMAILS at account creation, never by the client.
+				// "super_admin" | "admin" | "moderator" | "member"; derived from the staff email lists at
+				// sign-in, never by the client.
 				role: {
 					type: "string",
 					required: false,

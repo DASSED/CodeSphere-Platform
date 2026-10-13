@@ -46,7 +46,16 @@ export const CloseQuestionInput = z.object({
 export const questionsContract = {
 	create: base
 		.errors({ UNAUTHORIZED: {} })
-		.meta(openapi({ method: "POST", path: "/questions", tags: ["questions"] }))
+		.meta(
+			openapi({
+				method: "POST",
+				path: "/questions",
+				tags: ["questions"],
+				summary: "Ask a question",
+				description:
+					"Creates a question. The idempotencyKey makes a retry safe (offline outbox). Requires a session or an API key.",
+			}),
+		)
 		.meta(
 			mcp.tool({
 				description: "Ask a new Question on the platform.",
@@ -58,7 +67,14 @@ export const questionsContract = {
 	get: base
 		.errors({ NOT_FOUND: {} })
 		.meta(
-			openapi({ method: "GET", path: "/questions/{id}", tags: ["questions"] }),
+			openapi({
+				method: "GET",
+				path: "/questions/{id}",
+				tags: ["questions"],
+				summary: "Get a question",
+				description:
+					"One question with its Markdown body and rendered HTML. Returns 404 NOT_FOUND for an unknown id.",
+			}),
 		)
 		.meta(
 			mcp.tool({
@@ -81,6 +97,9 @@ export const questionsContract = {
 				method: "PATCH",
 				path: "/questions/{id}",
 				tags: ["questions"],
+				summary: "Update a question",
+				description:
+					"Partial update, author only. expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version.",
 			}),
 		)
 		.input(UpdateQuestionInput)
@@ -98,6 +117,9 @@ export const questionsContract = {
 				method: "POST",
 				path: "/questions/{id}/close",
 				tags: ["questions"],
+				summary: "Close a question",
+				description:
+					"Closes a question. Allowed for its author or an admin. expectedVersion guards against a stale write (409 CONFLICT).",
 			}),
 		)
 		.input(CloseQuestionInput)
@@ -115,6 +137,9 @@ export const questionsContract = {
 				method: "DELETE",
 				path: "/questions/{id}",
 				tags: ["questions"],
+				summary: "Delete a question",
+				description:
+					"Deletes a question, author only. expectedVersion guards against a stale write (409 CONFLICT).",
 			}),
 		)
 		.input(z.object({ id: Id, expectedVersion: ExpectedVersion }))

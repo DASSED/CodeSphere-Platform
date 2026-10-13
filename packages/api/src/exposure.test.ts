@@ -1,5 +1,5 @@
 /// <reference types="bun" />
-// #122: admin mutations are web-only. They never reach the MCP server nor the OpenAPI surface.
+// #122: admin mutations never reach the MCP server. They are documented over REST for staff only.
 import { describe, expect, test } from "bun:test";
 import { OpenAPIGenerator, openapi } from "@orpc/openapi";
 import { os } from "@orpc/server";
@@ -19,13 +19,13 @@ const read = os
 const bare = os.handler(() => null);
 
 describe("exposedOverOpenAPI", () => {
-	test("hides an admin mutation", () => {
+	test("documents an admin write that declares its route", () => {
 		expect(exposedOverOpenAPI(mutation, ["admin", "tags", "create"])).toBe(
-			false,
+			true,
 		);
 	});
 
-	test("hides an admin procedure without an explicit GET route", () => {
+	test("hides an admin procedure without an explicit route", () => {
 		expect(exposedOverOpenAPI(bare, ["admin", "tags", "create"])).toBe(false);
 	});
 
@@ -36,15 +36,17 @@ describe("exposedOverOpenAPI", () => {
 });
 
 describe("the served router", () => {
-	test("the OpenAPI spec has no admin operation other than GET", async () => {
+	test("the OpenAPI spec documents the admin writes for staff", async () => {
 		const spec = await new OpenAPIGenerator({
 			converters: [new ZodToJsonSchemaConverter()],
 		}).generate(appRouter, { filter: exposedOverOpenAPI });
-		const adminMethods = Object.entries(spec.paths ?? {})
-			.filter(([path]) => path.startsWith("/admin"))
-			.flatMap(([, item]) => Object.keys(item ?? {}));
-		expect(adminMethods.length).toBeGreaterThan(0);
-		expect(adminMethods.every((method) => method === "get")).toBe(true);
+		const operations = (path: string) =>
+			Object.keys(
+				(spec.paths as Record<string, object> | undefined)?.[path] ?? {},
+			);
+		expect(operations("/admin/audit-log")).toEqual(["get"]);
+		expect(operations("/admin/hackathons/{slug}")).toEqual(["patch"]);
+		expect(operations("/admin/questions/{id}")).toEqual(["delete"]);
 	});
 
 	test("every admin MCP tool is read-only", () => {

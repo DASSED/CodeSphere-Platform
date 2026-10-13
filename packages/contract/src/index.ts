@@ -10,6 +10,7 @@ export * from "./consent";
 export * from "./hackathons";
 export * from "./members";
 export * from "./questions";
+export * from "./roles";
 
 export const contract = {
 	admin: adminContract,

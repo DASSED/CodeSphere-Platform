@@ -1,7 +1,8 @@
 import type { AnyProcedureContract } from "@orpc/contract";
 
-// Which procedures leave the web app (#122). Admin mutations are reached over /rpc only: never
-// through the public REST surface nor as an MCP tool, so an Agent can never even see them.
+// Which procedures leave the web app (#122). Admin procedures are documented over REST when they
+// declare an explicit route, for staff only (requireAdmin). They are never MCP tools unless read-only,
+// so an Agent never sees an admin write.
 
 type Meta = {
 	"~openapi"?: { method?: string };
@@ -11,12 +12,15 @@ type Meta = {
 const metaOf = (procedure: { "~orpc": unknown }) =>
 	((procedure["~orpc"] as { meta?: Meta }).meta ?? {}) as Meta;
 
-/** OpenAPI `filter` for the handler and the generator: an admin procedure must be an explicit GET. */
+/**
+ * OpenAPI `filter` for the handler and the generator. An admin procedure is documented only when it
+ * declares its own route, whatever its method: a bare one has no REST operation to expose.
+ */
 export function exposedOverOpenAPI(
 	procedure: Pick<AnyProcedureContract, "~orpc">,
 	path: readonly string[],
 ): boolean {
-	return path[0] !== "admin" || metaOf(procedure)["~openapi"]?.method === "GET";
+	return path[0] !== "admin" || metaOf(procedure)["~openapi"] !== undefined;
 }
 
 /**

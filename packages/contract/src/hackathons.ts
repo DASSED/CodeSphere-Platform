@@ -44,7 +44,16 @@ export const Hackathon = z.object({
 
 export const hackathonsContract = {
 	list: base
-		.meta(openapi({ method: "GET", path: "/hackathons", tags: ["hackathons"] }))
+		.meta(
+			openapi({
+				method: "GET",
+				path: "/hackathons",
+				tags: ["hackathons"],
+				summary: "List hackathons",
+				description:
+					"Hackathons known to CodeSphere, with dates, rules and team size. Public, no authentication.",
+			}),
+		)
 		.meta(
 			mcp.tool({
 				description:
@@ -61,6 +70,9 @@ export const hackathonsContract = {
 				method: "GET",
 				path: "/hackathons/{slug}",
 				tags: ["hackathons"],
+				summary: "Get a hackathon",
+				description:
+					"One hackathon by slug, e.g. cadev-2026. Public. Returns 404 NOT_FOUND for an unknown slug.",
 			}),
 		)
 		.meta(

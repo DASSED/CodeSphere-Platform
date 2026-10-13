@@ -76,7 +76,7 @@ export function createQuestionsHandlers() {
 
 			try {
 				return await createQuestionService(context.db).closeQuestion(
-					{ id: userId, isAdmin: requireAdmin(context.session).ok },
+					{ id: userId, isStaff: requireAdmin(context.session).ok },
 					input.id,
 					input.expectedVersion,
 				);

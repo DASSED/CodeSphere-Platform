@@ -31,7 +31,16 @@ describe("isAdminEmail", () => {
 });
 
 describe("roleFor", () => {
-	const admins = parseAdminEmails("dave@example.com");
+	const staff = (lists: {
+		superAdmins?: string;
+		admins?: string;
+		moderators?: string;
+	}) => ({
+		superAdmins: parseAdminEmails(lists.superAdmins),
+		admins: parseAdminEmails(lists.admins),
+		moderators: parseAdminEmails(lists.moderators),
+	});
+	const admins = staff({ admins: "dave@example.com" });
 
 	test("promotes a listed, verified email at the next sign-in", () => {
 		expect(
@@ -41,10 +50,7 @@ describe("roleFor", () => {
 
 	test("demotes an email removed from the list", () => {
 		expect(
-			roleFor(
-				{ email: "dave@example.com", emailVerified: true },
-				parseAdminEmails(""),
-			),
+			roleFor({ email: "dave@example.com", emailVerified: true }, staff({})),
 		).toBe("member");
 	});
 
@@ -52,5 +58,26 @@ describe("roleFor", () => {
 		expect(
 			roleFor({ email: "dave@example.com", emailVerified: false }, admins),
 		).toBe("member");
+	});
+
+	test("gives each staff list its role", () => {
+		const lists = staff({
+			superAdmins: "boss@example.com",
+			moderators: "mod@example.com",
+		});
+		const verified = (email: string) => ({ email, emailVerified: true });
+		expect(roleFor(verified("boss@example.com"), lists)).toBe("super_admin");
+		expect(roleFor(verified("mod@example.com"), lists)).toBe("moderator");
+	});
+
+	test("gives the highest role when an email is in several lists", () => {
+		const lists = staff({
+			superAdmins: "dave@example.com",
+			admins: "dave@example.com",
+			moderators: "dave@example.com",
+		});
+		expect(
+			roleFor({ email: "dave@example.com", emailVerified: true }, lists),
+		).toBe("super_admin");
 	});
 });

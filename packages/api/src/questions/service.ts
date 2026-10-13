@@ -5,6 +5,7 @@ import type {
 import type { Database } from "@codesphere/db";
 import { questions } from "@codesphere/db/schema/questions";
 import { and, eq, isNull } from "drizzle-orm";
+import { withAudit } from "../audit";
 import { sanitizeMarkdown } from "../markdown/sanitizer";
 
 /** A refused question operation. `currentVersion` is set on CONFLICT only. */
@@ -17,7 +18,8 @@ export class QuestionError extends Error {
 	}
 }
 
-export type Actor = { id: string; isAdmin: boolean };
+/** `isStaff`: an admin, a super admin or a moderator (see requireAdmin). */
+export type Actor = { id: string; isStaff: boolean };
 
 const UNIQUE_VIOLATION = "23505";
 
@@ -64,6 +66,43 @@ export function createQuestionService(db: Database) {
 		}
 		const current = await findLive(id);
 		throw new QuestionError("CONFLICT", current.version);
+	}
+
+	// A moderation write: the change and its audit event land in one statement, or not at all.
+	// Like writeIfVersion it is a compare-and-set on `version`; on no row, the question is re-read to
+	// tell NOT_FOUND from CONFLICT.
+	async function moderate(
+		actor: Actor,
+		id: string,
+		expectedVersion: number,
+		action: string,
+		changes: Partial<typeof questions.$inferInsert>,
+	) {
+		const rows = await withAudit(
+			db,
+			{
+				actorId: actor.id,
+				action,
+				targetType: "question",
+				targetIdColumn: "id",
+				details: { fields: Object.keys(changes) },
+			},
+			db
+				.update(questions)
+				.set({ ...changes, version: expectedVersion + 1, updatedAt: new Date() })
+				.where(
+					and(
+						eq(questions.id, id),
+						eq(questions.version, expectedVersion),
+						isNull(questions.deletedAt),
+					),
+				)
+				.returning({ id: questions.id }),
+		);
+		if (rows.length === 0) {
+			const current = await findLive(id);
+			throw new QuestionError("CONFLICT", current.version);
+		}
 	}
 
 	return {
@@ -141,16 +180,36 @@ export function createQuestionService(db: Database) {
 			return toDTO(updated);
 		},
 
-		/** Closed by its author or by an Admin, and by no one else. */
+		/**
+		 * Closed by its author or by staff, and by no one else. Staff closing someone else's question
+		 * is a moderation action: it is audited in the same statement as the change (#122).
+		 */
 		async closeQuestion(actor: Actor, id: string, expectedVersion: number) {
 			const q = await findLive(id);
-			if (!actor.isAdmin && q.authorId !== actor.id) {
+			if (!actor.isStaff && q.authorId !== actor.id) {
 				throw new QuestionError("FORBIDDEN");
 			}
-			const updated = await writeIfVersion(id, expectedVersion, {
+			if (q.authorId === actor.id) {
+				const updated = await writeIfVersion(id, expectedVersion, {
+					status: "closed",
+				});
+				return toDTO(updated);
+			}
+			await moderate(actor, id, expectedVersion, "question.close", {
 				status: "closed",
 			});
-			return toDTO(updated);
+			return toDTO(await findLive(id));
+		},
+
+		/** Removed by staff, whoever wrote it. Audited like every moderation action (#122). */
+		async removeQuestion(actor: Actor, id: string, expectedVersion: number) {
+			if (!actor.isStaff) {
+				throw new QuestionError("FORBIDDEN");
+			}
+			await moderate(actor, id, expectedVersion, "question.remove", {
+				deletedAt: new Date(),
+			});
+			return { success: true };
 		},
 
 		async softDeleteQuestion(
