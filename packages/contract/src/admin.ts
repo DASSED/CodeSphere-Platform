@@ -2,14 +2,7 @@ import { openapi } from "@orpc/openapi";
 import { mcp } from "orpc-mcp";
 import * as z from "zod";
 
-import {
-	base,
-	ExpectedVersion,
-	Id,
-	Page,
-	PageInput,
-	Timestamp,
-} from "./base";
+import { base, ExpectedVersion, Id, Page, PageInput, Timestamp } from "./base";
 import { Hackathon } from "./hackathons";
 
 export const AuditEvent = z.object({

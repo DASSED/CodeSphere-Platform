@@ -63,9 +63,7 @@ export function sanitizeMarkdown(mdText: string): {
 	const dirty = md.render(mdText);
 
 	// Sanitize with DOMPurify
-	const sanitized = DOMPurify.sanitize(dirty, purifyConfig as any);
-	const clean =
-		typeof sanitized === "string" ? sanitized : sanitized.toString();
+	const clean = String(DOMPurify.sanitize(dirty, purifyConfig));
 
 	// Post-process: add nofollow + noopener to links
 	const withLinks = clean.replace(

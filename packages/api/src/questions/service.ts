@@ -89,7 +89,11 @@ export function createQuestionService(db: Database) {
 			},
 			db
 				.update(questions)
-				.set({ ...changes, version: expectedVersion + 1, updatedAt: new Date() })
+				.set({
+					...changes,
+					version: expectedVersion + 1,
+					updatedAt: new Date(),
+				})
 				.where(
 					and(
 						eq(questions.id, id),
