@@ -124,7 +124,12 @@ describe.skipIf(!url)("withAudit on Postgres", () => {
 					.where(inArray(hackathon.slug, [slug, other]))
 					.returning({ slug: hackathon.slug }),
 			),
-		).rejects.toThrow(/one target per mutation/);
+		).rejects.toMatchObject({
+			cause: {
+				code: "22P02",
+				message: expect.stringContaining("one target per mutation"),
+			},
+		});
 		expect(await eventsFor("it.audit.multi")).toHaveLength(0);
 		const rows = await db
 			.select({ slug: hackathon.slug, name: hackathon.name })

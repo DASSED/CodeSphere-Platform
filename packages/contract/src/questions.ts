@@ -7,7 +7,7 @@ import { base, ExpectedVersion, Id, IdempotencyKey, Markdown } from "./base";
 export const QuestionSummary = z.object({
 	id: Id,
 	title: z.string().min(1).max(200),
-	authorId: Id,
+	authorId: z.string().min(1),
 	language: z.enum(["fr", "en"]),
 	status: z.enum(["open", "answered", "closed"]),
 	tags: z.array(z.string().toLowerCase().trim()),

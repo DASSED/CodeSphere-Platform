@@ -1,4 +1,4 @@
-import { describe, expect, it } from "bun:test";
+import { describe, expect, it, test } from "bun:test";
 import { sanitizeMarkdown } from "../markdown/sanitizer";
 
 // Integration tests for questions API
@@ -50,4 +50,23 @@ describe("Questions API Integration", () => {
 	// - Soft delete: deleted questions return NOT_FOUND
 	// - Authorization: non-author cannot update/delete
 	// - Tag validation: 1-5 tags required
+});
+
+describe("sanitizer output rules (#67)", () => {
+	test("an external image is dropped, not rendered", () => {
+		const { html } = sanitizeMarkdown("![x](https://evil.example/x.png)");
+		expect(html).not.toContain("<img");
+		expect(html).not.toContain("evil.example");
+	});
+
+	test('links carry rel="nofollow noopener"', () => {
+		const { html } = sanitizeMarkdown("[a](https://example.com)");
+		expect(html).toContain('rel="nofollow noopener"');
+	});
+
+	test("fenced code is highlighted", () => {
+		const { html } = sanitizeMarkdown("```ts\nconst a = 1;\n```");
+		expect(html).toContain('class="language-ts"');
+		expect(html).toContain('<span class="hljs-keyword">const</span>');
+	});
 });
