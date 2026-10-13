@@ -21,6 +21,19 @@ describe("Worker without DATABASE_URL", () => {
 		expect(response.status).toBe(503);
 	});
 
+	test("a data call answers 503, not 500, when there is no database", async () => {
+		const response = await apiFetch(
+			new Request("https://pr-1.preview.example/rpc/hackathons/get", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ json: { slug: "cadev-2026" } }),
+			}),
+			env,
+			{ waitUntil: () => {}, passThroughOnException: () => {} } as never,
+		);
+		expect(response.status).toBe(503);
+	});
+
 	test("every query on the fallback database rejects", async () => {
 		const db = withoutDatabase();
 		expect(() => db.select()).toThrow("no database configured");

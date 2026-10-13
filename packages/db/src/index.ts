@@ -3,6 +3,8 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import type { DatabaseConfig } from "./config";
 import { relations } from "./relations";
 
+export { DatabaseUnavailableError } from "./unavailable";
+
 export function createDb(env: DatabaseConfig) {
 	return drizzle({
 		connection: {
