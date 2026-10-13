@@ -21,6 +21,8 @@ type ConfirmTwoStepProps = {
 	disabled?: boolean;
 	/** Seconds before an armed confirmation cancels itself. */
 	seconds?: number;
+	/** Tells the parent when the confirmation is armed, e.g. to hide its own « Annuler ». */
+	onArmedChange?: (armed: boolean) => void;
 	className?: string;
 };
 
@@ -36,27 +38,38 @@ function ConfirmTwoStep({
 	onConfirm,
 	disabled,
 	seconds = 5,
+	onArmedChange,
 	className,
 }: ConfirmTwoStepProps) {
 	const [state, setState] = useState<ConfirmState>(IDLE);
 	const current = useRef(state);
+	// The latest `onConfirm`, so an inline callback does not rebuild `send` on every render and
+	// restart the countdown timer (and steal the focus back) each second.
+	const onConfirmRef = useRef(onConfirm);
+	useEffect(() => {
+		onConfirmRef.current = onConfirm;
+	}, [onConfirm]);
 	const armButton = useRef<HTMLButtonElement>(null);
 	const confirmButton = useRef<HTMLButtonElement>(null);
 
-	const send = useCallback(
-		(event: ConfirmEvent) => {
-			let next = confirmStep(current.current, event);
-			if (next.phase === "confirmed") {
-				next = IDLE;
-				onConfirm();
-			}
-			current.current = next;
-			setState(next);
-		},
-		[onConfirm],
-	);
+	const send = useCallback((event: ConfirmEvent) => {
+		let next = confirmStep(current.current, event);
+		if (next.phase === "confirmed") {
+			next = IDLE;
+			onConfirmRef.current();
+		}
+		current.current = next;
+		setState(next);
+	}, []);
 
 	const armed = state.phase === "armed";
+	const onArmedChangeRef = useRef(onArmedChange);
+	useEffect(() => {
+		onArmedChangeRef.current = onArmedChange;
+	}, [onArmedChange]);
+	useEffect(() => {
+		onArmedChangeRef.current?.(armed);
+	}, [armed]);
 	useEffect(() => {
 		if (!armed) {
 			return;
