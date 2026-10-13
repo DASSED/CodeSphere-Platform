@@ -1,8 +1,7 @@
 name: Preview
 
 # One preview per pull request to develop (map #86): a Cloudflare Workers Preview for the code,
-# and a Neon branch for the data only when the pull request carries the `preview-db` label (#147).
-# Both are removed when the pull request closes.
+# and a disposable Neon branch for the data. Both are removed when the pull request closes.
 #
 # Off until the repository variable PREVIEW_ENABLED is "true" (secrets and the Worker entry
 # must exist first). Pull requests from forks never get a preview or any secret (#89).
@@ -14,7 +13,7 @@ name: Preview
 on:
   pull_request:
     branches: [develop]
-    types: [opened, synchronize, reopened, labeled, unlabeled, closed]
+    types: [opened, synchronize, reopened, closed]
 
 permissions:
   contents: read
@@ -70,15 +69,31 @@ jobs:
       - run: bun install --frozen-lockfile --ignore-scripts
       - run: bun run env:generate
 
+      # Neon Free allows 10 branches per project, parent branches included. Past that limit no
+      # database can be created: stop here with a clear message, and create nothing (#147).
+      - name: Check the Neon branch quota
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          BRANCH: preview/${{ env.PREVIEW_NAME }}
+        run: |
+          api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
+          curl -sSf -H "Authorization: Bearer $NEON_API_KEY" "$api" > branches.json
+          total=$(jq '.branches | length' branches.json)
+          own=$(jq --arg n "$BRANCH" '[.branches[] | select(.name == $n)] | length' branches.json)
+          echo "Neon branches in the project: $total of 10 (this preview's branch exists: $own)"
+          if [ "$own" = "0" ] && [ "$total" -ge 10 ]; then
+            echo "::error::Neon limit reached ($total/10 branches): no database is created for $PREVIEW_NAME. Close an older pull request or upgrade the Neon plan."
+            exit 1
+          fi
+
       # Safety net if the cleanup job never runs; a push does not extend it.
       - name: Expiry of the Neon branch
         id: expiry
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
         run: echo "at=$(date -u -d '+7 days' +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Neon branch
         id: neon
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
         uses: neondatabase/create-branch-action@v6
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
@@ -88,7 +103,6 @@ jobs:
           expires_at: ${{ steps.expiry.outputs.at }}
 
       - name: Migrate the preview database
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
         working-directory: packages/db
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
@@ -96,31 +110,10 @@ jobs:
 
       # Idempotent: creates the CADEV 2026 once and never overwrites what an Admin edited (#61).
       - name: Seed the preview database
-        if: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
         working-directory: packages/db
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: bun src/seed/index.ts
-
-      # Without the label this preview has no database: drop the branch an earlier run created
-      # (the label was removed), which frees its slot (#147). The Worker then answers 503 on
-      # readiness, and sign-in is unavailable (#150).
-      - name: Drop the database branch when the label is off
-        if: ${{ !contains(github.event.pull_request.labels.*.name, 'preview-db') }}
-        env:
-          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
-          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
-          BRANCH: preview/${{ env.PREVIEW_NAME }}
-        run: |
-          api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
-          curl -sSf -H "Authorization: Bearer $NEON_API_KEY" "$api" > branches.json
-          id=$(jq -r --arg n "$BRANCH" '.branches[] | select(.name == $n) | .id' branches.json)
-          if [ -n "$id" ]; then
-            curl -sSf -X DELETE -H "Authorization: Bearer $NEON_API_KEY" "$api/$id" > /dev/null
-            echo "deleted $BRANCH"
-          else
-            echo "no branch $BRANCH"
-          fi
 
       - name: Build the Worker
         working-directory: apps/web
@@ -233,7 +226,7 @@ jobs:
         run: bunx wrangler preview delete --name "$PREVIEW_NAME" --skip-confirmation
 
       - name: Delete the Neon branch
-        if: ${{ always() && contains(github.event.pull_request.labels.*.name, 'preview-db') }}
+        if: always()
         uses: neondatabase/delete-branch-action@v3
         with:
           project_id: ${{ vars.NEON_PROJECT_ID }}
