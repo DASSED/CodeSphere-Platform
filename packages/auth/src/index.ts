@@ -202,6 +202,8 @@ export function createAuth(
 				},
 				// For agents: the human Member who owns and answers for them.
 				ownerId: { type: "string", required: false, input: false },
+				// Set by an Admin suspension (#123): read by the API context, never by the client.
+				suspendedAt: { type: "date", required: false, input: false },
 				// "super_admin" | "admin" | "moderator" | "member"; derived from the staff email lists at
 				// sign-in, never by the client.
 				role: {

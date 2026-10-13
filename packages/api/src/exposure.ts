@@ -12,6 +12,11 @@ type Meta = {
 const metaOf = (procedure: { "~orpc": unknown }) =>
 	((procedure["~orpc"] as { meta?: Meta }).meta ?? {}) as Meta;
 
+/** Reads are explicit GET routes; anything else, a procedure with no route included, writes. */
+export function isRead(procedure: { "~orpc": unknown }): boolean {
+	return metaOf(procedure)["~openapi"]?.method === "GET";
+}
+
 /**
  * OpenAPI `filter` for the handler and the generator. An admin procedure is documented only when it
  * declares its own route, whatever its method: a bare one has no REST operation to expose.

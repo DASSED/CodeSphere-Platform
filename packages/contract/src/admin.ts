@@ -4,6 +4,7 @@ import * as z from "zod";
 
 import { base, ExpectedVersion, Id, Page, PageInput, Timestamp } from "./base";
 import { Hackathon } from "./hackathons";
+import { MemberSummary } from "./members";
 
 export const AuditEvent = z.object({
 	id: z.string(),
@@ -50,7 +51,40 @@ const staffErrors = {
 	CONFLICT: { data: z.object({ version: z.number() }) },
 };
 
+/** A Member as the moderation screen sees them: the email is for the Admin only (#123). */
+export const AdminMember = MemberSummary.extend({
+	email: z.string(),
+	role: z.enum(["super_admin", "admin", "moderator", "member"]),
+	createdAt: Timestamp,
+	suspendedAt: Timestamp.nullable(),
+	suspensionReason: z.string().nullable(),
+});
+
+export const AdminMemberFilter = PageInput.extend({
+	status: z.enum(["active", "suspended"]).optional(),
+	/** Matches the name or the email, case-insensitively. */
+	q: z.string().trim().min(1).max(100).optional(),
+});
+
+/** Why a Member is suspended: required, shown in the audit log (#116). */
+export const SuspensionReason = z.string().trim().min(3).max(280);
+
 export const adminContract = {
+	members: {
+		list: base
+			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+			.meta(openapi({ method: "GET", path: "/admin/members", tags: ["admin"] }))
+			.input(AdminMemberFilter)
+			.output(Page(AdminMember)),
+		suspend: base
+			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
+			.input(z.object({ id: z.string(), reason: SuspensionReason }))
+			.output(AdminMember),
+		reactivate: base
+			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, NOT_FOUND: {}, CONFLICT: {} })
+			.input(z.object({ id: z.string() }))
+			.output(AdminMember),
+	},
 	auditLog: {
 		list: base
 			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
