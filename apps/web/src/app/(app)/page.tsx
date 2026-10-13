@@ -21,6 +21,7 @@ import type * as z from "zod";
 
 import { AskButton } from "@/components/site-header";
 import { authClient } from "@/lib/auth-client";
+import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
 import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
@@ -32,9 +33,11 @@ type HackathonData = z.infer<typeof Hackathon>;
 // compact ribbon for a Member. The feed itself (tabs, cards) arrives with « Flux B » (#66).
 export default function Home() {
 	const { data: session, isPending } = authClient.useSession();
-	const hackathon = useQuery(
-		orpc.hackathons.get.queryOptions({ input: { slug: "cadev-2026" } }),
-	);
+	// Without a database (a preview without the preview-db label) the banner is simply absent.
+	const hackathon = useQuery({
+		...orpc.hackathons.get.queryOptions({ input: { slug: "cadev-2026" } }),
+		enabled: HAS_DATABASE,
+	});
 	if (isPending) {
 		return <PageSkeleton />;
 	}
