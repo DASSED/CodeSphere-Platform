@@ -1,3 +1,4 @@
+import { DatabaseUnavailableError } from "@codesphere/db";
 import { ORPCError } from "@orpc/server";
 
 import { impl } from "./index";
@@ -11,6 +12,10 @@ export const unexpectedErrors = impl.middleware(async ({ context, next }) => {
 	} catch (error) {
 		if (error instanceof ORPCError) {
 			throw error;
+		}
+		if (error instanceof DatabaseUnavailableError) {
+			context.logger.warn({ err: error }, "database unavailable");
+			throw new ORPCError("SERVICE_UNAVAILABLE");
 		}
 		context.logger.error({ err: error }, "procedure failed");
 		throw new ORPCError("INTERNAL_SERVER_ERROR", {

@@ -59,4 +59,6 @@ export const base = oc.errors({
 	TOO_MANY_REQUESTS: {
 		data: z.object({ retryAfter: z.number() }),
 	},
+	// No database for this deployment, or the database is down: the request can be retried later.
+	SERVICE_UNAVAILABLE: {},
 });

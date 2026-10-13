@@ -1,5 +1,5 @@
 import { createAuth } from "@codesphere/auth";
-import type { Database } from "@codesphere/db";
+import { type Database, DatabaseUnavailableError } from "@codesphere/db";
 import { createEdgeDb } from "@codesphere/db/edge";
 import { createLogger } from "@codesphere/logger";
 import type { ExecutionContext, Hono } from "hono";
@@ -70,7 +70,7 @@ let cached: { key: string; app: Hono<never> } | undefined;
  */
 export function withoutDatabase(): Database {
 	const unavailable = (): never => {
-		throw new Error("no database configured for this preview");
+		throw new DatabaseUnavailableError();
 	};
 	return new Proxy({} as Database, { get: () => unavailable });
 }
