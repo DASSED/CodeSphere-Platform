@@ -200,7 +200,10 @@ import {
 	MessageScrollerProvider,
 	MessageScrollerViewport,
 } from "@codesphere/ui/components/organisms/message-scroller";
-import { ModerationTable } from "@codesphere/ui/components/organisms/moderation-table";
+import {
+	type ModerationRow,
+	ModerationTable,
+} from "@codesphere/ui/components/organisms/moderation-table";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
 import {
 	RecordFields,
@@ -221,6 +224,26 @@ import { useState } from "react";
 import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
+/** The caller sorts: the table only reports the click. */
+function sortModerationRows(
+	rows: readonly ModerationRow[],
+	sort: SortState,
+): readonly ModerationRow[] {
+	if (!sort) {
+		return rows;
+	}
+	const pick = (row: ModerationRow) =>
+		sort.key === "title"
+			? row.title
+			: sort.key === "author"
+				? row.author
+				: row.reportedAgo;
+	return [...rows].sort((a, b) => {
+		const order = pick(a).localeCompare(pick(b), "fr");
+		return sort.direction === "asc" ? order : -order;
+	});
+}
+
 const TABLE_DEMO = [
 	{ tag: "mobile-money", questions: 128 },
 	{ tag: "ussd", questions: 41 },
@@ -330,6 +353,7 @@ const ADMIN_ITEMS: GroupedListItem[] = [
 export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
 	const [tableSort, setTableSort] = useState<SortState>(null);
+	const [moderationSort, setModerationSort] = useState<SortState>(null);
 	const [tablePage, setTablePage] = useState(1);
 	const [tableChecked, setTableChecked] = useState<Selection>(NO_SELECTION);
 	const [tableReasonOpen, setTableReasonOpen] = useState(false);
@@ -1203,10 +1227,10 @@ export default function DesignSystemPage() {
 					<Specimen label="ModerationTable (données d'exemple)">
 						<div className="w-full">
 							<ModerationTable
-								rows={moderationRows}
+								rows={sortModerationRows(moderationRows, moderationSort)}
 								onConfirm={() => {}}
-								sort={tableSort}
-								onSortChange={(next) => setTableSort(next)}
+								sort={moderationSort}
+								onSortChange={setModerationSort}
 								maxHeight={320}
 							/>
 						</div>

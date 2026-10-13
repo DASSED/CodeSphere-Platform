@@ -57,6 +57,8 @@ function ReasonDialog({
 	error,
 }: ReasonDialogProps) {
 	const [reason, setReason] = useState("");
+	// The armed confirmation brings its own « Annuler »: show only one.
+	const [armed, setArmed] = useState(false);
 	const fieldId = useId();
 	const valid = reasonRequired
 		? isReasonValid(reason)
@@ -65,12 +67,14 @@ function ReasonDialog({
 	const close = (next: boolean) => {
 		if (!next) {
 			setReason("");
+			setArmed(false);
 		}
 		onOpenChange(next);
 	};
 	const submit = () => {
 		onSubmit(reason.trim());
 		setReason("");
+		setArmed(false);
 	};
 
 	return (
@@ -92,14 +96,18 @@ function ReasonDialog({
 					error={error}
 				/>
 				<DialogFooter>
-					<Button variant="outline" onClick={() => close(false)}>
-						{cancelLabel}
-					</Button>
+					{!(tone === "reject" && armed) && (
+						<Button variant="outline" onClick={() => close(false)}>
+							{cancelLabel}
+						</Button>
+					)}
 					{tone === "reject" ? (
 						<ConfirmTwoStep
 							label={confirmLabel}
 							disabled={!valid}
 							onConfirm={submit}
+							onArmedChange={setArmed}
+							cancelLabel={cancelLabel}
 						/>
 					) : (
 						<Button disabled={!valid} onClick={submit}>

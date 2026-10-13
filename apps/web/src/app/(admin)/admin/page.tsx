@@ -10,6 +10,7 @@ import {
 	AuditLog,
 } from "@codesphere/ui/components/organisms/audit-log";
 import {
+	type ModerationDecision,
 	type ModerationRow,
 	ModerationTable,
 } from "@codesphere/ui/components/organisms/moderation-table";
@@ -27,7 +28,7 @@ export default function AdminPage() {
 		auditEntries.slice(0, 3),
 	);
 
-	const confirm = (row: ModerationRow) => {
+	const confirm = ({ row, reason }: ModerationDecision) => {
 		const next = row.kind === "question" ? "closed" : "suspended";
 		setRows((current) =>
 			current.map((r) => (r.id === row.id ? { ...r, status: next } : r)),
@@ -40,6 +41,7 @@ export default function AdminPage() {
 				action: row.kind === "question" ? "Question fermée" : "Membre suspendu",
 				target: row.title,
 				tone: row.kind === "question" ? "warning" : "destructive",
+				reason,
 			},
 			...current,
 		]);

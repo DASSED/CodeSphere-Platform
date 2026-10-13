@@ -21,6 +21,8 @@ type ConfirmTwoStepProps = {
 	disabled?: boolean;
 	/** Seconds before an armed confirmation cancels itself. */
 	seconds?: number;
+	/** Tells the parent when the confirmation is armed, e.g. to hide its own « Annuler ». */
+	onArmedChange?: (armed: boolean) => void;
 	className?: string;
 };
 
@@ -36,6 +38,7 @@ function ConfirmTwoStep({
 	onConfirm,
 	disabled,
 	seconds = 5,
+	onArmedChange,
 	className,
 }: ConfirmTwoStepProps) {
 	const [state, setState] = useState<ConfirmState>(IDLE);
@@ -60,6 +63,13 @@ function ConfirmTwoStep({
 	}, []);
 
 	const armed = state.phase === "armed";
+	const onArmedChangeRef = useRef(onArmedChange);
+	useEffect(() => {
+		onArmedChangeRef.current = onArmedChange;
+	}, [onArmedChange]);
+	useEffect(() => {
+		onArmedChangeRef.current?.(armed);
+	}, [armed]);
 	useEffect(() => {
 		if (!armed) {
 			return;

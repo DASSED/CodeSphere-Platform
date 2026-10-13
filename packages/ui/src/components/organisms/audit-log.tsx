@@ -16,6 +16,8 @@ type AuditEntry = {
 	action: string;
 	target: string;
 	tone?: "default" | "warning" | "destructive";
+	/** The reason typed by the admin for a decision; shown under the target. */
+	reason?: string;
 };
 
 type AuditLogProps = { entries: readonly AuditEntry[] };
@@ -54,6 +56,11 @@ function AuditLog({ entries }: AuditLogProps) {
 						</TableCell>
 						<TableCell className="text-muted-foreground">
 							{entry.target}
+							{entry.reason && (
+								<span className="mt-0.5 block text-xs">
+									Raison : {entry.reason}
+								</span>
+							)}
 						</TableCell>
 					</TableRow>
 				))}

@@ -44,15 +44,26 @@ type ModerationRow = {
 	status: "open" | "closed" | "active" | "suspended";
 };
 
+/**
+ * What the admin decided: the row and the reason typed in the dialog. An object, not two
+ * arguments, so a caller written for the old `(row) =>` fails to compile instead of dropping
+ * the reason the dialog promised to journal.
+ */
+type ModerationDecision = { row: ModerationRow; reason: string };
+type ModerationBulkDecision = {
+	rows: readonly ModerationRow[];
+	reason: string;
+};
+
 type ModerationTableProps = {
 	rows: readonly ModerationRow[];
 	/**
-	 * Called once the admin confirms, with the reason typed in the dialog; the caller records
-	 * the action in the audit log.
+	 * Called once the admin confirms; the caller records the action, with its reason, in the
+	 * audit log.
 	 */
-	onConfirm: (row: ModerationRow, reason: string) => void;
+	onConfirm: (decision: ModerationDecision) => void;
 	/** The same decision on every checked row; without it `onConfirm` runs once per row. */
-	onBulkConfirm?: (rows: readonly ModerationRow[], reason: string) => void;
+	onBulkConfirm?: (decision: ModerationBulkDecision) => void;
 	/** Adds « Voir le détail » to the row menu. */
 	onView?: (row: ModerationRow) => void;
 	/** Controlled sort; the caller sorts `rows`. Without it the headers are plain. */
@@ -155,10 +166,10 @@ function ModerationTable({
 	const submit = (reason: string) => {
 		const rowsToApply = target ?? [];
 		if (rowsToApply.length > 1 && onBulkConfirm) {
-			onBulkConfirm(rowsToApply, reason);
+			onBulkConfirm({ rows: rowsToApply, reason });
 		} else {
 			for (const row of rowsToApply) {
-				onConfirm(row, reason);
+				onConfirm({ row, reason });
 			}
 		}
 		setSelected(NO_SELECTION);
@@ -277,4 +288,10 @@ function ModerationTable({
 	);
 }
 
-export { type ModerationRow, ModerationTable, type ModerationTableProps };
+export {
+	type ModerationBulkDecision,
+	type ModerationDecision,
+	type ModerationRow,
+	ModerationTable,
+	type ModerationTableProps,
+};
