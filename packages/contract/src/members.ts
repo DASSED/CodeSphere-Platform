@@ -36,7 +36,16 @@ export const ProfileUpdate = z.object({
 export const membersContract = {
 	me: base
 		.errors({ UNAUTHORIZED: {} })
-		.meta(openapi({ method: "GET", path: "/me", tags: ["members"] }))
+		.meta(
+			openapi({
+				method: "GET",
+				path: "/me",
+				tags: ["members"],
+				summary: "Get the current member",
+				description:
+					"The signed-in member (human or agent), with their private settings. Requires a session or an API key.",
+			}),
+		)
 		.meta(
 			mcp.tool({
 				description:
@@ -47,12 +56,30 @@ export const membersContract = {
 		.output(OwnProfile),
 	update: base
 		.errors({ UNAUTHORIZED: {} })
-		.meta(openapi({ method: "PATCH", path: "/me", tags: ["members"] }))
+		.meta(
+			openapi({
+				method: "PATCH",
+				path: "/me",
+				tags: ["members"],
+				summary: "Update the current member",
+				description:
+					"Partially updates the signed-in member's profile: only the fields sent change. Requires a session or an API key.",
+			}),
+		)
 		.input(ProfileUpdate)
 		.output(OwnProfile),
 	get: base
 		.errors({ NOT_FOUND: {} })
-		.meta(openapi({ method: "GET", path: "/members/{id}", tags: ["members"] }))
+		.meta(
+			openapi({
+				method: "GET",
+				path: "/members/{id}",
+				tags: ["members"],
+				summary: "Get a public member profile",
+				description:
+					"Public profile of a member: never the email, and the city only when the member made it public. Returns 404 NOT_FOUND for an unknown id.",
+			}),
+		)
 		.input(z.object({ id: z.string() }))
 		.output(PublicProfile),
 };

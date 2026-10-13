@@ -19,6 +19,7 @@ const app = createApp({
 	corsOrigin: ENV.CORS_ORIGIN,
 	trustProxy: ENV.TRUST_PROXY,
 	release: { version: ENV.APP_VERSION, commit: ENV.GIT_SHA },
+	apiDocs: ENV.NODE_ENV !== "production",
 });
 
 export default app;

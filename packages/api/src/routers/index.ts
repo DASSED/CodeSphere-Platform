@@ -1,16 +1,20 @@
 import type { contract } from "@codesphere/contract";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
+import { hackathon } from "@codesphere/db/schema/hackathons";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 
+import { withAudit } from "../audit";
 import { requireAdmin } from "../authorization";
 import { decodeCursor, encodeCursor } from "../cursor";
 import { unexpectedErrors } from "../errors";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
 import { ownProfile, publicProfile } from "../profile";
+import { createQuestionsHandlers } from "../questions/handlers";
+import { createQuestionService, QuestionError } from "../questions/service";
 
 // The authorization guard behind every admin procedure (spec §2). Throws the typed
 // UNAUTHORIZED / FORBIDDEN error declared on the admin contract.
@@ -147,7 +151,102 @@ export const appRouter = impl.use(unexpectedErrors).router({
 					};
 				}),
 		},
+		hackathons: {
+			update: impl.admin.hackathons.update
+				.use(isAdmin)
+				.handler(async ({ context, input, errors }) => {
+					const actorId = context.session?.user.id;
+					if (!actorId) {
+						throw errors.UNAUTHORIZED();
+					}
+					const { slug, expectedVersion, verifiedAt, ...fields } = input;
+					const [current] = await loadHackathons(context.db, { slug }, 1);
+					if (!current) {
+						throw errors.NOT_FOUND();
+					}
+					const teamMin = fields.teamMin ?? current.teamMin;
+					const teamMax = fields.teamMax ?? current.teamMax;
+					if (teamMin > teamMax) {
+						throw errors.BAD_REQUEST({
+							data: {
+								issues: [
+									{
+										path: ["teamMax"],
+										message: "teamMax must be at least teamMin",
+									},
+								],
+							},
+						});
+					}
+					const changes = {
+						...fields,
+						...(verifiedAt ? { verifiedAt: new Date(verifiedAt) } : {}),
+					};
+					// One statement: the edit and its audit event land together, or not at all (#122).
+					const rows = await withAudit(
+						context.db,
+						{
+							actorId,
+							action: "hackathon.update",
+							targetType: "hackathon",
+							targetIdColumn: "slug",
+							details: { fields: Object.keys(changes) },
+						},
+						context.db
+							.update(hackathon)
+							.set({ ...changes, version: expectedVersion + 1 })
+							.where(
+								and(
+									eq(hackathon.slug, slug),
+									eq(hackathon.version, expectedVersion),
+								),
+							)
+							.returning({ slug: hackathon.slug }),
+					);
+					if (rows.length === 0) {
+						const [latest] = await loadHackathons(context.db, { slug }, 1);
+						throw errors.CONFLICT({
+							data: { version: latest?.version ?? current.version },
+						});
+					}
+					const [updated] = await loadHackathons(context.db, { slug }, 1);
+					if (!updated) {
+						throw errors.NOT_FOUND();
+					}
+					return updated;
+				}),
+		},
+		questions: {
+			remove: impl.admin.questions.remove
+				.use(isAdmin)
+				.handler(async ({ context, input, errors }) => {
+					const actorId = context.session?.user.id;
+					if (!actorId) {
+						throw errors.UNAUTHORIZED();
+					}
+					try {
+						// The isAdmin middleware admits staff only, so the actor is staff here.
+						return await createQuestionService(context.db).removeQuestion(
+							{ id: actorId, isStaff: true },
+							input.id,
+							input.expectedVersion,
+						);
+					} catch (err) {
+						if (err instanceof QuestionError) {
+							if (err.code === "NOT_FOUND") throw errors.NOT_FOUND();
+							if (err.code === "FORBIDDEN") throw errors.FORBIDDEN();
+							if (err.code === "CONFLICT") {
+								throw errors.CONFLICT({
+									data: { version: err.currentVersion ?? 0 },
+								});
+							}
+						}
+						throw err;
+					}
+				}),
+		},
 	},
+	questions: createQuestionsHandlers(),
 });
 
 export type AppRouter = typeof appRouter;

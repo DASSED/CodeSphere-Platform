@@ -45,6 +45,24 @@ describe("requireAdmin", () => {
 		});
 	});
 
+	test("admits the moderator and super_admin roles with their own role", () => {
+		expect(requireAdmin(sessionWith("moderator"))).toEqual({
+			ok: true,
+			role: "moderator",
+		});
+		expect(requireAdmin(sessionWith("super_admin"))).toEqual({
+			ok: true,
+			role: "super_admin",
+		});
+	});
+
+	test("rejects an Agent even with a staff role forced in the database (#122)", () => {
+		expect(requireAdmin(sessionWith("moderator", "agent"))).toEqual({
+			ok: false,
+			code: "FORBIDDEN",
+		});
+	});
+
 	test("rejects an Agent even with the admin role forced in the database (#122)", () => {
 		expect(requireAdmin(sessionWith("admin", "agent"))).toEqual({
 			ok: false,

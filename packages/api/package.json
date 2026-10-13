@@ -10,20 +10,25 @@
 		"check-types": "tsc -b"
 	},
 	"dependencies": {
+		"@codesphere/auth": "workspace:*",
+		"@codesphere/contract": "workspace:*",
+		"@codesphere/db": "workspace:*",
+		"@codesphere/logger": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/contract": "catalog:",
-		"@codesphere/contract": "workspace:*",
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
-		"@codesphere/auth": "workspace:*",
-		"@codesphere/db": "workspace:*",
-		"@codesphere/logger": "workspace:*",
 		"drizzle-orm": "catalog:",
+		"highlight.js": "11.12.0",
+		"markdown-it": "15.0.2",
+		"sanitize-html": "2.18.0",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@codesphere/config": "workspace:*",
+		"@types/markdown-it": "14.2.0",
+		"@types/sanitize-html": "2.16.2",
 		"orpc-mcp": "catalog:",
 		"typescript": "catalog:"
 	},

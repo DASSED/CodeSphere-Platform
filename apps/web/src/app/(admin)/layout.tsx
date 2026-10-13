@@ -1,3 +1,4 @@
+import { isStaffRole } from "@codesphere/contract/roles";
 import { redirect } from "next/navigation";
 
 import { AdminIdentityProvider } from "@/components/admin-identity";
@@ -12,7 +13,7 @@ export default async function AdminLayout({
 	if (!session?.user) {
 		redirect("/signin");
 	}
-	if (session.user.role !== "admin") {
+	if (!isStaffRole(session.user.role)) {
 		redirect("/");
 	}
 	return (

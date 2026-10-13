@@ -99,6 +99,8 @@ function buildApp(env: WorkerEnv) {
 			version: env.APP_VERSION ?? "dev",
 			commit: env.GIT_SHA ?? "dev",
 		},
+		// The public Worker never serves the spec or its UI: they are for development only.
+		apiDocs: false,
 	};
 	return createApp(deps) as unknown as Hono<never>;
 }

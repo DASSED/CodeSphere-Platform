@@ -22,8 +22,9 @@ export type AuditEvent = {
  *
  * The Worker's HTTP driver has no transactions, but one statement is atomic anyway: either the
  * mutation and its event both land, or neither does. A mutation that touches no row writes no
- * event (the `SELECT ... FROM m` is empty), and each returned row writes one: keep admin
- * mutations to a single target. The mutation must end with `.returning(...)`.
+ * event (the `SELECT ... FROM m` is empty). A mutation that touches MORE than one row is refused:
+ * the audit insert's guard fails the whole statement, so nothing is written. The mutation must
+ * end with `.returning(...)`.
  *
  * The rows come back raw from the driver: keyed by COLUMN name (`team_min`, not `teamMin`),
  * dates as strings. Callers map them.
@@ -43,6 +44,9 @@ export async function withAudit(
 			INSERT INTO audit_log (actor_id, action, target_type, target_id, details)
 			SELECT ${event.actorId}, ${event.action}, ${event.targetType}, ${targetId}, ${details}::jsonb
 			FROM m
+			-- Guard: with 2+ rows, the CASE yields text and the CAST fails, aborting the statement.
+			WHERE CAST(CASE WHEN (SELECT count(*) FROM m) > 1
+				THEN 'one target per mutation' END AS integer) IS NULL
 		)
 		SELECT * FROM m
 	`);

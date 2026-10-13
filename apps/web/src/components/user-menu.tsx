@@ -1,5 +1,6 @@
 "use client";
 
+import { isStaffRole } from "@codesphere/contract/roles";
 import { Button } from "@codesphere/ui/components/atoms/button";
 import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
 import {
@@ -75,7 +76,7 @@ export default function UserMenu() {
 						<SettingsIcon />
 						{t("settings")}
 					</DropdownMenuItem>
-					{user.role === "admin" && (
+					{isStaffRole(user.role) && (
 						<DropdownMenuItem onClick={() => router.push("/admin")}>
 							<ShieldIcon />
 							{t("admin")}
