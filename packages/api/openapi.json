@@ -250,6 +250,242 @@
 	},
 	"openapi": "3.2.0",
 	"paths": {
+		"/admin/members": {
+			"get": {
+				"operationId": "admin.members.list",
+				"tags": ["admin"],
+				"parameters": [
+					{
+						"in": "query",
+						"name": "cursor",
+						"schema": {
+							"type": "string"
+						},
+						"allowEmptyValue": true,
+						"allowReserved": true
+					},
+					{
+						"in": "query",
+						"name": "limit",
+						"schema": {
+							"default": 20,
+							"type": "integer",
+							"minimum": 1,
+							"maximum": 50
+						},
+						"allowEmptyValue": true,
+						"allowReserved": true
+					},
+					{
+						"in": "query",
+						"name": "status",
+						"schema": {
+							"type": "string",
+							"enum": ["active", "suspended"]
+						},
+						"allowEmptyValue": true,
+						"allowReserved": true
+					},
+					{
+						"in": "query",
+						"name": "q",
+						"schema": {
+							"type": "string",
+							"minLength": 1,
+							"maxLength": 100
+						},
+						"allowEmptyValue": true,
+						"allowReserved": true
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string"
+													},
+													"name": {
+														"type": "string"
+													},
+													"kind": {
+														"type": "string",
+														"enum": ["human", "agent"]
+													},
+													"ownerId": {
+														"type": ["string", "null"]
+													},
+													"email": {
+														"type": "string"
+													},
+													"role": {
+														"type": "string",
+														"enum": [
+															"super_admin",
+															"admin",
+															"moderator",
+															"member"
+														]
+													},
+													"createdAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													},
+													"suspendedAt": {
+														"anyOf": [
+															{
+																"type": "string",
+																"format": "date-time",
+																"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+															},
+															{
+																"type": "null"
+															}
+														]
+													},
+													"suspensionReason": {
+														"type": ["string", "null"]
+													}
+												},
+												"required": [
+													"id",
+													"name",
+													"kind",
+													"ownerId",
+													"email",
+													"role",
+													"createdAt",
+													"suspendedAt",
+													"suspensionReason"
+												],
+												"additionalProperties": false
+											}
+										},
+										"nextCursor": {
+											"type": ["string", "null"]
+										}
+									},
+									"required": ["items", "nextCursor"],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/admin/audit-log": {
 			"get": {
 				"operationId": "admin.auditLog.list",
@@ -499,7 +735,7 @@
 			"patch": {
 				"operationId": "admin.hackathons.update",
 				"summary": "Update a hackathon",
-				"description": "Edits the scalar fields of a hackathon (not its milestones, prizes or criteria). expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version. Requires a staff role. Audited.",
+				"description": "Edits a hackathon: its fields and, when given, its milestones, prizes and judging criteria (a list replaces the stored one; criteria weights must total 100). expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version. Requires a staff role. Audited.",
 				"tags": ["admin"],
 				"parameters": [
 					{
@@ -526,12 +762,12 @@
 									"name": {
 										"type": "string",
 										"minLength": 1,
-										"maxLength": 200
+										"maxLength": 120
 									},
 									"organizer": {
 										"type": "string",
 										"minLength": 1,
-										"maxLength": 200
+										"maxLength": 120
 									},
 									"summary": {
 										"type": "string",
@@ -567,6 +803,102 @@
 										"type": "string",
 										"format": "date-time",
 										"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+									},
+									"milestones": {
+										"maxItems": 20,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"key": {
+													"type": "string"
+												},
+												"label": {
+													"type": "string",
+													"minLength": 1,
+													"maxLength": 160
+												},
+												"startsAt": {
+													"type": "string",
+													"format": "date-time",
+													"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+												},
+												"endsAt": {
+													"anyOf": [
+														{
+															"type": "string",
+															"format": "date-time",
+															"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+														},
+														{
+															"type": "null"
+														}
+													]
+												}
+											},
+											"required": ["key", "label", "startsAt", "endsAt"]
+										}
+									},
+									"prizes": {
+										"maxItems": 20,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"label": {
+													"type": "string",
+													"minLength": 1,
+													"maxLength": 160
+												},
+												"amount": {
+													"anyOf": [
+														{
+															"type": "string",
+															"maxLength": 80
+														},
+														{
+															"type": "null"
+														}
+													]
+												},
+												"conditions": {
+													"anyOf": [
+														{
+															"type": "string",
+															"maxLength": 500
+														},
+														{
+															"type": "null"
+														}
+													]
+												}
+											},
+											"required": ["label", "amount", "conditions"]
+										}
+									},
+									"criteria": {
+										"maxItems": 20,
+										"type": "array",
+										"items": {
+											"type": "object",
+											"properties": {
+												"label": {
+													"type": "string",
+													"minLength": 1,
+													"maxLength": 160
+												},
+												"weight": {
+													"type": "integer",
+													"minimum": 0,
+													"maximum": 100
+												},
+												"scoredBy": {
+													"type": "string",
+													"enum": ["jury", "public", "peers"]
+												}
+											},
+											"required": ["label", "weight", "scoredBy"]
+										}
 									}
 								},
 								"required": ["expectedVersion"]
