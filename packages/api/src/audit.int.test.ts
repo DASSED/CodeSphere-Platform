@@ -6,7 +6,7 @@ import { createDb } from "@codesphere/db";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
 import { hackathon } from "@codesphere/db/schema/hackathons";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 import { withAudit } from "./audit";
 
@@ -111,5 +111,25 @@ describe.skipIf(!url)("withAudit on Postgres", () => {
 			.from(hackathon)
 			.where(eq(hackathon.slug, slug));
 		expect(row?.name).toBe("Renamed");
+	});
+
+	test("a mutation touching several rows is rejected and changes nothing", async () => {
+		await expect(
+			withAudit(
+				db,
+				{ actorId, action: "it.audit.multi", targetType: "hackathon" },
+				db
+					.update(hackathon)
+					.set({ name: "Bulk" })
+					.where(inArray(hackathon.slug, [slug, other]))
+					.returning({ slug: hackathon.slug }),
+			),
+		).rejects.toThrow(/one target per mutation/);
+		expect(await eventsFor("it.audit.multi")).toHaveLength(0);
+		const rows = await db
+			.select({ slug: hackathon.slug, name: hackathon.name })
+			.from(hackathon)
+			.where(inArray(hackathon.slug, [slug, other]));
+		expect(rows.map((r) => r.name).sort()).toEqual(["Audit test", "Renamed"]);
 	});
 });

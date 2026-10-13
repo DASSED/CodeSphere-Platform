@@ -1,4 +1,4 @@
-import { exposedOverOpenAPI } from "@codesphere/api/exposure";
+import { exposedOverMCP, exposedOverOpenAPI } from "@codesphere/api/exposure";
 import { appRouter } from "@codesphere/api/routers/index";
 import type { createAuth } from "@codesphere/auth";
 import type { Database } from "@codesphere/db";
@@ -49,9 +49,11 @@ const apiHandler = new OpenAPIHandler(appRouter, {
 
 const rpcHandler = new RPCHandler(appRouter);
 
+// Admin mutations are not MCP tools, neither listed nor callable: the same rule as the OpenAPI filter.
 const mcpHandler = new MCPHandler(appRouter, {
 	serverInfo: { name: "codesphere", version: "0.1.0" },
 	converters: [new ZodToJsonSchemaConverter()],
+	authorizeCatalogEntry: ({ entry }) => exposedOverMCP(entry),
 });
 
 /**

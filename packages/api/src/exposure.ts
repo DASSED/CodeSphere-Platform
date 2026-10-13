@@ -19,6 +19,21 @@ export function exposedOverOpenAPI(
 	return path[0] !== "admin" || metaOf(procedure)["~openapi"]?.method === "GET";
 }
 
+/**
+ * MCP `authorizeCatalogEntry` gate, for discovery and invocation alike: an admin procedure must
+ * declare itself read-only. Mirrors `exposedOverOpenAPI`, so a mutation is hidden on both surfaces.
+ */
+export function exposedOverMCP(entry: {
+	path: readonly string[];
+	meta: object;
+}): boolean {
+	return (
+		entry.path[0] !== "admin" ||
+		(entry.meta as { annotations?: { readOnlyHint?: boolean } }).annotations
+			?.readOnlyHint === true
+	);
+}
+
 /** Every procedure tagged as an MCP tool, with whether it declares itself read-only. */
 export function mcpTools(
 	router: object,
