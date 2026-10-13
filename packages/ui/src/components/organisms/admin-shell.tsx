@@ -86,7 +86,8 @@ function AdminShell({
 			</aside>
 
 			<div className="flex min-w-0 flex-col">
-				<header className="flex flex-wrap items-center justify-between gap-3 border-border border-b px-4 py-4 md:px-8">
+				{/* Fixed page title and subtitle (#131): the list and the record scroll under it. */}
+				<header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-border border-b bg-background/95 px-4 py-4 backdrop-blur md:px-8">
 					<div className="min-w-0">
 						<h1 className="truncate font-semibold text-xl tracking-tight">
 							{title}
