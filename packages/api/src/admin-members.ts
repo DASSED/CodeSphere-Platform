@@ -1,10 +1,11 @@
-import { isStaffRole } from "@codesphere/contract";
+import { isStaffRole, outranks, rolesBelow } from "@codesphere/contract";
 import type { Database } from "@codesphere/db";
 import { user } from "@codesphere/db/schema/auth";
 import {
 	and,
 	desc,
 	eq,
+	inArray,
 	isNotNull,
 	isNull,
 	lt,
@@ -87,29 +88,42 @@ export async function listMembers(db: Database, filter: MemberFilter) {
 
 export type SuspensionOutcome =
 	| { ok: true; member: ReturnType<typeof adminMember> }
-	| { ok: false; code: "NOT_FOUND" | "CONFLICT" };
+	| { ok: false; code: "NOT_FOUND" | "CONFLICT" | "FORBIDDEN" };
 
 /**
  * Suspends or reactivates a Member and writes the audit event in one statement (#122). The
  * `WHERE` carries the state the call expects, so a Member already in the target state matches
  * no row: that is the CONFLICT, told apart from an unknown id by one follow-up read.
+ *
+ * The actor must outrank the target (a moderator cannot touch an admin, an admin cannot touch a
+ * peer): the rank rides in the same `WHERE`, so a role change between a read and the write cannot
+ * slip through. A Member the actor may not moderate is FORBIDDEN, not CONFLICT.
  */
 export async function setSuspension(
 	db: Database,
 	actorId: string,
+	actorRole: string,
 	targetId: string,
 	change: { suspend: true; reason: string } | { suspend: false },
 ): Promise<SuspensionOutcome> {
+	const withinReach = or(
+		isNull(user.role),
+		inArray(user.role, rolesBelow(actorRole)),
+	);
 	const mutation = change.suspend
 		? db
 				.update(user)
 				.set({ suspendedAt: new Date(), suspensionReason: change.reason })
-				.where(and(eq(user.id, targetId), isNull(user.suspendedAt)))
+				.where(
+					and(eq(user.id, targetId), isNull(user.suspendedAt), withinReach),
+				)
 				.returning({ id: user.id })
 		: db
 				.update(user)
 				.set({ suspendedAt: null, suspensionReason: null })
-				.where(and(eq(user.id, targetId), isNotNull(user.suspendedAt)))
+				.where(
+					and(eq(user.id, targetId), isNotNull(user.suspendedAt), withinReach),
+				)
 				.returning({ id: user.id });
 	const changed = await withAudit(
 		db,
@@ -127,7 +141,10 @@ export async function setSuspension(
 		return { ok: false, code: "NOT_FOUND" };
 	}
 	if (changed.length === 0) {
-		return { ok: false, code: "CONFLICT" };
+		return {
+			ok: false,
+			code: outranks(actorRole, row.role) ? "CONFLICT" : "FORBIDDEN",
+		};
 	}
 	return { ok: true, member: adminMember(row) };
 }

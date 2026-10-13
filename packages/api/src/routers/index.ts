@@ -31,6 +31,23 @@ const isAdmin = impl.middleware(async ({ context, next }) => {
 	return next();
 });
 
+// The typed refusal of a moderation outcome (#123).
+const refusal = (
+	code: "NOT_FOUND" | "CONFLICT" | "FORBIDDEN",
+	errors: {
+		NOT_FOUND: () => Error;
+		CONFLICT: () => Error;
+		FORBIDDEN: (options?: { message?: string }) => Error;
+	},
+) =>
+	code === "NOT_FOUND"
+		? errors.NOT_FOUND()
+		: code === "FORBIDDEN"
+			? errors.FORBIDDEN({
+					message: "You cannot moderate a Member of equal or higher rank.",
+				})
+			: errors.CONFLICT();
+
 // A suspended Member keeps reading but every write is refused with a typed error (#123).
 const refuseSuspendedWrites = impl.middleware(
 	async ({ context, procedure, next }) => {
@@ -169,14 +186,15 @@ export const appRouter = impl
 								message: "An Admin cannot suspend themself.",
 							});
 						}
-						const outcome = await setSuspension(context.db, actorId, input.id, {
-							suspend: true,
-							reason: input.reason,
-						});
+						const outcome = await setSuspension(
+							context.db,
+							actorId,
+							String(context.session?.user.role),
+							input.id,
+							{ suspend: true, reason: input.reason },
+						);
 						if (!outcome.ok) {
-							throw outcome.code === "NOT_FOUND"
-								? errors.NOT_FOUND()
-								: errors.CONFLICT();
+							throw refusal(outcome.code, errors);
 						}
 						return outcome.member;
 					}),
@@ -186,13 +204,12 @@ export const appRouter = impl
 						const outcome = await setSuspension(
 							context.db,
 							context.session?.user.id ?? "",
+							String(context.session?.user.role),
 							input.id,
 							{ suspend: false },
 						);
 						if (!outcome.ok) {
-							throw outcome.code === "NOT_FOUND"
-								? errors.NOT_FOUND()
-								: errors.CONFLICT();
+							throw refusal(outcome.code, errors);
 						}
 						return outcome.member;
 					}),
