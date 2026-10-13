@@ -26,9 +26,12 @@ const call = async (url: string) => {
 	return response;
 };
 
-const issuesOf = async (response: Response | undefined) =>
-	((await response?.json()) as { data?: { issues?: { path: string[] }[] } })
-		.data?.issues;
+const issuesOf = async (response: Response | undefined) => {
+	const body = (await response?.json()) as
+		| { data?: { issues?: { path: string[] }[] } }
+		| undefined;
+	return body?.data?.issues;
+};
 
 describe("REST query strings", () => {
 	test("questions.list: a string limit and bracketed tags pass validation", async () => {
