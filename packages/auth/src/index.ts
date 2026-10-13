@@ -4,6 +4,7 @@ import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
+import { createAuthMiddleware } from "better-auth/api";
 import { emailOTP, oAuthProxy } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
@@ -11,6 +12,7 @@ import { parseAdminEmails, roleFor } from "./admin";
 import { readConsent } from "./consent";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
+import { isRefusedProxyCallback } from "./proxy-target";
 import { withoutOAuthTokens } from "./tokens";
 
 export type AuthConfig = SocialProviderEnv &
@@ -62,6 +64,37 @@ export function createAuth(
 			schema,
 		}),
 		trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
+		// Staging only: refuse a proxy callback that would send a member to an origin other than
+		// staging or one preview (#149). The plugin redirects to whatever its state carries.
+		hooks: proxy
+			? {
+					before: createAuthMiddleware(async (ctx) => {
+						if (ctx.path !== "/callback/:id") {
+							return;
+						}
+						const state = ctx.query?.state;
+						if (typeof state !== "string") {
+							return;
+						}
+						if (
+							!(await isRefusedProxyCallback(
+								state,
+								proxy.secret,
+								proxy.productionURL,
+							))
+						) {
+							return;
+						}
+						ctx.context.logger.error(
+							"OAuth proxy: refused a callback target outside staging and previews",
+						);
+						// The sign-in page shows a generic failure for unknown codes (sign-in-error.ts).
+						throw ctx.redirect(
+							`${proxy.productionURL}/signin?error=invalid_callback`,
+						);
+					}),
+				}
+			: undefined,
 		// SSO in production: no email/password sign-in (#59, spec §3). The email code below is
 		// opt-in (EMAIL_OTP_SIGNIN), for local development and previews only.
 		socialProviders: socialProvidersFrom(env),
