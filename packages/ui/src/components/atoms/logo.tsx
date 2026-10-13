@@ -13,7 +13,7 @@ function Logo({ className, ...props }: React.ComponentProps<"span">) {
 			<span className="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground text-sm">
 				◍
 			</span>
-			CodeSphere
+			CodeSphere Platform
 		</span>
 	);
 }

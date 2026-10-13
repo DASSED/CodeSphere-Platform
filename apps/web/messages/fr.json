@@ -1,6 +1,6 @@
 {
 	"footer": {
-		"build": "CodeSphere v{version} · {sha}"
+		"build": "CodeSphere Platform v{version} · {sha}"
 	},
 	"language": {
 		"label": "Langue",
