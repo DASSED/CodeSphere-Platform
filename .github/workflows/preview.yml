@@ -127,6 +127,8 @@ jobs:
         env:
           # Inlined at build time, hence one build per pull request.
           NEXT_PUBLIC_SERVER_URL: https://${{ env.PREVIEW_NAME }}.${{ env.PREVIEW_DOMAIN }}
+          # Without the preview-db label there is no database: the home page does not ask for it.
+          NEXT_PUBLIC_HAS_DATABASE: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
         run: bunx opennextjs-cloudflare build
 
       - name: Deploy the Preview
