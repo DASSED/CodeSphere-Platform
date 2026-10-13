@@ -185,6 +185,20 @@ import {
 	WifiOffIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { ConfirmTwoStep } from "@codesphere/ui/components/molecules/confirm-two-step";
+import {
+	GroupedList,
+	type GroupedListItem,
+} from "@codesphere/ui/components/molecules/grouped-list";
+import { ReasonField } from "@codesphere/ui/components/molecules/reason-field";
+import { SaveBar } from "@codesphere/ui/components/molecules/save-bar";
+import { StateGate } from "@codesphere/ui/components/molecules/state-gate";
+import { AdminMasterDetail } from "@codesphere/ui/components/organisms/admin-master-detail";
+import {
+	RecordFields,
+	RecordSection,
+	RecordSheet,
+} from "@codesphere/ui/components/organisms/record-sheet";
 import { useState } from "react";
 import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
 
@@ -274,6 +288,17 @@ const COLOR_TOKENS = [
 	{ name: "border", className: "bg-border" },
 ] as const;
 
+const ADMIN_GROUPS = [
+	{ key: "active", label: "Actifs" },
+	{ key: "suspended", label: "Suspendus" },
+] as const;
+
+const ADMIN_ITEMS: GroupedListItem[] = [
+	{ id: "awa", name: "awa_dev", group: "active", meta: "12" },
+	{ id: "moussa", name: "moussa", group: "active", meta: "4" },
+	{ id: "fatou", name: "fatou_k", group: "suspended", meta: "Suspendu" },
+];
+
 export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
 	const [checked, setChecked] = useState(false);
@@ -287,6 +312,9 @@ export default function DesignSystemPage() {
 	const [locale, setLocale] = useState<Locale>("fr");
 	const [online, setOnline] = useState(false);
 	const [language, setLanguage] = useState<string | null>("fr");
+	const [adminSelected, setAdminSelected] = useState("awa");
+	const [adminEditing, setAdminEditing] = useState(false);
+	const [reason, setReason] = useState("");
 	const [answerText, setAnswerText] = useState(
 		"Utilise un `callback_url` public avec un tunnel en local.",
 	);
@@ -1252,6 +1280,85 @@ export default function DesignSystemPage() {
 								</EmptyDescription>
 							</EmptyHeader>
 						</Empty>
+					</Specimen>
+				</Section>
+
+				<Section
+					title="Socle admin"
+					description="Composants du back-office : liste et fiche, enregistrement, confirmation en deux temps."
+				>
+					<Specimen label="AdminMasterDetail — GroupedList + RecordSheet">
+						<AdminMasterDetail
+							className="w-full"
+							list={
+								<GroupedList
+									label="Membres"
+									items={ADMIN_ITEMS}
+									groups={ADMIN_GROUPS}
+									selectedId={adminSelected}
+									onSelect={(item) => setAdminSelected(item.id)}
+								/>
+							}
+							detail={
+								<RecordSheet
+									title={
+										ADMIN_ITEMS.find((item) => item.id === adminSelected)?.name
+									}
+									editing={adminEditing}
+									onEdit={() => setAdminEditing(true)}
+								>
+									<RecordSection title="Profil">
+										<RecordFields
+											fields={[
+												{ label: "Pays", value: "Burkina Faso" },
+												{ label: "Langue", value: "Français" },
+											]}
+										/>
+									</RecordSection>
+								</RecordSheet>
+							}
+						/>
+					</Specimen>
+					<Specimen label="SaveBar — modifié / inchangé">
+						<div className="flex w-full flex-col gap-3">
+							<SaveBar
+								dirty
+								onSave={() => setAdminEditing(false)}
+								onDiscard={() => setAdminEditing(false)}
+							/>
+							<SaveBar
+								dirty={false}
+								onSave={() => {}}
+								onDiscard={() => {}}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="ConfirmTwoStep + ReasonField">
+						<div className="flex w-full max-w-md flex-col gap-3">
+							<ReasonField
+								id="ds-reason"
+								value={reason}
+								onValueChange={setReason}
+							/>
+							<ConfirmTwoStep
+								label="Suspendre ce Member"
+								disabled={reason.trim().length < 3}
+								onConfirm={() => setReason("")}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="StateGate — chargement, erreur, vide">
+						<div className="grid w-full gap-4 md:grid-cols-3">
+							<StateGate status="loading">
+								<p>Contenu</p>
+							</StateGate>
+							<StateGate status="error" onRetry={() => {}}>
+								<p>Contenu</p>
+							</StateGate>
+							<StateGate status="empty">
+								<p>Contenu</p>
+							</StateGate>
+						</div>
 					</Specimen>
 				</Section>
 			</main>
