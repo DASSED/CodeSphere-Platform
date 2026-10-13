@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "de9c4258-6efd-4edf-9549-c11ca82de8fd",
+  "id": "fef86608-b804-4ec7-bdb5-65f9cdb5a4eb",
   "prevIds": [
-    "88e5c185-98f0-4ea8-96eb-97264421094d"
+    "9c984b25-08a1-4a33-8815-63adb30c05e8"
   ],
   "ddl": [
     {
@@ -828,6 +828,32 @@
       "generated": null,
       "identity": null,
       "name": "role",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user"
+    },
+    {
+      "type": "timestamp(3)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "suspended_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "suspension_reason",
       "entityType": "columns",
       "schema": "public",
       "table": "user"
