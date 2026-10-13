@@ -3,7 +3,7 @@ import { mcp } from "orpc-mcp";
 import * as z from "zod";
 
 import { base, ExpectedVersion, Id, Page, PageInput, Timestamp } from "./base";
-import { Hackathon } from "./hackathons";
+import { Hackathon, JudgingCriterion, Milestone, Prize } from "./hackathons";
 import { MemberSummary } from "./members";
 
 export const AuditEvent = z.object({
@@ -29,19 +29,69 @@ export const AuditLogFilter = PageInput.extend({
 	targetType: z.string().min(1).max(64).optional(),
 });
 
-/** Scalar fields of a Hackathon an admin may edit. Milestones, prizes and criteria are not among them. */
-export const HackathonUpdate = z.object({
-	slug: z.string(),
-	expectedVersion: ExpectedVersion,
-	name: z.string().trim().min(1).max(200).optional(),
-	organizer: z.string().trim().min(1).max(200).optional(),
-	summary: z.string().trim().min(1).max(2000).optional(),
-	teamMin: z.number().int().min(1).max(50).optional(),
-	teamMax: z.number().int().min(1).max(50).optional(),
-	sourceUrl: z.url().optional(),
-	sourceNote: z.string().max(500).nullable().optional(),
-	verifiedAt: Timestamp.optional(),
-});
+/**
+ * An Admin edit of a Hackathon (#124): every field is optional, a list given replaces the
+ * stored one. Milestones keep their keys (the countdowns hang on them): only their label and
+ * dates change. A stale `expectedVersion` gets CONFLICT.
+ */
+export const HackathonUpdate = z
+	.object({
+		slug: z.string(),
+		expectedVersion: ExpectedVersion,
+		name: z.string().trim().min(1).max(120).optional(),
+		organizer: z.string().trim().min(1).max(120).optional(),
+		summary: z.string().trim().min(1).max(2000).optional(),
+		teamMin: z.number().int().min(1).max(50).optional(),
+		teamMax: z.number().int().min(1).max(50).optional(),
+		sourceUrl: z.url().optional(),
+		sourceNote: z.string().trim().max(500).nullable().optional(),
+		verifiedAt: Timestamp.optional(),
+		milestones: z
+			.array(Milestone.extend({ label: z.string().trim().min(1).max(160) }))
+			.max(20)
+			.optional(),
+		prizes: z
+			.array(
+				Prize.extend({
+					label: z.string().trim().min(1).max(160),
+					amount: z.string().trim().max(80).nullable(),
+					conditions: z.string().trim().max(500).nullable(),
+				}),
+			)
+			.max(20)
+			.optional(),
+		criteria: z
+			.array(
+				JudgingCriterion.extend({
+					label: z.string().trim().min(1).max(160),
+					weight: z.number().int().min(0).max(100),
+				}),
+			)
+			.max(20)
+			.refine(
+				(criteria) =>
+					criteria.reduce((total, { weight }) => total + weight, 0) === 100,
+				"The criteria weights must total 100.",
+			)
+			.optional(),
+	})
+	.refine(
+		({ teamMin, teamMax }) =>
+			teamMin === undefined || teamMax === undefined || teamMin <= teamMax,
+		{ message: "teamMin cannot exceed teamMax.", path: ["teamMin"] },
+	)
+	.refine(
+		({ milestones }) =>
+			!milestones ||
+			milestones.every(
+				({ startsAt, endsAt }) =>
+					!endsAt || Date.parse(endsAt) >= Date.parse(startsAt),
+			),
+		{
+			message: "A Milestone cannot end before it starts.",
+			path: ["milestones"],
+		},
+	);
 
 /** Staff writes. Every one needs a staff role (super_admin, admin or moderator), see requireAdmin. */
 const staffErrors = {
@@ -118,7 +168,7 @@ export const adminContract = {
 					tags: ["admin"],
 					summary: "Update a hackathon",
 					description:
-						"Edits the scalar fields of a hackathon (not its milestones, prizes or criteria). expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version. Requires a staff role. Audited.",
+						"Edits a hackathon: its fields and, when given, its milestones, prizes and judging criteria (a list replaces the stored one; criteria weights must total 100). expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version. Requires a staff role. Audited.",
 				}),
 			)
 			.input(HackathonUpdate)
