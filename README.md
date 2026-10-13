@@ -128,7 +128,7 @@ codesphere/
 - `bun run db:generate`: Generate database client/types
 - `bun run db:migrate`: Run database migrations
 - `bun run db:studio`: Open database studio UI
-- `bun run db:local`: Start the local Postgres (docker compose), apply the migrations and run the idempotent seed; `-- --no-seed` skips the seed
+- `bun run db:local`: Turbo task of `@codesphere/db`: start the local Postgres (docker compose), apply the migrations and run the idempotent seed; `-- --no-seed` skips the seed
 - `bun run db:local:studio`: Same, then open Drizzle Studio (https://local.drizzle.studio) on the local database to inspect changes; `bun run db:stop` stops Postgres
 - `bun run check`: Run Biome formatting and linting
 - `bun run docker:build`: Build the Docker Compose images

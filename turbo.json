@@ -34,6 +34,15 @@
       "cache": false,
       "persistent": true
     },
+    "db:local": {
+      "cache": false,
+      "env": ["POSTGRES_PASSWORD"]
+    },
+    "db:local:studio": {
+      "cache": false,
+      "persistent": true,
+      "env": ["POSTGRES_PASSWORD"]
+    },
     "db:start": {
       "cache": false
     },
