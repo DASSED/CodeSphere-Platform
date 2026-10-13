@@ -14,7 +14,10 @@ import { isRead } from "../exposure";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
 import { ownProfile, publicProfile } from "../profile";
-import { createQuestionsHandlers } from "../questions/handlers";
+import {
+	createFeedHandlers,
+	createQuestionsHandlers,
+} from "../questions/handlers";
 import { createQuestionService, QuestionError } from "../questions/service";
 import { isSuspended } from "../suspension";
 
@@ -281,6 +284,7 @@ export const appRouter = impl
 			},
 		},
 		questions: createQuestionsHandlers(),
+		feed: createFeedHandlers(),
 	});
 
 export type AppRouter = typeof appRouter;

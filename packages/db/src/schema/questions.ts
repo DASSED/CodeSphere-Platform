@@ -1,4 +1,5 @@
 import {
+	index,
 	integer,
 	pgTable,
 	text,
@@ -29,6 +30,8 @@ export const questions = pgTable(
 			.default("open"),
 		tags: text("tags").array().notNull(),
 		version: integer("version").default(1).notNull(),
+		// Net votes (#65): kept by the votes module (#48); feeds the hot score of the feed.
+		score: integer("score").default(0).notNull(),
 		createdAt: timestamp("created_at").defaultNow().notNull(),
 		updatedAt: timestamp("updated_at")
 			.defaultNow()
@@ -38,5 +41,6 @@ export const questions = pgTable(
 	},
 	(t) => [
 		unique("questions_author_idempotency").on(t.authorId, t.idempotencyKey),
+		index("questions_created_at_idx").on(t.createdAt),
 	],
 );
