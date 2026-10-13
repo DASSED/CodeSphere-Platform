@@ -69,6 +69,24 @@ jobs:
       - run: bun install --frozen-lockfile --ignore-scripts
       - run: bun run env:generate
 
+      # Neon Free allows 10 branches per project, parent branches included. Past that limit no
+      # database can be created: stop here with a clear message, and create nothing (#147).
+      - name: Check the Neon branch quota
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          BRANCH: preview/${{ env.PREVIEW_NAME }}
+        run: |
+          api="https://console.neon.tech/api/v2/projects/$NEON_PROJECT_ID/branches"
+          curl -sSf -H "Authorization: Bearer $NEON_API_KEY" "$api" > branches.json
+          total=$(jq '.branches | length' branches.json)
+          own=$(jq --arg n "$BRANCH" '[.branches[] | select(.name == $n)] | length' branches.json)
+          echo "Neon branches in the project: $total of 10 (this preview's branch exists: $own)"
+          if [ "$own" = "0" ] && [ "$total" -ge 10 ]; then
+            echo "::error::Neon limit reached ($total/10 branches): no database is created for $PREVIEW_NAME. Close an older pull request or upgrade the Neon plan."
+            exit 1
+          fi
+
       # Safety net if the cleanup job never runs; a push does not extend it.
       - name: Expiry of the Neon branch
         id: expiry
