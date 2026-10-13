@@ -13,7 +13,9 @@
 		"db:migrate:deploy": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
 		"db:migrate": "drizzle-kit migrate",
-		"db:seed": "bun src/seed/index.ts"
+		"db:seed": "bun src/seed/index.ts",
+		"db:local": "bun ../../scripts/db-local.mjs",
+		"db:local:studio": "bun ../../scripts/db-local.mjs --studio"
 	},
 	"dependencies": {
 		"@neondatabase/serverless": "^1.2.0",

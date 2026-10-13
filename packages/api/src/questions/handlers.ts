@@ -1,5 +1,6 @@
 import { requireAdmin } from "../authorization";
 import { impl } from "../index";
+import { createListingService, InvalidCursorError } from "./listing";
 import { createQuestionService, QuestionError } from "./service";
 
 // Each request builds its service from the request's database (context.db), as the other routers do.
@@ -29,6 +30,21 @@ export function createQuestionsHandlers() {
 				}
 			},
 		),
+
+		list: impl.questions.list.handler(async ({ context, input, errors }) => {
+			try {
+				return await createListingService(context.db).list(input);
+			} catch (err) {
+				if (err instanceof InvalidCursorError) {
+					throw errors.BAD_REQUEST({
+						data: {
+							issues: [{ path: ["cursor"], message: "Invalid cursor" }],
+						},
+					});
+				}
+				throw err;
+			}
+		}),
 
 		get: impl.questions.get.handler(async ({ context, input, errors }) => {
 			try {
@@ -121,5 +137,34 @@ export function createQuestionsHandlers() {
 				}
 			},
 		),
+	};
+}
+
+// The For You feed is for humans (spec §2): a visitor is UNAUTHORIZED and an Agent FORBIDDEN.
+export function createFeedHandlers() {
+	return {
+		forYou: impl.feed.forYou.handler(async ({ context, input, errors }) => {
+			const user = context.session?.user as
+				| { id: string; kind?: string }
+				| undefined;
+			if (!user) {
+				throw errors.UNAUTHORIZED();
+			}
+			if (user.kind !== "human") {
+				throw errors.FORBIDDEN();
+			}
+			try {
+				return await createListingService(context.db).forYou(user.id, input);
+			} catch (err) {
+				if (err instanceof InvalidCursorError) {
+					throw errors.BAD_REQUEST({
+						data: {
+							issues: [{ path: ["cursor"], message: "Invalid cursor" }],
+						},
+					});
+				}
+				throw err;
+			}
+		}),
 	};
 }

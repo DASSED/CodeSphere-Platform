@@ -2,7 +2,15 @@ import { openapi } from "@orpc/openapi";
 import { mcp } from "orpc-mcp";
 import * as z from "zod";
 
-import { base, ExpectedVersion, Id, IdempotencyKey, Markdown } from "./base";
+import {
+	base,
+	ExpectedVersion,
+	Id,
+	IdempotencyKey,
+	Markdown,
+	Page,
+	Region,
+} from "./base";
 
 export const QuestionSummary = z.object({
 	id: Id,
@@ -15,6 +23,27 @@ export const QuestionSummary = z.object({
 	createdAt: z.string().datetime(),
 	updatedAt: z.string().datetime(),
 });
+
+// A Question as listed in a feed (#65): its summary plus the net votes the hot score is built on.
+export const QuestionListItem = QuestionSummary.extend({
+	score: z.number().int(),
+});
+
+export const QuestionSort = z.enum(["hot", "recent", "unanswered"]);
+
+export const ListQuestionsInput = z.object({
+	/** Questions carrying at least one of these Tags. */
+	tags: z.array(z.string().toLowerCase().trim().min(1)).max(10).optional(),
+	language: z.enum(["fr", "en"]).optional(),
+	/** Country of the author (ISO 3166-1 alpha-2, or "OTHER"). */
+	country: Region.shape.country.optional(),
+	status: z.enum(["open", "answered", "closed"]).optional(),
+	sort: QuestionSort.default("recent"),
+	cursor: z.string().optional(),
+	limit: z.number().int().min(1).max(50).default(20),
+});
+
+export const QuestionPage = Page(QuestionListItem);
 
 export const QuestionDetail = QuestionSummary.extend({
 	body: Markdown,
@@ -63,6 +92,18 @@ export const questionsContract = {
 		)
 		.input(CreateQuestionInput)
 		.output(QuestionDetail),
+
+	list: base
+		.meta(openapi({ method: "GET", path: "/questions", tags: ["questions"] }))
+		.meta(
+			mcp.tool({
+				description:
+					"List Questions, filtered by Tag, language, author country or status, sorted hot, recent or unanswered.",
+				annotations: { readOnlyHint: true },
+			}),
+		)
+		.input(ListQuestionsInput)
+		.output(QuestionPage),
 
 	get: base
 		.errors({ NOT_FOUND: {} })
@@ -149,3 +190,5 @@ export const questionsContract = {
 export type QuestionDetail = z.infer<typeof QuestionDetail>;
 export type CreateQuestionInput = z.infer<typeof CreateQuestionInput>;
 export type UpdateQuestionInput = z.infer<typeof UpdateQuestionInput>;
+export type ListQuestionsInput = z.infer<typeof ListQuestionsInput>;
+export type QuestionListItem = z.infer<typeof QuestionListItem>;

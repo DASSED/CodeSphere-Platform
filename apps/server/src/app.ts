@@ -4,6 +4,7 @@ import { appRouter } from "@codesphere/api/routers/index";
 import type { createAuth } from "@codesphere/auth";
 import type { Database } from "@codesphere/db";
 import { type Logger, type LoggerEnv, requestLogger } from "@codesphere/logger";
+import { SmartCoercionHandlerPlugin } from "@orpc/json-schema";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferenceHandlerPlugin } from "@orpc/openapi/plugins";
 import { RPCHandler } from "@orpc/server/fetch";
@@ -32,20 +33,28 @@ let openapiSpec: ReturnType<typeof openApiDocument> | undefined;
  * The REST surface. Staff operations are documented on it, and only staff can call them (requireAdmin).
  * The reference plugin adds `/spec.json` and the docs UI, so it is mounted only when asked.
  */
-function restHandler(apiDocs: boolean) {
+export function restHandler(apiDocs: boolean) {
 	return new OpenAPIHandler(appRouter, {
 		filter: exposedOverOpenAPI,
-		plugins: apiDocs
-			? [
-					new OpenAPIReferenceHandlerPlugin({
-						// The spec only depends on the router: generate it once, not per request.
-						spec: () => {
-							openapiSpec ??= openApiDocument();
-							return openapiSpec;
-						},
-					}),
-				]
-			: [],
+		plugins: [
+			// Query strings arrive as text: smart coercion turns `limit=5` into the number the
+			// `.input` schema declares, so the GET operations of the spec can be called as
+			// documented (#65).
+			new SmartCoercionHandlerPlugin({
+				converters: [new ZodToJsonSchemaConverter()],
+			}),
+			...(apiDocs
+				? [
+						new OpenAPIReferenceHandlerPlugin({
+							// The spec only depends on the router: generate it once, not per request.
+							spec: () => {
+								openapiSpec ??= openApiDocument();
+								return openapiSpec;
+							},
+						}),
+					]
+				: []),
+		],
 	});
 }
 

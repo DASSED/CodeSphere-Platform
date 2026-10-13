@@ -1,3 +1,4 @@
+import { isStaffRole } from "@codesphere/contract";
 import type { Database } from "@codesphere/db";
 import { user } from "@codesphere/db/schema/auth";
 import {
@@ -23,7 +24,7 @@ export const adminMember = (row: AdminMemberRow) => ({
 	kind: row.kind === "agent" ? ("agent" as const) : ("human" as const),
 	ownerId: row.ownerId,
 	email: row.email,
-	role: row.role === "admin" ? ("admin" as const) : ("member" as const),
+	role: isStaffRole(row.role) ? row.role : ("member" as const),
 	createdAt: row.createdAt.toISOString(),
 	suspendedAt: row.suspendedAt?.toISOString() ?? null,
 	suspensionReason: row.suspensionReason,
