@@ -69,6 +69,7 @@ import {
 	CollapsiblePanel,
 	CollapsibleTrigger,
 } from "@codesphere/ui/components/molecules/collapsible";
+import { ConfirmTwoStep } from "@codesphere/ui/components/molecules/confirm-two-step";
 import { Countdown } from "@codesphere/ui/components/molecules/countdown";
 import {
 	Dialog,
@@ -100,6 +101,10 @@ import {
 import { Field } from "@codesphere/ui/components/molecules/field";
 import { FollowedTags } from "@codesphere/ui/components/molecules/followed-tags";
 import {
+	GroupedList,
+	type GroupedListItem,
+} from "@codesphere/ui/components/molecules/grouped-list";
+import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
@@ -114,7 +119,9 @@ import {
 import { OfflineBanner } from "@codesphere/ui/components/molecules/offline-banner";
 import { ProviderButton } from "@codesphere/ui/components/molecules/provider-button";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
+import { ReasonField } from "@codesphere/ui/components/molecules/reason-field";
 import { RelatedQuestions } from "@codesphere/ui/components/molecules/related-questions";
+import { SaveBar } from "@codesphere/ui/components/molecules/save-bar";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import {
 	Select,
@@ -127,6 +134,7 @@ import {
 	SettingRow,
 	SettingsSection,
 } from "@codesphere/ui/components/molecules/setting-row";
+import { StateGate } from "@codesphere/ui/components/molecules/state-gate";
 import { Stepper } from "@codesphere/ui/components/molecules/stepper";
 import {
 	Table,
@@ -149,6 +157,7 @@ import {
 	type Vote,
 	VoteControl,
 } from "@codesphere/ui/components/molecules/vote-control";
+import { AdminMasterDetail } from "@codesphere/ui/components/organisms/admin-master-detail";
 import { AnswerForm } from "@codesphere/ui/components/organisms/answer-form";
 import { ApiKeyReveal } from "@codesphere/ui/components/organisms/api-key-reveal";
 import { AppFooter } from "@codesphere/ui/components/organisms/app-footer";
@@ -175,6 +184,11 @@ import {
 } from "@codesphere/ui/components/organisms/message-scroller";
 import { ModerationTable } from "@codesphere/ui/components/organisms/moderation-table";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
+import {
+	RecordFields,
+	RecordSection,
+	RecordSheet,
+} from "@codesphere/ui/components/organisms/record-sheet";
 import { TagPicker } from "@codesphere/ui/components/organisms/tag-picker";
 import {
 	BookOpenIcon,
@@ -185,20 +199,6 @@ import {
 	WifiOffIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { ConfirmTwoStep } from "@codesphere/ui/components/molecules/confirm-two-step";
-import {
-	GroupedList,
-	type GroupedListItem,
-} from "@codesphere/ui/components/molecules/grouped-list";
-import { ReasonField } from "@codesphere/ui/components/molecules/reason-field";
-import { SaveBar } from "@codesphere/ui/components/molecules/save-bar";
-import { StateGate } from "@codesphere/ui/components/molecules/state-gate";
-import { AdminMasterDetail } from "@codesphere/ui/components/organisms/admin-master-detail";
-import {
-	RecordFields,
-	RecordSection,
-	RecordSheet,
-} from "@codesphere/ui/components/organisms/record-sheet";
 import { useState } from "react";
 import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
 
@@ -1326,11 +1326,7 @@ export default function DesignSystemPage() {
 								onSave={() => setAdminEditing(false)}
 								onDiscard={() => setAdminEditing(false)}
 							/>
-							<SaveBar
-								dirty={false}
-								onSave={() => {}}
-								onDiscard={() => {}}
-							/>
+							<SaveBar dirty={false} onSave={() => {}} onDiscard={() => {}} />
 						</div>
 					</Specimen>
 					<Specimen label="ConfirmTwoStep + ReasonField">
