@@ -11,7 +11,6 @@ import { unexpectedErrors } from "../errors";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
 import { ownProfile, publicProfile } from "../profile";
-import { createQuestionService } from "../questions/service";
 import { createQuestionsHandlers } from "../questions/handlers";
 
 // The authorization guard behind every admin procedure (spec §2). Throws the typed
@@ -150,17 +149,7 @@ export const appRouter = impl.use(unexpectedErrors).router({
 				}),
 		},
 	},
-	questions: (() => {
-		const service = createQuestionService(null as any);
-		const handlers = createQuestionsHandlers(service);
-		return {
-			create: handlers.create,
-			get: handlers.get,
-			update: handlers.update,
-			close: handlers.close,
-			delete: handlers.delete,
-		};
-	})(),
+	questions: createQuestionsHandlers(),
 });
 
 export type AppRouter = typeof appRouter;

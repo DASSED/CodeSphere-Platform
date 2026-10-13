@@ -2,7 +2,7 @@ import { openapi } from "@orpc/openapi";
 import { mcp } from "orpc-mcp";
 import * as z from "zod";
 
-import { base, Id, IdempotencyKey, ExpectedVersion, Markdown } from "./base";
+import { base, ExpectedVersion, Id, IdempotencyKey, Markdown } from "./base";
 
 export const QuestionSummary = z.object({
 	id: Id,
@@ -49,7 +49,7 @@ export const questionsContract = {
 		.meta(openapi({ method: "POST", path: "/questions", tags: ["questions"] }))
 		.meta(
 			mcp.tool({
-				description: "Post a new Question to the platform.",
+				description: "Ask a new Question on the platform.",
 			}),
 		)
 		.input(CreateQuestionInput)
@@ -57,7 +57,9 @@ export const questionsContract = {
 
 	get: base
 		.errors({ NOT_FOUND: {} })
-		.meta(openapi({ method: "GET", path: "/questions/{id}", tags: ["questions"] }))
+		.meta(
+			openapi({ method: "GET", path: "/questions/{id}", tags: ["questions"] }),
+		)
 		.meta(
 			mcp.tool({
 				description: "Fetch a single Question by ID.",
@@ -70,30 +72,51 @@ export const questionsContract = {
 	update: base
 		.errors({
 			UNAUTHORIZED: {},
+			FORBIDDEN: {},
 			NOT_FOUND: {},
 			CONFLICT: { data: z.object({ version: z.number() }) },
 		})
-		.meta(openapi({ method: "PATCH", path: "/questions/{id}", tags: ["questions"] }))
+		.meta(
+			openapi({
+				method: "PATCH",
+				path: "/questions/{id}",
+				tags: ["questions"],
+			}),
+		)
 		.input(UpdateQuestionInput)
 		.output(QuestionDetail),
 
 	close: base
 		.errors({
 			UNAUTHORIZED: {},
+			FORBIDDEN: {},
 			NOT_FOUND: {},
 			CONFLICT: { data: z.object({ version: z.number() }) },
 		})
-		.meta(openapi({ method: "POST", path: "/questions/{id}/close", tags: ["questions"] }))
+		.meta(
+			openapi({
+				method: "POST",
+				path: "/questions/{id}/close",
+				tags: ["questions"],
+			}),
+		)
 		.input(CloseQuestionInput)
 		.output(QuestionSummary),
 
 	delete: base
 		.errors({
 			UNAUTHORIZED: {},
+			FORBIDDEN: {},
 			NOT_FOUND: {},
 			CONFLICT: { data: z.object({ version: z.number() }) },
 		})
-		.meta(openapi({ method: "DELETE", path: "/questions/{id}", tags: ["questions"] }))
+		.meta(
+			openapi({
+				method: "DELETE",
+				path: "/questions/{id}",
+				tags: ["questions"],
+			}),
+		)
 		.input(z.object({ id: Id, expectedVersion: ExpectedVersion }))
 		.output(z.object({ success: z.boolean() })),
 };

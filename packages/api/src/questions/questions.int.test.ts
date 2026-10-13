@@ -1,4 +1,4 @@
-import { describe, it, expect } from "bun:test";
+import { describe, expect, it } from "bun:test";
 import { sanitizeMarkdown } from "../markdown/sanitizer";
 
 // Integration tests for questions API
@@ -7,35 +7,27 @@ import { sanitizeMarkdown } from "../markdown/sanitizer";
 describe("Questions API Integration", () => {
 	describe("Markdown sanitization", () => {
 		it("should prevent XSS via HTML injection", () => {
-			const result1 = sanitizeMarkdown(
-				'<script>alert("xss")</script>',
-			);
+			const result1 = sanitizeMarkdown('<script>alert("xss")</script>');
 			expect(result1.html).not.toContain("<script");
 
 			const result2 = sanitizeMarkdown(
-				'<img src=x onerror="alert(\'xss\')" />',
+				"<img src=x onerror=\"alert('xss')\" />",
 			);
 			// Raw HTML is escaped, not executed
 			expect(result2.html).toContain("&lt;img");
 
-			const result3 = sanitizeMarkdown(
-				'<svg onload="alert(\'xss\')"></svg>',
-			);
+			const result3 = sanitizeMarkdown("<svg onload=\"alert('xss')\"></svg>");
 			expect(result3.html).toContain("&lt;svg");
 		});
 
 		it("should add nofollow+noopener to links", () => {
-			const result = sanitizeMarkdown(
-				"[Visit example](https://example.com)",
-			);
+			const result = sanitizeMarkdown("[Visit example](https://example.com)");
 			expect(result.html).toContain('rel="nofollow noopener"');
 		});
 
 		it("should reject oversize bodies (>20000 chars)", () => {
 			const oversize = "a".repeat(20001);
-			expect(() => sanitizeMarkdown(oversize)).toThrow(
-				"exceeds 20,000",
-			);
+			expect(() => sanitizeMarkdown(oversize)).toThrow("exceeds 20,000");
 		});
 
 		it("should extract plaintext for indexing", () => {
@@ -46,9 +38,7 @@ describe("Questions API Integration", () => {
 		});
 
 		it("should highlight code blocks", () => {
-			const result = sanitizeMarkdown(
-				"```js\nconst x = 1;\n```",
-			);
+			const result = sanitizeMarkdown("```js\nconst x = 1;\n```");
 			expect(result.html).toContain("<code");
 		});
 	});
