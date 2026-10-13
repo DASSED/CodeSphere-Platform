@@ -31,6 +31,19 @@ export function isAllowedProxyTarget(
 }
 
 /**
+ * Whether a proxy callback must be refused: its state carries a target the staging proxy must not
+ * send a member to. An unreadable state is not refused here; the plugin then refuses it itself.
+ */
+export async function isRefusedProxyCallback(
+	state: string,
+	secret: string,
+	stagingOrigin: string,
+): Promise<boolean> {
+	const target = await proxyTargetOf(state, secret);
+	return target !== null && !isAllowedProxyTarget(target, stagingOrigin);
+}
+
+/**
  * The callback URL the proxy will redirect to, read from the `state` the provider sent back.
  * Null when the state is not a proxy state this secret can open; the plugin then decides.
  */

@@ -12,7 +12,7 @@ import { parseAdminEmails, roleFor } from "./admin";
 import { readConsent } from "./consent";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
-import { isAllowedProxyTarget, proxyTargetOf } from "./proxy-target";
+import { isRefusedProxyCallback } from "./proxy-target";
 import { withoutOAuthTokens } from "./tokens";
 
 export type AuthConfig = SocialProviderEnv &
@@ -76,18 +76,21 @@ export function createAuth(
 						if (typeof state !== "string") {
 							return;
 						}
-						const target = await proxyTargetOf(state, proxy.secret);
 						if (
-							target === null ||
-							isAllowedProxyTarget(target, proxy.productionURL)
+							!(await isRefusedProxyCallback(
+								state,
+								proxy.secret,
+								proxy.productionURL,
+							))
 						) {
 							return;
 						}
 						ctx.context.logger.error(
 							"OAuth proxy: refused a callback target outside staging and previews",
 						);
+						// The sign-in page shows a generic failure for unknown codes (sign-in-error.ts).
 						throw ctx.redirect(
-							`${ctx.context.baseURL}/error?error=invalid_callback`,
+							`${proxy.productionURL}/signin?error=invalid_callback`,
 						);
 					}),
 				}
