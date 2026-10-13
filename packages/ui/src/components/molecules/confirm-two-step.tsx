@@ -40,21 +40,24 @@ function ConfirmTwoStep({
 }: ConfirmTwoStepProps) {
 	const [state, setState] = useState<ConfirmState>(IDLE);
 	const current = useRef(state);
+	// The latest `onConfirm`, so an inline callback does not rebuild `send` on every render and
+	// restart the countdown timer (and steal the focus back) each second.
+	const onConfirmRef = useRef(onConfirm);
+	useEffect(() => {
+		onConfirmRef.current = onConfirm;
+	}, [onConfirm]);
 	const armButton = useRef<HTMLButtonElement>(null);
 	const confirmButton = useRef<HTMLButtonElement>(null);
 
-	const send = useCallback(
-		(event: ConfirmEvent) => {
-			let next = confirmStep(current.current, event);
-			if (next.phase === "confirmed") {
-				next = IDLE;
-				onConfirm();
-			}
-			current.current = next;
-			setState(next);
-		},
-		[onConfirm],
-	);
+	const send = useCallback((event: ConfirmEvent) => {
+		let next = confirmStep(current.current, event);
+		if (next.phase === "confirmed") {
+			next = IDLE;
+			onConfirmRef.current();
+		}
+		current.current = next;
+		setState(next);
+	}, []);
 
 	const armed = state.phase === "armed";
 	useEffect(() => {
