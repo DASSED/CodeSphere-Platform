@@ -1,6 +1,6 @@
 import hljs from "highlight.js";
-import DOMPurify from "isomorphic-dompurify";
 import MarkdownIt from "markdown-it";
+import sanitizeHtml from "sanitize-html";
 
 const md = new MarkdownIt({
 	html: false, // Disable raw HTML in Markdown
@@ -19,9 +19,10 @@ const md = new MarkdownIt({
 	},
 });
 
-// Configure DOMPurify: strip unwanted tags, allow safe HTML from markdown-it
-const purifyConfig = {
-	ALLOWED_TAGS: [
+// Strip unwanted tags and attributes from the rendered HTML. sanitize-html is pure JavaScript: it runs
+// on the Workers runtime, where a DOM-based sanitizer (DOMPurify over jsdom) cannot.
+const sanitizeOptions: sanitizeHtml.IOptions = {
+	allowedTags: [
 		"h1",
 		"h2",
 		"h3",
@@ -43,8 +44,14 @@ const purifyConfig = {
 		"a",
 		"span", // for highlight.js <span class="hljs-*">
 	],
-	ALLOWED_ATTR: ["href", "rel", "target", "class"],
-	KEEP_CONTENT: true,
+	allowedAttributes: {
+		a: ["href", "rel", "target"],
+		"*": ["class"],
+	},
+	// Only web and mail links: no javascript:, data: or other schemes.
+	allowedSchemes: ["http", "https", "mailto"],
+	// Drop the markup of a disallowed tag but keep its text, as DOMPurify's KEEP_CONTENT did.
+	disallowedTagsMode: "discard",
 };
 
 export function sanitizeMarkdown(mdText: string): {
@@ -62,8 +69,7 @@ export function sanitizeMarkdown(mdText: string): {
 	// Render Markdown to HTML
 	const dirty = md.render(mdText);
 
-	// Sanitize with DOMPurify
-	const clean = String(DOMPurify.sanitize(dirty, purifyConfig));
+	const clean = sanitizeHtml(dirty, sanitizeOptions);
 
 	// Post-process: add nofollow + noopener to links
 	const withLinks = clean.replace(
