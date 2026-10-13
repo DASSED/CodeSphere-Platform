@@ -22,6 +22,11 @@ const tags = [
 			"Questions asked on the platform. Writes need authentication and the author's rights.",
 	},
 	{
+		name: "feed",
+		description:
+			"The For You feed: the hottest Questions on the Tags a Member follows. Humans only; a visitor is unauthorized and an Agent is forbidden.",
+	},
+	{
 		name: "admin",
 		description:
 			"Staff operations (super_admin, admin or moderator): audit log, hackathon edits, question moderation. Each needs a staff session or API key.",
