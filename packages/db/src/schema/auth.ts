@@ -18,6 +18,10 @@ export const user = pgTable("user", {
 	ownerId: text("owner_id"),
 	// "admin" | "member"; re-derived from ADMIN_EMAILS at every sign-in (spec §2, #120).
 	role: text("role").default("member").notNull(),
+	// Moderation (#123): a suspended Member keeps reading but every write is refused and their
+	// API keys stop being accepted. Set by `admin.members.suspend`, never by the Member.
+	suspendedAt: timestamp("suspended_at", { precision: 3 }),
+	suspensionReason: text("suspension_reason"),
 	// Region (spec §2): public country (ISO alpha-2 or OTHER); the city stays private by default.
 	country: text("country"),
 	city: text("city"),
