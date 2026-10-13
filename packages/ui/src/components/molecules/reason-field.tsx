@@ -16,6 +16,8 @@ type ReasonFieldProps = {
 	value: string;
 	onValueChange: (value: string) => void;
 	label?: string;
+	/** Marks the field required for assistive technology; `true` unless the reason is optional. */
+	required?: boolean;
 	/** Shown once the field has been touched and the reason is too short. */
 	tooShortText?: string;
 	/** The API's error, e.g. after a refusal. */
@@ -29,6 +31,7 @@ function ReasonField({
 	value,
 	onValueChange,
 	label = "Raison (obligatoire)",
+	required = true,
 	tooShortText = `${REASON_MIN} caractères minimum.`,
 	error,
 	className,
@@ -39,12 +42,18 @@ function ReasonField({
 	const { errorId } = fieldIds(id);
 	const counterId = `${id}-counter`;
 	return (
-		<Field id={id} label={label} required error={shown} className={className}>
+		<Field
+			id={id}
+			label={label}
+			required={required}
+			error={shown}
+			className={className}
+		>
 			<Textarea
 				id={id}
 				value={value}
 				maxLength={REASON_MAX}
-				required
+				required={required}
 				aria-invalid={shown ? true : undefined}
 				aria-describedby={shown ? `${counterId} ${errorId}` : counterId}
 				onChange={(event) => onValueChange(event.target.value)}

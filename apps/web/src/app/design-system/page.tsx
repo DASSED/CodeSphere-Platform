@@ -119,8 +119,10 @@ import {
 import { OfflineBanner } from "@codesphere/ui/components/molecules/offline-banner";
 import { ProviderButton } from "@codesphere/ui/components/molecules/provider-button";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
+import { ReasonDialog } from "@codesphere/ui/components/molecules/reason-dialog";
 import { ReasonField } from "@codesphere/ui/components/molecules/reason-field";
 import { RelatedQuestions } from "@codesphere/ui/components/molecules/related-questions";
+import { RowActions } from "@codesphere/ui/components/molecules/row-actions";
 import { SaveBar } from "@codesphere/ui/components/molecules/save-bar";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import {
@@ -140,10 +142,26 @@ import {
 	Table,
 	TableBody,
 	TableCell,
+	TableEmpty,
 	TableHead,
 	TableHeader,
 	TableRow,
 } from "@codesphere/ui/components/molecules/table";
+import {
+	TableBulkBar,
+	TablePagination,
+	TableSelectCell,
+	TableSelectHead,
+	TableSortHead,
+} from "@codesphere/ui/components/molecules/table-controls";
+import {
+	NO_SELECTION,
+	pageSelectionState,
+	type Selection,
+	type SortState,
+	togglePage,
+	toggleRow,
+} from "@codesphere/ui/components/molecules/table-state";
 import {
 	Tabs,
 	TabsContent,
@@ -203,6 +221,16 @@ import { useState } from "react";
 import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
+const TABLE_DEMO = [
+	{ tag: "mobile-money", questions: 128 },
+	{ tag: "ussd", questions: 41 },
+	{ tag: "docker", questions: 96 },
+	{ tag: "nodejs", questions: 212 },
+	{ tag: "postgresql", questions: 77 },
+	{ tag: "react", questions: 154 },
+	{ tag: "webhooks", questions: 33 },
+] as const;
+
 const SAMPLE_QUESTIONS = [
 	{
 		id: "q1",
@@ -301,6 +329,10 @@ const ADMIN_ITEMS: GroupedListItem[] = [
 
 export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
+	const [tableSort, setTableSort] = useState<SortState>(null);
+	const [tablePage, setTablePage] = useState(1);
+	const [tableChecked, setTableChecked] = useState<Selection>(NO_SELECTION);
+	const [tableReasonOpen, setTableReasonOpen] = useState(false);
 	const [checked, setChecked] = useState(false);
 	const [vote, setVote] = useState<Vote | null>("up");
 	const [step, setStep] = useState(1);
@@ -711,6 +743,138 @@ export default function DesignSystemPage() {
 							</Table>
 						</div>
 					</Specimen>
+					<Specimen label="Table headless — tri, sélection, pagination, menu ⋯ et motif">
+						<div className="flex w-full flex-col gap-3">
+							{(() => {
+								const sorted = [...TABLE_DEMO].sort((a, b) => {
+									if (!tableSort) {
+										return 0;
+									}
+									const left = String(a[tableSort.key as "tag" | "questions"]);
+									const right = String(b[tableSort.key as "tag" | "questions"]);
+									const order = left.localeCompare(right, "fr", {
+										numeric: true,
+									});
+									return tableSort.direction === "asc" ? order : -order;
+								});
+								const pageRows = sorted.slice(
+									(tablePage - 1) * 3,
+									tablePage * 3,
+								);
+								const ids = pageRows.map((row) => row.tag);
+								return (
+									<>
+										<Table maxHeight={220}>
+											<TableHeader>
+												<TableRow>
+													<TableSelectHead
+														state={pageSelectionState(tableChecked, ids)}
+														onToggle={() =>
+															setTableChecked(togglePage(tableChecked, ids))
+														}
+													/>
+													<TableSortHead
+														sortKey="tag"
+														sort={tableSort}
+														onSortChange={setTableSort}
+													>
+														Tag
+													</TableSortHead>
+													<TableSortHead
+														sortKey="questions"
+														sort={tableSort}
+														onSortChange={setTableSort}
+													>
+														Questions
+													</TableSortHead>
+													<TableHead className="w-12">
+														<span className="sr-only">Actions</span>
+													</TableHead>
+												</TableRow>
+											</TableHeader>
+											<TableBody>
+												{pageRows.map((row) => (
+													<TableRow
+														key={row.tag}
+														selected={tableChecked.has(row.tag)}
+													>
+														<TableSelectCell
+															label={`Sélectionner ${row.tag}`}
+															checked={tableChecked.has(row.tag)}
+															onCheckedChange={() =>
+																setTableChecked(
+																	toggleRow(tableChecked, row.tag),
+																)
+															}
+														/>
+														<TableCell>{row.tag}</TableCell>
+														<TableCell className="tabular-nums">
+															{row.questions}
+														</TableCell>
+														<TableCell className="text-right">
+															<RowActions
+																label={`Actions pour ${row.tag}`}
+																actions={[
+																	{
+																		id: "open",
+																		label: "Voir les questions",
+																		onSelect: () => {},
+																	},
+																	{
+																		id: "reject",
+																		label: "Rejeter ce Tag",
+																		destructive: true,
+																		onSelect: () => setTableReasonOpen(true),
+																	},
+																]}
+															/>
+														</TableCell>
+													</TableRow>
+												))}
+												{pageRows.length === 0 && (
+													<TableEmpty colSpan={4}>Aucun Tag.</TableEmpty>
+												)}
+											</TableBody>
+										</Table>
+										<TablePagination
+											page={tablePage}
+											pageCount={Math.ceil(TABLE_DEMO.length / 3)}
+											pageSize={3}
+											total={TABLE_DEMO.length}
+											onPageChange={(next) => {
+												setTablePage(next);
+												setTableChecked(NO_SELECTION);
+											}}
+										/>
+										<TableBulkBar
+											count={tableChecked.size}
+											onClear={() => setTableChecked(NO_SELECTION)}
+											actions={
+												<Button
+													variant="destructive"
+													size="sm"
+													onClick={() => setTableReasonOpen(true)}
+												>
+													Rejeter la sélection…
+												</Button>
+											}
+										/>
+										<ReasonDialog
+											open={tableReasonOpen}
+											onOpenChange={setTableReasonOpen}
+											title="Rejeter ce Tag"
+											description="Le Tag est retiré du catalogue. L'action est enregistrée dans le journal d'audit."
+											confirmLabel="Rejeter"
+											onSubmit={() => {
+												setTableChecked(NO_SELECTION);
+												setTableReasonOpen(false);
+											}}
+										/>
+									</>
+								);
+							})()}
+						</div>
+					</Specimen>
 					<Specimen label="KpiCard — hausse, baisse, métrique à minimiser">
 						<div className="grid w-full gap-4 md:grid-cols-3">
 							<KpiCard
@@ -1038,7 +1202,13 @@ export default function DesignSystemPage() {
 					</Specimen>
 					<Specimen label="ModerationTable (données d'exemple)">
 						<div className="w-full">
-							<ModerationTable rows={moderationRows} onConfirm={() => {}} />
+							<ModerationTable
+								rows={moderationRows}
+								onConfirm={() => {}}
+								sort={tableSort}
+								onSortChange={(next) => setTableSort(next)}
+								maxHeight={320}
+							/>
 						</div>
 					</Specimen>
 					<Specimen label="AuditLog (données d'exemple)">
