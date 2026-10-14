@@ -60,11 +60,7 @@
 					},
 					"data": {}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message"
-				]
+				"required": ["defined", "code", "message"]
 			},
 			"BadRequest": {
 				"title": "BAD_REQUEST",
@@ -90,36 +86,23 @@
 										"path": {
 											"type": "array",
 											"items": {
-												"type": [
-													"string",
-													"number"
-												]
+												"type": ["string", "number"]
 											}
 										},
 										"message": {
 											"type": "string"
 										}
 									},
-									"required": [
-										"path",
-										"message"
-									],
+									"required": ["path", "message"],
 									"additionalProperties": false
 								}
 							}
 						},
-						"required": [
-							"issues"
-						],
+						"required": ["issues"],
 						"additionalProperties": false
 					}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message",
-					"data"
-				]
+				"required": ["defined", "code", "message", "data"]
 			},
 			"InternalServerError": {
 				"title": "INTERNAL_SERVER_ERROR",
@@ -141,18 +124,11 @@
 								"type": "string"
 							}
 						},
-						"required": [
-							"requestId"
-						],
+						"required": ["requestId"],
 						"additionalProperties": false
 					}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message",
-					"data"
-				]
+				"required": ["defined", "code", "message", "data"]
 			},
 			"TooManyRequests": {
 				"title": "TOO_MANY_REQUESTS",
@@ -174,18 +150,11 @@
 								"type": "number"
 							}
 						},
-						"required": [
-							"retryAfter"
-						],
+						"required": ["retryAfter"],
 						"additionalProperties": false
 					}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message",
-					"data"
-				]
+				"required": ["defined", "code", "message", "data"]
 			},
 			"ServiceUnavailable": {
 				"title": "SERVICE_UNAVAILABLE",
@@ -202,11 +171,7 @@
 					},
 					"data": {}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message"
-				]
+				"required": ["defined", "code", "message"]
 			},
 			"Unauthorized": {
 				"title": "UNAUTHORIZED",
@@ -223,11 +188,7 @@
 					},
 					"data": {}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message"
-				]
+				"required": ["defined", "code", "message"]
 			},
 			"Forbidden": {
 				"title": "FORBIDDEN",
@@ -244,11 +205,7 @@
 					},
 					"data": {}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message"
-				]
+				"required": ["defined", "code", "message"]
 			},
 			"NotFound": {
 				"title": "NOT_FOUND",
@@ -265,11 +222,7 @@
 					},
 					"data": {}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message"
-				]
+				"required": ["defined", "code", "message"]
 			},
 			"Conflict": {
 				"title": "CONFLICT",
@@ -291,18 +244,11 @@
 								"type": "number"
 							}
 						},
-						"required": [
-							"version"
-						],
+						"required": ["version"],
 						"additionalProperties": false
 					}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message",
-					"data"
-				]
+				"required": ["defined", "code", "message", "data"]
 			},
 			"Conflict2": {
 				"title": "CONFLICT",
@@ -319,11 +265,7 @@
 					},
 					"data": {}
 				},
-				"required": [
-					"defined",
-					"code",
-					"message"
-				]
+				"required": ["defined", "code", "message"]
 			}
 		}
 	},
@@ -332,9 +274,7 @@
 		"/admin/members": {
 			"get": {
 				"operationId": "admin.members.list",
-				"tags": [
-					"admin"
-				],
+				"tags": ["admin"],
 				"parameters": [
 					{
 						"in": "query",
@@ -362,10 +302,7 @@
 						"name": "status",
 						"schema": {
 							"type": "string",
-							"enum": [
-								"active",
-								"suspended"
-							]
+							"enum": ["active", "suspended"]
 						},
 						"allowEmptyValue": true,
 						"allowReserved": true
@@ -403,16 +340,10 @@
 													},
 													"kind": {
 														"type": "string",
-														"enum": [
-															"human",
-															"agent"
-														]
+														"enum": ["human", "agent"]
 													},
 													"ownerId": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"email": {
 														"type": "string"
@@ -444,10 +375,7 @@
 														]
 													},
 													"suspensionReason": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													}
 												},
 												"required": [
@@ -465,16 +393,10 @@
 											}
 										},
 										"nextCursor": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										}
 									},
-									"required": [
-										"items",
-										"nextCursor"
-									],
+									"required": ["items", "nextCursor"],
 									"additionalProperties": false
 								}
 							}
@@ -590,9 +512,7 @@
 				"operationId": "admin.auditLog.list",
 				"summary": "List the audit log",
 				"description": "Admin audit log, newest first, filterable by action, actor and target type. Requires a staff role: UNAUTHORIZED without a session, FORBIDDEN without one.",
-				"tags": [
-					"admin"
-				],
+				"tags": ["admin"],
 				"parameters": [
 					{
 						"in": "query",
@@ -665,10 +585,7 @@
 														"type": "string"
 													},
 													"actorId": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"action": {
 														"type": "string"
@@ -677,10 +594,7 @@
 														"type": "string"
 													},
 													"targetId": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"details": {
 														"anyOf": [
@@ -724,16 +638,10 @@
 											}
 										},
 										"nextCursor": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										}
 									},
-									"required": [
-										"items",
-										"nextCursor"
-									],
+									"required": ["items", "nextCursor"],
 									"additionalProperties": false
 								}
 							}
@@ -849,9 +757,7 @@
 				"operationId": "admin.hackathons.update",
 				"summary": "Update a hackathon",
 				"description": "Edits a hackathon: its fields and, when given, its milestones, prizes and judging criteria (a list replaces the stored one; criteria weights must total 100). expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version. Requires a staff role. Audited.",
-				"tags": [
-					"admin"
-				],
+				"tags": ["admin"],
 				"parameters": [
 					{
 						"in": "path",
@@ -951,12 +857,7 @@
 													]
 												}
 											},
-											"required": [
-												"key",
-												"label",
-												"startsAt",
-												"endsAt"
-											]
+											"required": ["key", "label", "startsAt", "endsAt"]
 										}
 									},
 									"prizes": {
@@ -993,11 +894,7 @@
 													]
 												}
 											},
-											"required": [
-												"label",
-												"amount",
-												"conditions"
-											]
+											"required": ["label", "amount", "conditions"]
 										}
 									},
 									"criteria": {
@@ -1018,24 +915,14 @@
 												},
 												"scoredBy": {
 													"type": "string",
-													"enum": [
-														"jury",
-														"public",
-														"peers"
-													]
+													"enum": ["jury", "public", "peers"]
 												}
 											},
-											"required": [
-												"label",
-												"weight",
-												"scoredBy"
-											]
+											"required": ["label", "weight", "scoredBy"]
 										}
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -1099,12 +986,7 @@
 														]
 													}
 												},
-												"required": [
-													"key",
-													"label",
-													"startsAt",
-													"endsAt"
-												],
+												"required": ["key", "label", "startsAt", "endsAt"],
 												"additionalProperties": false
 											}
 										},
@@ -1117,23 +999,13 @@
 														"type": "string"
 													},
 													"amount": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"conditions": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													}
 												},
-												"required": [
-													"label",
-													"amount",
-													"conditions"
-												],
+												"required": ["label", "amount", "conditions"],
 												"additionalProperties": false
 											}
 										},
@@ -1152,18 +1024,10 @@
 													},
 													"scoredBy": {
 														"type": "string",
-														"enum": [
-															"jury",
-															"public",
-															"peers"
-														]
+														"enum": ["jury", "public", "peers"]
 													}
 												},
-												"required": [
-													"label",
-													"weight",
-													"scoredBy"
-												],
+												"required": ["label", "weight", "scoredBy"],
 												"additionalProperties": false
 											}
 										},
@@ -1172,10 +1036,7 @@
 											"format": "uri"
 										},
 										"sourceNote": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"verifiedAt": {
 											"type": "string",
@@ -1352,9 +1213,7 @@
 				"operationId": "admin.questions.remove",
 				"summary": "Remove a question (moderation)",
 				"description": "Soft-deletes any question, whoever wrote it. expectedVersion must match the current version (409 CONFLICT otherwise). Requires a staff role. Audited.",
-				"tags": [
-					"admin"
-				],
+				"tags": ["admin"],
 				"parameters": [
 					{
 						"in": "path",
@@ -1380,9 +1239,7 @@
 										"maximum": 9007199254740991
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -1399,9 +1256,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}
@@ -1551,9 +1406,7 @@
 				"operationId": "answers.list",
 				"summary": "List the answers of a question",
 				"description": "Accepted answer first, then by Score. 404 for an unknown question.",
-				"tags": [
-					"answers"
-				],
+				"tags": ["answers"],
 				"parameters": [
 					{
 						"in": "path",
@@ -1641,9 +1494,7 @@
 											}
 										}
 									},
-									"required": [
-										"items"
-									],
+									"required": ["items"],
 									"additionalProperties": false
 								}
 							}
@@ -1740,9 +1591,7 @@
 				"operationId": "answers.create",
 				"summary": "Answer a question",
 				"description": "One answer per Member and Question (a replay of the idempotencyKey returns it; a second distinct answer is 409 CONFLICT). A closed question takes no answer (409).",
-				"tags": [
-					"answers"
-				],
+				"tags": ["answers"],
 				"parameters": [
 					{
 						"in": "path",
@@ -1773,10 +1622,7 @@
 										"maxLength": 20000
 									}
 								},
-								"required": [
-									"idempotencyKey",
-									"body"
-								]
+								"required": ["idempotencyKey", "body"]
 							}
 						}
 					}
@@ -1979,9 +1825,7 @@
 				"operationId": "answers.update",
 				"summary": "Edit an answer",
 				"description": "Author only. expectedVersion guards a stale write (409 CONFLICT).",
-				"tags": [
-					"answers"
-				],
+				"tags": ["answers"],
 				"parameters": [
 					{
 						"in": "path",
@@ -2012,10 +1856,7 @@
 										"maxLength": 20000
 									}
 								},
-								"required": [
-									"expectedVersion",
-									"body"
-								]
+								"required": ["expectedVersion", "body"]
 							}
 						}
 					}
@@ -2233,9 +2074,7 @@
 				"operationId": "answers.delete",
 				"summary": "Delete an answer",
 				"description": "Author only. Deleting the Accepted answer reopens the Question.",
-				"tags": [
-					"answers"
-				],
+				"tags": ["answers"],
 				"parameters": [
 					{
 						"in": "path",
@@ -2261,9 +2100,7 @@
 										"maximum": 9007199254740991
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -2280,9 +2117,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}
@@ -2432,9 +2267,7 @@
 				"operationId": "answers.accept",
 				"summary": "Accept an answer",
 				"description": "Question's author only. Replaces any previous Accepted answer; the Question becomes answered.",
-				"tags": [
-					"answers"
-				],
+				"tags": ["answers"],
 				"parameters": [
 					{
 						"in": "path",
@@ -2653,9 +2486,7 @@
 		"/feed/for-you": {
 			"get": {
 				"operationId": "feed.forYou",
-				"tags": [
-					"feed"
-				],
+				"tags": ["feed"],
 				"parameters": [
 					{
 						"in": "query",
@@ -2708,18 +2539,11 @@
 													},
 													"language": {
 														"type": "string",
-														"enum": [
-															"fr",
-															"en"
-														]
+														"enum": ["fr", "en"]
 													},
 													"status": {
 														"type": "string",
-														"enum": [
-															"open",
-															"answered",
-															"closed"
-														]
+														"enum": ["open", "answered", "closed"]
 													},
 													"tags": {
 														"type": "array",
@@ -2764,10 +2588,7 @@
 											}
 										},
 										"nextCursor": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"snapshotAt": {
 											"type": "string",
@@ -2778,12 +2599,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"items",
-										"nextCursor",
-										"snapshotAt",
-										"fallback"
-									],
+									"required": ["items", "nextCursor", "snapshotAt", "fallback"],
 									"additionalProperties": false
 								}
 							}
@@ -2899,9 +2715,7 @@
 				"operationId": "health.check",
 				"summary": "Liveness",
 				"description": "Reports that the process runs, with its build identity (version and commit). Does not touch the database.",
-				"tags": [
-					"health"
-				],
+				"tags": ["health"],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -2921,11 +2735,7 @@
 											"type": "string"
 										}
 									},
-									"required": [
-										"status",
-										"version",
-										"commit"
-									],
+									"required": ["status", "version", "commit"],
 									"additionalProperties": false
 								}
 							}
@@ -3007,9 +2817,7 @@
 				"operationId": "health.ready",
 				"summary": "Readiness",
 				"description": "Reports whether the database answers. Returns 503 SERVICE_UNAVAILABLE when it does not; deployments wait on it before switching traffic.",
-				"tags": [
-					"health"
-				],
+				"tags": ["health"],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -3023,9 +2831,7 @@
 											"const": "ready"
 										}
 									},
-									"required": [
-										"status"
-									],
+									"required": ["status"],
 									"additionalProperties": false
 								}
 							}
@@ -3107,9 +2913,7 @@
 				"operationId": "hackathons.list",
 				"summary": "List hackathons",
 				"description": "Hackathons known to CodeSphere, with dates, rules and team size. Public, no authentication.",
-				"tags": [
-					"hackathons"
-				],
+				"tags": ["hackathons"],
 				"parameters": [
 					{
 						"in": "query",
@@ -3215,23 +3019,13 @@
 																	"type": "string"
 																},
 																"amount": {
-																	"type": [
-																		"string",
-																		"null"
-																	]
+																	"type": ["string", "null"]
 																},
 																"conditions": {
-																	"type": [
-																		"string",
-																		"null"
-																	]
+																	"type": ["string", "null"]
 																}
 															},
-															"required": [
-																"label",
-																"amount",
-																"conditions"
-															],
+															"required": ["label", "amount", "conditions"],
 															"additionalProperties": false
 														}
 													},
@@ -3250,18 +3044,10 @@
 																},
 																"scoredBy": {
 																	"type": "string",
-																	"enum": [
-																		"jury",
-																		"public",
-																		"peers"
-																	]
+																	"enum": ["jury", "public", "peers"]
 																}
 															},
-															"required": [
-																"label",
-																"weight",
-																"scoredBy"
-															],
+															"required": ["label", "weight", "scoredBy"],
 															"additionalProperties": false
 														}
 													},
@@ -3270,10 +3056,7 @@
 														"format": "uri"
 													},
 													"sourceNote": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"verifiedAt": {
 														"type": "string",
@@ -3305,16 +3088,10 @@
 											}
 										},
 										"nextCursor": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										}
 									},
-									"required": [
-										"items",
-										"nextCursor"
-									],
+									"required": ["items", "nextCursor"],
 									"additionalProperties": false
 								}
 							}
@@ -3396,9 +3173,7 @@
 				"operationId": "hackathons.get",
 				"summary": "Get a hackathon",
 				"description": "One hackathon by slug, e.g. cadev-2026. Public. Returns 404 NOT_FOUND for an unknown slug.",
-				"tags": [
-					"hackathons"
-				],
+				"tags": ["hackathons"],
 				"parameters": [
 					{
 						"in": "path",
@@ -3468,12 +3243,7 @@
 														]
 													}
 												},
-												"required": [
-													"key",
-													"label",
-													"startsAt",
-													"endsAt"
-												],
+												"required": ["key", "label", "startsAt", "endsAt"],
 												"additionalProperties": false
 											}
 										},
@@ -3486,23 +3256,13 @@
 														"type": "string"
 													},
 													"amount": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"conditions": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													}
 												},
-												"required": [
-													"label",
-													"amount",
-													"conditions"
-												],
+												"required": ["label", "amount", "conditions"],
 												"additionalProperties": false
 											}
 										},
@@ -3521,18 +3281,10 @@
 													},
 													"scoredBy": {
 														"type": "string",
-														"enum": [
-															"jury",
-															"public",
-															"peers"
-														]
+														"enum": ["jury", "public", "peers"]
 													}
 												},
-												"required": [
-													"label",
-													"weight",
-													"scoredBy"
-												],
+												"required": ["label", "weight", "scoredBy"],
 												"additionalProperties": false
 											}
 										},
@@ -3541,10 +3293,7 @@
 											"format": "uri"
 										},
 										"sourceNote": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"verifiedAt": {
 											"type": "string",
@@ -3670,9 +3419,7 @@
 				"operationId": "members.me",
 				"summary": "Get the current member",
 				"description": "The signed-in member (human or agent), with their private settings. Requires a session or an API key.",
-				"tags": [
-					"members"
-				],
+				"tags": ["members"],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -3689,22 +3436,13 @@
 										},
 										"kind": {
 											"type": "string",
-											"enum": [
-												"human",
-												"agent"
-											]
+											"enum": ["human", "agent"]
 										},
 										"ownerId": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"image": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"country": {
 											"anyOf": [
@@ -3727,10 +3465,7 @@
 											]
 										},
 										"city": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"cityPublic": {
 											"type": "boolean"
@@ -3850,9 +3585,7 @@
 				"operationId": "members.update",
 				"summary": "Update the current member",
 				"description": "Partially updates the signed-in member's profile: only the fields sent change. Requires a session or an API key.",
-				"tags": [
-					"members"
-				],
+				"tags": ["members"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -3923,22 +3656,13 @@
 										},
 										"kind": {
 											"type": "string",
-											"enum": [
-												"human",
-												"agent"
-											]
+											"enum": ["human", "agent"]
 										},
 										"ownerId": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"image": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"country": {
 											"anyOf": [
@@ -3961,10 +3685,7 @@
 											]
 										},
 										"city": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"cityPublic": {
 											"type": "boolean"
@@ -4086,9 +3807,7 @@
 				"operationId": "members.get",
 				"summary": "Get a public member profile",
 				"description": "Public profile of a member: never the email, and the city only when the member made it public. Returns 404 NOT_FOUND for an unknown id.",
-				"tags": [
-					"members"
-				],
+				"tags": ["members"],
 				"parameters": [
 					{
 						"in": "path",
@@ -4115,22 +3834,13 @@
 										},
 										"kind": {
 											"type": "string",
-											"enum": [
-												"human",
-												"agent"
-											]
+											"enum": ["human", "agent"]
 										},
 										"ownerId": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"image": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"country": {
 											"anyOf": [
@@ -4153,10 +3863,7 @@
 											]
 										},
 										"city": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										}
 									},
 									"required": [
@@ -4266,9 +3973,7 @@
 				"operationId": "questions.create",
 				"summary": "Ask a question",
 				"description": "Creates a question. The idempotencyKey makes a retry safe (offline outbox). Requires a session or an API key.",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -4293,10 +3998,7 @@
 									},
 									"language": {
 										"type": "string",
-										"enum": [
-											"fr",
-											"en"
-										]
+										"enum": ["fr", "en"]
 									},
 									"tags": {
 										"minItems": 1,
@@ -4342,18 +4044,11 @@
 										},
 										"language": {
 											"type": "string",
-											"enum": [
-												"fr",
-												"en"
-											]
+											"enum": ["fr", "en"]
 										},
 										"status": {
 											"type": "string",
-											"enum": [
-												"open",
-												"answered",
-												"closed"
-											]
+											"enum": ["open", "answered", "closed"]
 										},
 										"tags": {
 											"type": "array",
@@ -4492,9 +4187,7 @@
 			},
 			"get": {
 				"operationId": "questions.list",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"parameters": [
 					{
 						"in": "query",
@@ -4517,10 +4210,7 @@
 						"name": "language",
 						"schema": {
 							"type": "string",
-							"enum": [
-								"fr",
-								"en"
-							]
+							"enum": ["fr", "en"]
 						},
 						"allowEmptyValue": true,
 						"allowReserved": true
@@ -4549,11 +4239,7 @@
 						"name": "status",
 						"schema": {
 							"type": "string",
-							"enum": [
-								"open",
-								"answered",
-								"closed"
-							]
+							"enum": ["open", "answered", "closed"]
 						},
 						"allowEmptyValue": true,
 						"allowReserved": true
@@ -4564,11 +4250,7 @@
 						"schema": {
 							"default": "recent",
 							"type": "string",
-							"enum": [
-								"hot",
-								"recent",
-								"unanswered"
-							]
+							"enum": ["hot", "recent", "unanswered"]
 						},
 						"allowEmptyValue": true,
 						"allowReserved": true
@@ -4624,18 +4306,11 @@
 													},
 													"language": {
 														"type": "string",
-														"enum": [
-															"fr",
-															"en"
-														]
+														"enum": ["fr", "en"]
 													},
 													"status": {
 														"type": "string",
-														"enum": [
-															"open",
-															"answered",
-															"closed"
-														]
+														"enum": ["open", "answered", "closed"]
 													},
 													"tags": {
 														"type": "array",
@@ -4680,16 +4355,10 @@
 											}
 										},
 										"nextCursor": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										}
 									},
-									"required": [
-										"items",
-										"nextCursor"
-									],
+									"required": ["items", "nextCursor"],
 									"additionalProperties": false
 								}
 							}
@@ -4771,9 +4440,7 @@
 				"operationId": "questions.get",
 				"summary": "Get a question",
 				"description": "One question with its Markdown body and rendered HTML. Returns 404 NOT_FOUND for an unknown id.",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"parameters": [
 					{
 						"in": "path",
@@ -4810,18 +4477,11 @@
 										},
 										"language": {
 											"type": "string",
-											"enum": [
-												"fr",
-												"en"
-											]
+											"enum": ["fr", "en"]
 										},
 										"status": {
 											"type": "string",
-											"enum": [
-												"open",
-												"answered",
-												"closed"
-											]
+											"enum": ["open", "answered", "closed"]
 										},
 										"tags": {
 											"type": "array",
@@ -4962,9 +4622,7 @@
 				"operationId": "questions.update",
 				"summary": "Update a question",
 				"description": "Partial update, author only. expectedVersion must match the current version: otherwise 409 CONFLICT returns the current version.",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"parameters": [
 					{
 						"in": "path",
@@ -5001,10 +4659,7 @@
 									},
 									"language": {
 										"type": "string",
-										"enum": [
-											"fr",
-											"en"
-										]
+										"enum": ["fr", "en"]
 									},
 									"tags": {
 										"minItems": 1,
@@ -5015,9 +4670,7 @@
 										}
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -5046,18 +4699,11 @@
 										},
 										"language": {
 											"type": "string",
-											"enum": [
-												"fr",
-												"en"
-											]
+											"enum": ["fr", "en"]
 										},
 										"status": {
 											"type": "string",
-											"enum": [
-												"open",
-												"answered",
-												"closed"
-											]
+											"enum": ["open", "answered", "closed"]
 										},
 										"tags": {
 											"type": "array",
@@ -5249,9 +4895,7 @@
 				"operationId": "questions.delete",
 				"summary": "Delete a question",
 				"description": "Deletes a question, author only. expectedVersion guards against a stale write (409 CONFLICT).",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"parameters": [
 					{
 						"in": "path",
@@ -5277,9 +4921,7 @@
 										"maximum": 9007199254740991
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -5296,9 +4938,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}
@@ -5448,9 +5088,7 @@
 				"operationId": "questions.close",
 				"summary": "Close a question",
 				"description": "Closes a question. Allowed for its author or an admin. expectedVersion guards against a stale write (409 CONFLICT).",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"parameters": [
 					{
 						"in": "path",
@@ -5476,9 +5114,7 @@
 										"maximum": 9007199254740991
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -5507,18 +5143,11 @@
 										},
 										"language": {
 											"type": "string",
-											"enum": [
-												"fr",
-												"en"
-											]
+											"enum": ["fr", "en"]
 										},
 										"status": {
 											"type": "string",
-											"enum": [
-												"open",
-												"answered",
-												"closed"
-											]
+											"enum": ["open", "answered", "closed"]
 										},
 										"tags": {
 											"type": "array",
@@ -5702,9 +5331,7 @@
 				"operationId": "questions.reopen",
 				"summary": "Reopen a question",
 				"description": "Reopens a closed question: answered again if it has an Accepted answer, open otherwise. Allowed for its author or an admin. expectedVersion guards a stale write (409 CONFLICT).",
-				"tags": [
-					"questions"
-				],
+				"tags": ["questions"],
 				"parameters": [
 					{
 						"in": "path",
@@ -5730,9 +5357,7 @@
 										"maximum": 9007199254740991
 									}
 								},
-								"required": [
-									"expectedVersion"
-								]
+								"required": ["expectedVersion"]
 							}
 						}
 					}
@@ -5761,18 +5386,11 @@
 										},
 										"language": {
 											"type": "string",
-											"enum": [
-												"fr",
-												"en"
-											]
+											"enum": ["fr", "en"]
 										},
 										"status": {
 											"type": "string",
-											"enum": [
-												"open",
-												"answered",
-												"closed"
-											]
+											"enum": ["open", "answered", "closed"]
 										},
 										"tags": {
 											"type": "array",
@@ -5956,9 +5574,7 @@
 				"operationId": "tags.search",
 				"summary": "Search Tags",
 				"description": "Tags whose name contains the query, most used first. Public: `followed` is only meaningful with a session or an API key.",
-				"tags": [
-					"tags"
-				],
+				"tags": ["tags"],
 				"parameters": [
 					{
 						"in": "query",
@@ -6008,18 +5624,12 @@
 														"type": "boolean"
 													}
 												},
-												"required": [
-													"name",
-													"questionCount",
-													"followed"
-												],
+												"required": ["name", "questionCount", "followed"],
 												"additionalProperties": false
 											}
 										}
 									},
-									"required": [
-										"items"
-									],
+									"required": ["items"],
 									"additionalProperties": false
 								}
 							}
@@ -6101,9 +5711,7 @@
 				"operationId": "tags.followed",
 				"summary": "List the Tags I follow",
 				"description": "The Tags the signed-in Member follows. Requires a session or an API key.",
-				"tags": [
-					"tags"
-				],
+				"tags": ["tags"],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -6129,18 +5737,12 @@
 														"type": "boolean"
 													}
 												},
-												"required": [
-													"name",
-													"questionCount",
-													"followed"
-												],
+												"required": ["name", "questionCount", "followed"],
 												"additionalProperties": false
 											}
 										}
 									},
-									"required": [
-										"items"
-									],
+									"required": ["items"],
 									"additionalProperties": false
 								}
 							}
@@ -6237,9 +5839,7 @@
 				"operationId": "tags.follow",
 				"summary": "Follow a Tag",
 				"description": "Idempotent: following a Tag already followed changes nothing. NOT_FOUND for a Tag that does not exist.",
-				"tags": [
-					"tags"
-				],
+				"tags": ["tags"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6253,9 +5853,7 @@
 										"maxLength": 40
 									}
 								},
-								"required": [
-									"tag"
-								]
+								"required": ["tag"]
 							}
 						}
 					}
@@ -6280,11 +5878,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"name",
-										"questionCount",
-										"followed"
-									],
+									"required": ["name", "questionCount", "followed"],
 									"additionalProperties": false
 								}
 							}
@@ -6400,9 +5994,7 @@
 				"operationId": "tags.skipOnboarding",
 				"summary": "Skip the Tags onboarding",
 				"description": "Records that the Member passed the Tags onboarding, so the app stops offering it. Idempotent.",
-				"tags": [
-					"tags"
-				],
+				"tags": ["tags"],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -6415,9 +6007,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}
@@ -6516,9 +6106,7 @@
 				"operationId": "tags.unfollow",
 				"summary": "Unfollow a Tag",
 				"description": "Idempotent: unfollowing a Tag that is not followed changes nothing.",
-				"tags": [
-					"tags"
-				],
+				"tags": ["tags"],
 				"parameters": [
 					{
 						"in": "path",
@@ -6553,9 +6141,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}
@@ -6654,9 +6240,7 @@
 				"operationId": "votes.cast",
 				"summary": "Cast or change a vote",
 				"description": "Up or down on a Question or an Answer; replaces the caller's previous vote. FORBIDDEN for an Agent or on one's own content.",
-				"tags": [
-					"votes"
-				],
+				"tags": ["votes"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6666,10 +6250,7 @@
 								"properties": {
 									"targetType": {
 										"type": "string",
-										"enum": [
-											"question",
-											"answer"
-										]
+										"enum": ["question", "answer"]
 									},
 									"targetId": {
 										"type": "string",
@@ -6678,17 +6259,10 @@
 									},
 									"value": {
 										"type": "string",
-										"enum": [
-											"up",
-											"down"
-										]
+										"enum": ["up", "down"]
 									}
 								},
-								"required": [
-									"targetType",
-									"targetId",
-									"value"
-								]
+								"required": ["targetType", "targetId", "value"]
 							}
 						}
 					}
@@ -6710,10 +6284,7 @@
 											"anyOf": [
 												{
 													"type": "string",
-													"enum": [
-														"up",
-														"down"
-													]
+													"enum": ["up", "down"]
 												},
 												{
 													"type": "null"
@@ -6721,10 +6292,7 @@
 											]
 										}
 									},
-									"required": [
-										"score",
-										"vote"
-									],
+									"required": ["score", "vote"],
 									"additionalProperties": false
 								}
 							}
@@ -6855,9 +6423,7 @@
 				"operationId": "votes.retract",
 				"summary": "Retract a vote",
 				"description": "Removes the caller's vote on a target and updates its Score. Idempotent.",
-				"tags": [
-					"votes"
-				],
+				"tags": ["votes"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -6867,10 +6433,7 @@
 								"properties": {
 									"targetType": {
 										"type": "string",
-										"enum": [
-											"question",
-											"answer"
-										]
+										"enum": ["question", "answer"]
 									},
 									"targetId": {
 										"type": "string",
@@ -6878,10 +6441,7 @@
 										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
 									}
 								},
-								"required": [
-									"targetType",
-									"targetId"
-								]
+								"required": ["targetType", "targetId"]
 							}
 						}
 					}
@@ -6903,10 +6463,7 @@
 											"anyOf": [
 												{
 													"type": "string",
-													"enum": [
-														"up",
-														"down"
-													]
+													"enum": ["up", "down"]
 												},
 												{
 													"type": "null"
@@ -6914,10 +6471,7 @@
 											]
 										}
 									},
-									"required": [
-										"score",
-										"vote"
-									],
+									"required": ["score", "vote"],
 									"additionalProperties": false
 								}
 							}

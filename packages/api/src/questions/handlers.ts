@@ -1,9 +1,9 @@
 import { AnswerError, createAnswerService } from "../answers/service";
 import { requireAdmin } from "../authorization";
 import { impl } from "../index";
-import { createListingService, InvalidCursorError } from "./listing";
 import { answerLimiter, consume, questionLimiter } from "../rate-limit";
 import { createVoteService, VoteError } from "../votes/service";
+import { createListingService, InvalidCursorError } from "./listing";
 import { createQuestionService, QuestionError } from "./service";
 
 // Each request builds its service from the request's database (context.db), as the other routers do.
@@ -116,31 +116,33 @@ export function createQuestionsHandlers() {
 			}
 		}),
 
-		reopen: impl.questions.reopen.handler(async ({ context, input, errors }) => {
-			const userId = context.session?.user.id;
-			if (!userId) {
-				throw errors.UNAUTHORIZED();
-			}
-
-			try {
-				return await createQuestionService(context.db).reopenQuestion(
-					{ id: userId, isStaff: requireAdmin(context.session).ok },
-					input.id,
-					input.expectedVersion,
-				);
-			} catch (err) {
-				if (err instanceof QuestionError) {
-					if (err.code === "NOT_FOUND") throw errors.NOT_FOUND();
-					if (err.code === "FORBIDDEN") throw errors.FORBIDDEN();
-					if (err.code === "CONFLICT") {
-						throw errors.CONFLICT({
-							data: { version: err.currentVersion ?? 0 },
-						});
-					}
+		reopen: impl.questions.reopen.handler(
+			async ({ context, input, errors }) => {
+				const userId = context.session?.user.id;
+				if (!userId) {
+					throw errors.UNAUTHORIZED();
 				}
-				throw err;
-			}
-		}),
+
+				try {
+					return await createQuestionService(context.db).reopenQuestion(
+						{ id: userId, isStaff: requireAdmin(context.session).ok },
+						input.id,
+						input.expectedVersion,
+					);
+				} catch (err) {
+					if (err instanceof QuestionError) {
+						if (err.code === "NOT_FOUND") throw errors.NOT_FOUND();
+						if (err.code === "FORBIDDEN") throw errors.FORBIDDEN();
+						if (err.code === "CONFLICT") {
+							throw errors.CONFLICT({
+								data: { version: err.currentVersion ?? 0 },
+							});
+						}
+					}
+					throw err;
+				}
+			},
+		),
 
 		delete: impl.questions.delete.handler(
 			async ({ context, input, errors }) => {
