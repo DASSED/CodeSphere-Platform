@@ -7,7 +7,7 @@ import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
 import { hackathon } from "@codesphere/db/schema/hackathons";
 import { questions } from "@codesphere/db/schema/questions";
-import { tag } from "@codesphere/db/schema/tags";
+import { tag, tagFollows } from "@codesphere/db/schema/tags";
 import { cadev2026 } from "@codesphere/db/seed/cadev";
 import { seedHackathon } from "@codesphere/db/seed/seed";
 import { createRouterClient } from "@orpc/server";
@@ -126,6 +126,28 @@ describe.skipIf(!url)("admin.tags on Postgres (#125)", () => {
 			.where(eq(questions.id, q?.id ?? ""));
 		expect(after?.tags).toEqual([name("e")]);
 		await db.delete(tag).where(eq(tag.id, t.id));
+	});
+
+	test("renaming a Tag moves its followers, without doubling a follow", async () => {
+		const from = await admin().admin.tags.create({ name: name("f") });
+		// The admin follows the old name AND already follows the target name (a stale follow:
+		// follows carry no foreign key to the Tag, so the target row can exist without a Tag).
+		await db.insert(tagFollows).values([
+			{ userId: adminId, tag: from.name },
+			{ userId: adminId, tag: name("h") },
+		]);
+		await admin().admin.tags.rename({
+			id: from.id,
+			name: name("h"),
+			expectedVersion: from.version,
+		});
+		const mine = await db
+			.select({ tag: tagFollows.tag })
+			.from(tagFollows)
+			.where(eq(tagFollows.userId, adminId));
+		expect(mine.map((row) => row.tag)).toEqual([name("h")]);
+		await db.delete(tagFollows).where(eq(tagFollows.userId, adminId));
+		await db.delete(tag).where(inArray(tag.name, [name("h"), name("f")]));
 	});
 
 	test("the Hackathon's Tag is protected, a non-admin is FORBIDDEN", async () => {

@@ -10,6 +10,7 @@ export type ProfileRow = {
 	city: string | null;
 	cityPublic: boolean;
 	hideAgentContent: boolean;
+	tagsOnboardingSkippedAt: Date | null;
 };
 
 export function publicProfile(row: ProfileRow) {
@@ -30,5 +31,6 @@ export function ownProfile(row: ProfileRow) {
 		city: row.city,
 		cityPublic: row.cityPublic,
 		hideAgentContent: row.hideAgentContent,
+		tagsOnboardingSkipped: row.tagsOnboardingSkippedAt !== null,
 	};
 }

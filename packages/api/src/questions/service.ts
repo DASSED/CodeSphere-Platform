@@ -7,6 +7,7 @@ import { questions } from "@codesphere/db/schema/questions";
 import { and, eq, isNull } from "drizzle-orm";
 import { withAudit } from "../audit";
 import { sanitizeMarkdown } from "../markdown/sanitizer";
+import { ensureTags } from "../tags";
 
 /** A refused question operation. `currentVersion` is set on CONFLICT only. */
 export class QuestionError extends Error {
@@ -117,6 +118,9 @@ export function createQuestionService(db: Database) {
 
 			const { html: bodyHtml } = sanitizeMarkdown(input.body);
 
+			// Tags are created freely, normalized: each becomes an official Tag row (#44).
+			await ensureTags(db, input.tags);
+
 			// One statement, no transaction: a racing duplicate key fails on the unique index and
 			// nothing is written. The replay then returns the question the first request created.
 			try {
@@ -171,6 +175,10 @@ export function createQuestionService(db: Database) {
 
 			if (input.tags && (input.tags.length < 1 || input.tags.length > 5)) {
 				throw new QuestionError("VALIDATION");
+			}
+
+			if (input.tags) {
+				await ensureTags(db, input.tags);
 			}
 
 			const body = input.body ?? q.body;

@@ -23,6 +23,8 @@ export const PublicProfile = MemberSummary.extend({
 export const OwnProfile = PublicProfile.extend({
 	cityPublic: z.boolean(),
 	hideAgentContent: z.boolean(),
+	/** The Member passed the Tags onboarding: the app no longer sends them there by itself (#44). */
+	tagsOnboardingSkipped: z.boolean(),
 });
 
 export const ProfileUpdate = z.object({

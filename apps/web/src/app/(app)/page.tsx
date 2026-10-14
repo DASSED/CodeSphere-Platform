@@ -15,11 +15,13 @@ import {
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, MessageSquareIcon, TagIcon } from "lucide-react";
+import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type * as z from "zod";
 
 import { AskButton } from "@/components/site-header";
+import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
 import { authClient } from "@/lib/auth-client";
 import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
@@ -159,7 +161,11 @@ function EmptyFeed({ signedIn }: { signedIn: boolean }) {
 			<EmptyContent className="flex-row flex-wrap justify-center">
 				<AskButton />
 				{signedIn && (
-					<Button variant="outline" disabled>
+					<Button
+						variant="outline"
+						render={<Link href="/onboarding/tags" />}
+						nativeButton={false}
+					>
 						<TagIcon />
 						{t("followTags")}
 					</Button>
@@ -207,6 +213,8 @@ function MemberHome({
 		: null;
 	return (
 		<main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 md:grid-cols-[minmax(0,1fr)_20rem] md:px-6 md:py-8">
+			{/* Tags are read from the database: without one there is nothing to onboard. */}
+			{HAS_DATABASE && <TagsOnboardingRedirect />}
 			<div className="grid min-w-0 content-start gap-5">
 				{/* Phone only: greeting and compact ribbon (variant 4). */}
 				<div className="grid gap-4 md:hidden">

@@ -93,6 +93,7 @@ export async function renameTag(
 	if (before.ownerHackathon) {
 		return { ok: false, code: "CONFLICT" };
 	}
+	const renamed = normalizeTagName(input.name);
 	let changed: Record<string, unknown>[];
 	try {
 		changed = await withAudit(
@@ -107,7 +108,7 @@ export async function renameTag(
 			db
 				.update(tag)
 				.set({
-					name: normalizeTagName(input.name),
+					name: renamed,
 					version: sql`${tag.version} + 1`,
 				})
 				.where(
@@ -117,8 +118,19 @@ export async function renameTag(
 				.returning({ id: tag.id }),
 			// The Questions carry the Tag by name: they follow the rename, in the same statement.
 			[
-				sql`UPDATE questions SET tags = array_replace(tags, ${before.name}, ${normalizeTagName(input.name)})
+				sql`UPDATE questions SET tags = array_replace(tags, ${before.name}, ${renamed})
 					WHERE ${before.name} = ANY (tags) AND EXISTS (SELECT 1 FROM m)`,
+				// Followers follow the new name, unless they already followed it (primary key).
+				sql`UPDATE tag_follows SET tag = ${renamed}
+					WHERE tag = ${before.name} AND EXISTS (SELECT 1 FROM m)
+					AND NOT EXISTS (SELECT 1 FROM tag_follows f2
+						WHERE f2.user_id = tag_follows.user_id AND f2.tag = ${renamed})`,
+				// Those who already followed the new name keep that one: their old row goes away
+				// (disjoint from the rows updated above, so the two writes never meet).
+				sql`DELETE FROM tag_follows
+					WHERE tag = ${before.name} AND EXISTS (SELECT 1 FROM m)
+					AND EXISTS (SELECT 1 FROM tag_follows f2
+						WHERE f2.user_id = tag_follows.user_id AND f2.tag = ${renamed})`,
 			],
 		);
 	} catch (error) {

@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "tags_onboarding_skipped_at" timestamp;
