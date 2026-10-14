@@ -103,6 +103,7 @@
         "@orpc/client": "catalog:",
         "@orpc/contract": "catalog:",
         "@orpc/openapi": "catalog:",
+        "@orpc/ratelimit": "2.0.0-beta.41",
         "@orpc/server": "catalog:",
         "@orpc/zod": "catalog:",
         "drizzle-orm": "catalog:",
@@ -702,6 +703,8 @@
     "@orpc/openapi": ["@orpc/openapi@2.0.0-beta.41", "", { "dependencies": { "@openapi-spec/downgrader": "~0.1.0", "@openapi-spec/types": "~0.1.0", "@orpc/client": "2.0.0-beta.41", "@orpc/contract": "2.0.0-beta.41", "@orpc/json-schema": "2.0.0-beta.41", "@orpc/server": "2.0.0-beta.41", "@orpc/shared": "2.0.0-beta.41", "@standard-server/core": "~0.10.0", "@standard-server/fetch": "~0.10.0", "rou3": "^0.9.1" }, "peerDependencies": { "@scalar/api-reference": ">=1.57.2", "@types/swagger-ui": ">=5.32.0", "swagger-ui": ">=5.32.6" }, "optionalPeers": ["@scalar/api-reference", "@types/swagger-ui", "swagger-ui"] }, "sha512-r+Q6z7tVdMiLLZlk+HxpPQ3LTgCFri7+13y6xehlg2zB0GEXs6CdjAzR4YtAgGAxOrysdPd1U5kcPd42jf5qoA=="],
 
     "@orpc/opentelemetry": ["@orpc/opentelemetry@2.0.0-beta.41", "", { "dependencies": { "@orpc/shared": "2.0.0-beta.41" }, "peerDependencies": { "@opentelemetry/api": ">=1.9.0", "@opentelemetry/instrumentation": ">=0.203.0" } }, "sha512-X9gQvcKpwU1444V9cPZ43qQR99iF6ptQcOoHDoBVzYsjaUv0MnroAaasIJsRvWkZEOFZd+erZEgRfggQoKU91Q=="],
+
+    "@orpc/ratelimit": ["@orpc/ratelimit@2.0.0-beta.41", "", { "dependencies": { "@orpc/server": "2.0.0-beta.41", "@orpc/shared": "2.0.0-beta.41", "@standard-server/core": "~0.10.0" }, "peerDependencies": { "@upstash/ratelimit": ">=2.0.8", "redis": ">=6.0.0" }, "optionalPeers": ["@upstash/ratelimit", "redis"] }, "sha512-gAg6/MCpyGHEOeTeh7FgzN7y22zjk1JwSmCDIMno8k7UxDZDmY3YNo3QsfFtmaweXVHJgA4soeKa900hLZahZg=="],
 
     "@orpc/server": ["@orpc/server@2.0.0-beta.41", "", { "dependencies": { "@orpc/client": "2.0.0-beta.41", "@orpc/contract": "2.0.0-beta.41", "@orpc/shared": "2.0.0-beta.41", "@standard-server/aws-lambda": "~0.10.0", "@standard-server/core": "~0.10.0", "@standard-server/fastify": "~0.10.0", "@standard-server/fetch": "~0.10.0", "@standard-server/node": "~0.10.0", "@standard-server/peer": "~0.10.0", "cookie": "^2.0.1" }, "peerDependencies": { "crossws": ">=0.3.4", "fastify": ">=5.6.1" }, "optionalPeers": ["crossws", "fastify"] }, "sha512-66XM0e1p5uP78C77nONozn0igCjkoYiOnUOB1ScP8UE8EeVle0BFDQQViBqttYCYOSVr3P+8u3ru1bpKZk5fUg=="],
 
