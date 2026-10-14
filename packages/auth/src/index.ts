@@ -20,6 +20,10 @@ export type AuthConfig = SocialProviderEnv &
 		BETTER_AUTH_URL: string;
 		BETTER_AUTH_SECRET: string;
 		CORS_ORIGIN: string;
+		/** Origin of the back-office host (production): trusted for auth calls, like CORS_ORIGIN. */
+		ADMIN_ORIGIN?: string;
+		/** Parent domain (e.g. codesphereplatform.xyz) so the session cookie reaches the back-office host. */
+		COOKIE_DOMAIN?: string;
 		SUPER_ADMIN_EMAILS?: string;
 		ADMIN_EMAILS?: string;
 		MODERATOR_EMAILS?: string;
@@ -69,7 +73,11 @@ export function createAuth(
 			provider: "pg",
 			schema,
 		}),
-		trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
+		trustedOrigins: [
+			env.CORS_ORIGIN,
+			...(env.ADMIN_ORIGIN ? [env.ADMIN_ORIGIN] : []),
+			...desktopOrigins,
+		],
 		// Staging only: refuse a proxy callback that would send a member to an origin other than
 		// staging or one preview (#149). The plugin redirects to whatever its state carries.
 		hooks: proxy
@@ -184,7 +192,11 @@ export function createAuth(
 		baseURL: env.BETTER_AUTH_URL,
 		advanced: {
 			// One origin per deployment (map #86): the web and the API share a site, so the session
-			// cookie is first-party. SameSite=None was for the cross-origin layout, now retired.
+			// cookie is first-party. With the back-office on its own host (COOKIE_DOMAIN), the cookie is
+			// scoped to the parent domain so both hosts see the same session.
+			crossSubDomainCookies: env.COOKIE_DOMAIN
+				? { enabled: true, domain: env.COOKIE_DOMAIN }
+				: undefined,
 			defaultCookieAttributes: {
 				sameSite: "lax",
 				secure: true,

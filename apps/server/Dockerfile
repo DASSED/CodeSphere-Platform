@@ -14,8 +14,10 @@ ENV NODE_ENV=production
 ARG APP_VERSION=dev
 ARG GIT_SHA=dev
 ENV APP_VERSION=$APP_VERSION GIT_SHA=$GIT_SHA
-COPY --from=builder /app /app
+COPY --from=builder --chown=bun:bun /app /app
 
+# Not root: the image ships the `bun` user from oven/bun.
+USER bun
 EXPOSE 3000
 
 WORKDIR /app/apps/server

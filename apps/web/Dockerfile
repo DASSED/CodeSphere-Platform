@@ -16,8 +16,10 @@ RUN --mount=type=secret,id=web_env,target=/app/apps/web/.env.local --mount=type=
 FROM oven/bun:1 AS runner
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=builder /app /app
+COPY --from=builder --chown=bun:bun /app /app
 
+# Not root: Next writes its cache under .next at runtime, owned by bun above.
+USER bun
 ENV HOST=0.0.0.0
 ENV PORT=3001
 EXPOSE 3001
