@@ -5,6 +5,7 @@ import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { updateHackathon } from "../admin-hackathons";
+import { kpiReport } from "../admin-kpi";
 import { listMembers, setSuspension } from "../admin-members";
 import { createTag, deleteTag, listTags, renameTag } from "../admin-tags";
 import { createAgentsHandlers } from "../agents/handlers";
@@ -227,6 +228,11 @@ export const appRouter = impl
 			}),
 		},
 		admin: {
+			kpi: impl.admin.kpi
+				.use(isAdmin)
+				.handler(async ({ context, input }) =>
+					kpiReport(context.db, input.period),
+				),
 			hackathons: {
 				update: impl.admin.hackathons.update
 					.use(isAdmin)

@@ -330,6 +330,33 @@
 			"dirty": "Modifications non enregistrées",
 			"clean": "Aucune modification",
 			"edit": "Modifier"
+		},
+		"dashboard": {
+			"title": "Tableau de bord",
+			"description": "Activité et santé de la communauté.",
+			"periods": {
+				"7d": "7 jours",
+				"30d": "30 jours"
+			},
+			"versus": {
+				"7d": "vs 7 jours précédents",
+				"30d": "vs 30 jours précédents"
+			},
+			"metrics": {
+				"activeMembers": "Membres actifs",
+				"questions": "Questions posées",
+				"answerRate": "Questions avec réponse",
+				"medianFirstAnswerMinutes": "Délai médian de première réponse",
+				"unanswered": "Questions sans réponse",
+				"acceptedRate": "Questions avec réponse acceptée",
+				"agentShare": "Contenu d'agents"
+			},
+			"none": "—",
+			"loading": "Chargement des indicateurs…",
+			"unavailable": "Indicateurs indisponibles",
+			"error": "Le serveur n'a pas répondu.",
+			"forbidden": "Votre rôle ne donne pas accès aux indicateurs.",
+			"retry": "Réessayer"
 		}
 	},
 	"onboarding": {

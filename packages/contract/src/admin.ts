@@ -133,6 +133,39 @@ export const AdminTag = z.object({
 /** Name of a Tag: normalized (trimmed, lowercase) like the Tags of a Question. */
 export const TagName = z.string().trim().toLowerCase().min(1).max(40);
 
+/** Window of the KPI page (#113): the last 7 or 30 days, compared with the window before. */
+export const KpiPeriod = z.enum(["7d", "30d"]);
+
+export const KpiMetricId = z.enum([
+	"activeMembers",
+	"questions",
+	"answerRate",
+	"medianFirstAnswerMinutes",
+	"unanswered",
+	"acceptedRate",
+	"agentShare",
+]);
+
+/**
+ * One metric over the window. Rates are between 0 and 1. A value is null when it has no
+ * meaning, such as a rate over no Question or a median over no answer.
+ */
+export const KpiMetric = z.object({
+	id: KpiMetricId,
+	value: z.number().nullable(),
+	/** Same metric over the window just before, for the change. */
+	previous: z.number().nullable(),
+	/** The window cut into equal buckets, oldest first. */
+	trend: z.array(z.number().nullable()),
+});
+
+export const KpiReport = z.object({
+	period: KpiPeriod,
+	from: Timestamp,
+	to: Timestamp,
+	metrics: z.array(KpiMetric),
+});
+
 const tagErrors = {
 	UNAUTHORIZED: {},
 	FORBIDDEN: {},
@@ -161,6 +194,20 @@ export const adminContract = {
 			.input(z.object({ id: Id }))
 			.output(z.object({ success: z.boolean() })),
 	},
+	kpi: base
+		.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+		.meta(
+			openapi({
+				method: "GET",
+				path: "/admin/kpi",
+				tags: ["admin"],
+				summary: "Community KPIs",
+				description:
+					"Activity over the last 7 or 30 days, with the previous window and a trend: active Members, Questions, answer rate, median time to first answer, unanswered Questions, accepted rate and agent share. Requires a staff role.",
+			}),
+		)
+		.input(z.object({ period: KpiPeriod }))
+		.output(KpiReport),
 	members: {
 		list: base
 			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
