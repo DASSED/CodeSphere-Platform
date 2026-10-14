@@ -4,17 +4,6 @@ import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
-
-<<<<<<< HEAD
-
-import { createAgentsHandlers } from "../agents/handlers";
-import { agentPreset } from "../agents/service";
-import { deleteMember } from "../members-delete";
-import { exportMember } from "../members-export";
-
-=======
->>>>>>> feat/agents-member-delete
-
 import { updateHackathon } from "../admin-hackathons";
 import { listMembers, setSuspension } from "../admin-members";
 import { createTag, deleteTag, listTags, renameTag } from "../admin-tags";
@@ -27,6 +16,7 @@ import { isRead } from "../exposure";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
 import { deleteMember } from "../members-delete";
+import { exportMember } from "../members-export";
 import { ownProfile, publicProfile } from "../profile";
 import {
 	createAnswersHandlers,
@@ -164,7 +154,6 @@ export const appRouter = impl
 					return ownProfile(row);
 				},
 			),
-<<<<<<< HEAD
 			export: impl.members.export.handler(async ({ context, errors }) => {
 				const me = context.session?.user as
 					| { id: string; kind?: string }
@@ -181,20 +170,6 @@ export const appRouter = impl
 				}
 				return data;
 			}),
-			delete: impl.members.delete.handler(async ({ context, input, errors }) => {
-				const me = context.session?.user as
-					| { id: string; kind?: string }
-					| undefined;
-				if (!me) {
-					throw errors.UNAUTHORIZED();
-				}
-				if (me.kind !== "human") {
-					throw errors.FORBIDDEN();
-				}
-				await deleteMember(context.db, me.id, input.deleteContent);
-				return { success: true };
-			}),
-=======
 			delete: impl.members.delete.handler(
 				async ({ context, input, errors }) => {
 					const me = context.session?.user as
@@ -210,7 +185,6 @@ export const appRouter = impl
 					return { success: true };
 				},
 			),
->>>>>>> feat/agents-member-delete
 			get: impl.members.get.handler(async ({ context, input, errors }) => {
 				const [row] = await context.db
 					.select()
@@ -227,7 +201,7 @@ export const appRouter = impl
 				items: await loadHackathons(context.db, undefined, input.limit),
 				nextCursor: null,
 			})),
-			get: impl.hackathons.get.handler(async (context, input, errors ) => {
+			get: impl.hackathons.get.handler(async ({ context, input, errors }) => {
 				const [found] = await loadHackathons(
 					context.db,
 					{ slug: input.slug },
@@ -240,6 +214,7 @@ export const appRouter = impl
 			}),
 		},
 		admin: {
+			hackathons: {
 				update: impl.admin.hackathons.update
 					.use(isAdmin)
 					.handler(async ({ context, input, errors }) => {
@@ -262,8 +237,9 @@ export const appRouter = impl
 							throw errors.NOT_FOUND();
 						}
 						throw errors.CONFLICT({ data: { version: outcome.version } });
-					}),,
-			members: 
+					}),
+			},
+			members: {
 				list: impl.admin.members.list
 					.use(isAdmin)
 					.handler(async (context, input, errors ) => {
@@ -279,7 +255,7 @@ export const appRouter = impl
 					}),
 				suspend: impl.admin.members.suspend
 					.use(isAdmin)
-					.handler(async (context, input, errors ) => {
+					.handler(async ({ context, input, errors }) => {
 						const actorId = actorOf(context.session);
 						if (input.id === actorId) {
 							throw errors.FORBIDDEN({
@@ -300,7 +276,7 @@ export const appRouter = impl
 					}),
 				reactivate: impl.admin.members.reactivate
 					.use(isAdmin)
-					.handler(async (context, input, errors ) => {
+					.handler(async ({ context, input, errors }) => {
 						const outcome = await setSuspension(
 							context.db,
 							actorOf(context.session),
@@ -312,15 +288,16 @@ export const appRouter = impl
 							throw refusal(outcome.code, errors);
 						}
 						return outcome.member;
-					}),,
-			tags: 
+					}),
+			},
+			tags: {
 				list: impl.admin.tags.list
 					.use(isAdmin)
 					.handler(async (context ) => (
 						items: await listTags(context.db),)),
 				create: impl.admin.tags.create
 					.use(isAdmin)
-					.handler(async (context, input, errors ) => {
+					.handler(async ({ context, input, errors }) => {
 						const outcome = await createTag(
 							context.db,
 							actorOf(context.session),
@@ -333,7 +310,7 @@ export const appRouter = impl
 					}),
 				rename: impl.admin.tags.rename
 					.use(isAdmin)
-					.handler(async (context, input, errors ) => {
+					.handler(async ({ context, input, errors }) => {
 						const outcome = await renameTag(
 							context.db,
 							actorOf(context.session),
@@ -346,7 +323,7 @@ export const appRouter = impl
 					}),
 				delete: impl.admin.tags.delete
 					.use(isAdmin)
-					.handler(async (context, input, errors ) => {
+					.handler(async ({ context, input, errors }) => {
 						const outcome = await deleteTag(
 							context.db,
 							actorOf(context.session),
@@ -356,8 +333,9 @@ export const appRouter = impl
 							throw tagRefusal(outcome.code, errors);
 						}
 						return { success: true };
-					}),,
-			auditLog: 
+					}),
+			},
+			auditLog: {
 				list: impl.admin.auditLog.list
 					.use(isAdmin)
 					.handler(async (context, input, errors ) => {
@@ -411,8 +389,9 @@ export const appRouter = impl
 									? encodeCursor(last.createdAt, last.id)
 									: null,
 						};
-					}),,
-			questions: 
+					}),
+			},
+			questions: {
 				remove: impl.admin.questions.remove
 					.use(isAdmin)
 					.handler(async (context, input, errors ) => {
@@ -439,7 +418,8 @@ export const appRouter = impl
 							}
 							throw err;
 						}
-					}),,
+					}),
+			},
 		},
 		tags: {
 			search: impl.tags.search.handler(async ({ context, input }) => ({
@@ -449,11 +429,11 @@ export const appRouter = impl
 					context.session?.user.id ?? null,
 				),
 			})),
-			followed: impl.tags.followed.handler(async (context ) => {
+			followed: impl.tags.followed.handler(async ({ context }) => {
 				const userId = actorOf(context.session);
 				return { items: await followedTags(context.db, userId) };
 			}),
-			follow: impl.tags.follow.handler(async (context, input, errors ) => {
+			follow: impl.tags.follow.handler(async ({ context, input, errors }) => {
 				const userId = actorOf(context.session);
 				const tag = await followTag(context.db, userId, input.tag);
 				if (!tag) {
@@ -461,10 +441,11 @@ export const appRouter = impl
 				}
 				return tag;
 			}),
-			skipOnboarding: impl.tags.skipOnboarding.handler(async (context ) => 
+			skipOnboarding: impl.tags.skipOnboarding.handler(async ({ context }) => {
 				await skipTagsOnboarding(context.db, actorOf(context.session));
-				return { success: true };),
-			unfollow: impl.tags.unfollow.handler(async (context, input ) => {
+				return { success: true };
+			}),
+			unfollow: impl.tags.unfollow.handler(async ({ context, input }) => {
 				const userId = actorOf(context.session);
 				await unfollowTag(context.db, userId, input.tag);
 				return { success: true };
