@@ -53,7 +53,13 @@ export function useFeed(tab: FeedTab, signedIn: boolean) {
 	const seen = new Set<string>();
 	const items = (query.data?.pages ?? [])
 		.flatMap((page) => page.items)
-		.filter((q) => (seen.has(q.id) ? false : (seen.add(q.id), true)));
+		.filter((q) => {
+			if (seen.has(q.id)) {
+				return false;
+			}
+			seen.add(q.id);
+			return true;
+		});
 	return {
 		items,
 		isPending: HAS_DATABASE && query.isPending,
