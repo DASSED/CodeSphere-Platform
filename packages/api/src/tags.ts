@@ -73,6 +73,13 @@ export async function followTag(db: Database, userId: string, name: string) {
 	return row ? summary(row) : null;
 }
 
+/** Records that the Member passed the onboarding; idempotent (the first date is kept). */
+export async function skipTagsOnboarding(db: Database, userId: string) {
+	await db.execute(sql`
+		UPDATE "user" SET tags_onboarding_skipped_at = now()
+		WHERE id = ${userId} AND tags_onboarding_skipped_at IS NULL`);
+}
+
 /** Unfollows a Tag; idempotent. */
 export async function unfollowTag(db: Database, userId: string, name: string) {
 	await db.execute(
@@ -80,7 +87,14 @@ export async function unfollowTag(db: Database, userId: string, name: string) {
 	);
 }
 
-/** Makes sure every Tag of a Question exists as an official Tag row; idempotent (#44). */
+/**
+ * Makes sure every Tag of a Question exists as an official Tag row; idempotent (#44).
+ *
+ * Runs BEFORE the Question is written, and not in the same statement: the edge database (Neon
+ * over HTTP) has no transactions. If the Question then fails (validation, conflict), the Tags stay
+ * with zero Questions: harmless, visible in the search, and an Admin can delete them. The reverse
+ * order would be worse, a Question carrying a Tag that is not in the registry.
+ */
 export async function ensureTags(db: Database, names: readonly string[]) {
 	if (names.length === 0) {
 		return;

@@ -4,21 +4,22 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { isOnboardingSkipped, shouldOnboard } from "@/lib/tags-onboarding";
+import { shouldOnboard } from "@/lib/tags-onboarding";
 import { orpc } from "@/utils/orpc";
 
 /** Sends a Member who follows no Tag to the onboarding, unless they skipped it (#44). */
-export default function TagsOnboardingRedirect({ userId }: { userId: string }) {
+export default function TagsOnboardingRedirect() {
 	const router = useRouter();
 	const followed = useQuery(orpc.tags.followed.queryOptions());
+	const me = useQuery(orpc.members.me.queryOptions());
 	const count = followed.data?.items.length;
+	const skipped = me.data?.tagsOnboardingSkipped;
 
 	useEffect(() => {
-		const skipped = isOnboardingSkipped(window.localStorage, userId);
 		if (shouldOnboard({ followedCount: count, skipped })) {
 			router.replace("/onboarding/tags");
 		}
-	}, [count, userId, router]);
+	}, [count, skipped, router]);
 
 	return null;
 }

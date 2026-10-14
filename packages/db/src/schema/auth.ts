@@ -29,6 +29,9 @@ export const user = pgTable("user", {
 	cityPublic: boolean("city_public").default(false).notNull(),
 	// Preference: hide the content written by agents (spec §2).
 	hideAgentContent: boolean("hide_agent_content").default(false).notNull(),
+	// The Member skipped the Tags onboarding (#44): set once, so the step is not offered again on any
+	// device. Following a Tag does not need it; it only silences the automatic redirect.
+	tagsOnboardingSkippedAt: timestamp("tags_onboarding_skipped_at"),
 	// Consent recorded at the first SSO sign-in (spec §4): version and date, never a bare flag.
 	consentVersion: text("consent_version"),
 	consentAcceptedAt: timestamp("consent_accepted_at"),

@@ -48,6 +48,7 @@ const ada = (): Row => ({
 	city: "Ouagadougou",
 	cityPublic: false,
 	hideAgentContent: false,
+	tagsOnboardingSkippedAt: null,
 });
 
 function client(rows: Row[], signedIn: boolean) {

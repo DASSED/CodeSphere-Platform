@@ -69,6 +69,19 @@ export const tagsContract = {
 		)
 		.input(z.object({ tag: TagSlug }))
 		.output(TagSummary),
+	skipOnboarding: base
+		.errors({ UNAUTHORIZED: {} })
+		.meta(
+			openapi({
+				method: "POST",
+				path: "/me/tags/onboarding/skip",
+				tags: ["tags"],
+				summary: "Skip the Tags onboarding",
+				description:
+					"Records that the Member passed the Tags onboarding, so the app stops offering it. Idempotent.",
+			}),
+		)
+		.output(z.object({ success: z.boolean() })),
 	unfollow: base
 		.errors({ UNAUTHORIZED: {} })
 		.meta(

@@ -104,6 +104,17 @@ describe.skipIf(!url)("tags on Postgres (#44)", () => {
 		).rejects.toMatchObject({ code: "NOT_FOUND" });
 	});
 
+	test("skipping the onboarding is stored on the account, once", async () => {
+		const member = clientAs(memberId);
+		expect((await member.members.me()).tagsOnboardingSkipped).toBe(false);
+		await member.tags.skipOnboarding();
+		await member.tags.skipOnboarding();
+		expect((await member.members.me()).tagsOnboardingSkipped).toBe(true);
+		await expect(clientAs(null).tags.skipOnboarding()).rejects.toMatchObject({
+			code: "UNAUTHORIZED",
+		});
+	});
+
 	test("a blank query lists the most used Tags instead of failing", async () => {
 		const found = await clientAs(null).tags.search({ q: "   ", limit: 5 });
 		expect(found.items.length).toBeGreaterThan(0);

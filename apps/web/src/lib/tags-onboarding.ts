@@ -1,25 +1,14 @@
-// Tags onboarding (spec §3, #44): a Member who follows no Tag is sent to choose some, once. The
-// step is skippable; the choice to skip is remembered per Member on this device.
+// Tags onboarding (spec §3, #44): a Member who follows no Tag is sent to choose some. The step is
+// skippable; the choice to skip is stored on the account (`tagsOnboardingSkipped`), so it holds on
+// every device.
 
-type Store = Pick<Storage, "getItem" | "setItem">;
-
-const key = (userId: string) => `tags-onboarding-skipped:${userId}`;
-
-export function isOnboardingSkipped(store: Store, userId: string) {
-	return store.getItem(key(userId)) === "1";
-}
-
-export function markOnboardingSkipped(store: Store, userId: string) {
-	store.setItem(key(userId), "1");
-}
-
-/** `followedCount` is undefined while the followed Tags are still loading: decide nothing yet. */
+/** `followedCount` / `skipped` are undefined while loading: decide nothing yet. */
 export function shouldOnboard({
 	followedCount,
 	skipped,
 }: {
 	followedCount: number | undefined;
-	skipped: boolean;
+	skipped: boolean | undefined;
 }) {
-	return followedCount === 0 && !skipped;
+	return followedCount === 0 && skipped === false;
 }

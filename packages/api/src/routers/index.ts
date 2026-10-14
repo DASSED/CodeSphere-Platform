@@ -20,7 +20,13 @@ import {
 } from "../questions/handlers";
 import { createQuestionService, QuestionError } from "../questions/service";
 import { isSuspended } from "../suspension";
-import { followedTags, followTag, searchTags, unfollowTag } from "../tags";
+import {
+	followedTags,
+	followTag,
+	searchTags,
+	skipTagsOnboarding,
+	unfollowTag,
+} from "../tags";
 
 // The authorization guard behind every admin procedure (spec §2). Throws the typed
 // UNAUTHORIZED / FORBIDDEN error declared on the admin contract.
@@ -380,6 +386,10 @@ export const appRouter = impl
 					throw errors.NOT_FOUND();
 				}
 				return tag;
+			}),
+			skipOnboarding: impl.tags.skipOnboarding.handler(async ({ context }) => {
+				await skipTagsOnboarding(context.db, actorOf(context.session));
+				return { success: true };
 			}),
 			unfollow: impl.tags.unfollow.handler(async ({ context, input }) => {
 				const userId = actorOf(context.session);
