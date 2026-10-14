@@ -365,22 +365,16 @@ export const appRouter = impl
 			search: impl.tags.search.handler(async ({ context, input }) => ({
 				items: await searchTags(
 					context.db,
-					input,
+					{ q: input.q?.trim().toLowerCase() || undefined, limit: input.limit },
 					context.session?.user.id ?? null,
 				),
 			})),
-			followed: impl.tags.followed.handler(async ({ context, errors }) => {
-				const userId = context.session?.user.id;
-				if (!userId) {
-					throw errors.UNAUTHORIZED();
-				}
+			followed: impl.tags.followed.handler(async ({ context }) => {
+				const userId = actorOf(context.session);
 				return { items: await followedTags(context.db, userId) };
 			}),
 			follow: impl.tags.follow.handler(async ({ context, input, errors }) => {
-				const userId = context.session?.user.id;
-				if (!userId) {
-					throw errors.UNAUTHORIZED();
-				}
+				const userId = actorOf(context.session);
 				const tag = await followTag(context.db, userId, input.tag);
 				if (!tag) {
 					throw errors.NOT_FOUND();
@@ -389,10 +383,7 @@ export const appRouter = impl
 			}),
 			unfollow: impl.tags.unfollow.handler(
 				async ({ context, input, errors }) => {
-					const userId = context.session?.user.id;
-					if (!userId) {
-						throw errors.UNAUTHORIZED();
-					}
+					const userId = actorOf(context.session);
 					await unfollowTag(context.db, userId, input.tag);
 					return { success: true };
 				},

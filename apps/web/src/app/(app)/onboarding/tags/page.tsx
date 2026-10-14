@@ -31,11 +31,16 @@ export default function TagsOnboardingPage() {
 	const save = useMutation({
 		mutationFn: async (names: string[]) => {
 			const already = new Set(followed.data?.items.map((tag) => tag.name));
-			await Promise.all(
-				names
+			const wanted = new Set(names);
+			// Both directions: a Tag deselected here is unfollowed, not left behind.
+			await Promise.all([
+				...names
 					.filter((name) => !already.has(name))
 					.map((tag) => client.tags.follow({ tag })),
-			);
+				...[...already]
+					.filter((name) => !wanted.has(name))
+					.map((tag) => client.tags.unfollow({ tag })),
+			]);
 		},
 		onSuccess: async () => {
 			await queryClient.invalidateQueries({ queryKey: orpc.tags.key() });

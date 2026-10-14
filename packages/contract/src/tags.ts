@@ -9,15 +9,15 @@ export const TagSlug = z.string().trim().toLowerCase().min(1).max(40);
 
 export const TagSummary = z.object({
 	name: z.string(),
-	/** Open Questions that carry the Tag. */
+	/** Live (not deleted) Questions that carry the Tag, whatever their status. */
 	questionCount: z.number().int().min(0),
 	/** Whether the signed-in Member follows it; always false without a session. */
 	followed: z.boolean(),
 });
 
 export const TagSearchInput = z.object({
-	/** Part of a name; matched on the normalized form. Without it, the most used Tags. */
-	q: TagSlug.optional(),
+	/** Part of a name; normalized by the server. Empty or absent: the most used Tags. */
+	q: z.string().max(40).optional(),
 	limit: z.number().int().min(1).max(50).default(20),
 });
 

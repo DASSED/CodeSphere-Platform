@@ -104,6 +104,17 @@ describe.skipIf(!url)("tags on Postgres (#44)", () => {
 		).rejects.toMatchObject({ code: "NOT_FOUND" });
 	});
 
+	test("a blank query lists the most used Tags instead of failing", async () => {
+		const found = await clientAs(null).tags.search({ q: "   ", limit: 5 });
+		expect(found.items.length).toBeGreaterThan(0);
+	});
+
+	test("unfollow without a session is UNAUTHORIZED", async () => {
+		await expect(
+			clientAs(null).tags.unfollow({ tag: name("a") }),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
+
 	test("a `%` in the query matches itself, not everything", async () => {
 		const found = await clientAs(null).tags.search({ q: "%", limit: 50 });
 		expect(found.items.every((t) => t.name.includes("%"))).toBe(true);
