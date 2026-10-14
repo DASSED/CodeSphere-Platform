@@ -1,0 +1,150 @@
+"use client";
+
+import type { QuestionListItem } from "@codesphere/contract";
+import { Button } from "@codesphere/ui/components/atoms/button";
+import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
+import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useFormatter, useTranslations } from "next-intl";
+import { useEffect, useRef } from "react";
+
+import { HAS_DATABASE } from "@/lib/deployment";
+import { useMounted } from "@/lib/use-mounted";
+import { orpc } from "@/utils/orpc";
+
+export type FeedTab = "forYou" | "recent" | "unanswered";
+
+const PAGE_SIZE = 20;
+
+/**
+ * The home feed (#66): one infinite list per tab. « Pour toi » is the Member's feed; a visitor, who
+ * has none, sees the hottest Questions instead. `snapshotAt` and the cursors keep the order stable,
+ * so pages never repeat a Question.
+ */
+export function useFeed(tab: FeedTab, signedIn: boolean) {
+	const forYou = tab === "forYou" && signedIn;
+	const personal = useInfiniteQuery({
+		...orpc.feed.forYou.infiniteOptions({
+			input: (cursor: string | undefined) => ({ cursor, limit: PAGE_SIZE }),
+			initialPageParam: undefined,
+			getNextPageParam: (last) => last.nextCursor ?? undefined,
+		}),
+		enabled: HAS_DATABASE && forYou,
+	});
+	const listed = useInfiniteQuery({
+		...orpc.questions.list.infiniteOptions({
+			input: (cursor: string | undefined) => ({
+				cursor,
+				limit: PAGE_SIZE,
+				sort:
+					tab === "forYou"
+						? ("hot" as const)
+						: tab === "unanswered"
+							? ("unanswered" as const)
+							: ("recent" as const),
+			}),
+			initialPageParam: undefined,
+			getNextPageParam: (last) => last.nextCursor ?? undefined,
+		}),
+		enabled: HAS_DATABASE && !forYou,
+	});
+	const query = forYou ? personal : listed;
+	// A Question never appears twice, even if a page boundary moves under a live feed.
+	const seen = new Set<string>();
+	const items = (query.data?.pages ?? [])
+		.flatMap((page) => page.items)
+		.filter((q) => {
+			if (seen.has(q.id)) {
+				return false;
+			}
+			seen.add(q.id);
+			return true;
+		});
+	return {
+		items,
+		isPending: HAS_DATABASE && query.isPending,
+		hasNextPage: query.hasNextPage,
+		isFetchingNextPage: query.isFetchingNextPage,
+		fetchNextPage: query.fetchNextPage,
+	};
+}
+
+export function HomeFeed({
+	items,
+	hasNextPage,
+	isFetchingNextPage,
+	fetchNextPage,
+}: {
+	items: QuestionListItem[];
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	fetchNextPage: () => unknown;
+}) {
+	const t = useTranslations("home.feed");
+	const format = useFormatter();
+	const mounted = useMounted();
+	const sentinel = useRef<HTMLDivElement>(null);
+
+	// Infinite scroll: the next page is requested as the end of the list nears the viewport.
+	useEffect(() => {
+		const node = sentinel.current;
+		if (!node || !hasNextPage) {
+			return;
+		}
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((e) => e.isIntersecting)) {
+					void fetchNextPage();
+				}
+			},
+			{ rootMargin: "400px" },
+		);
+		observer.observe(node);
+		return () => observer.disconnect();
+	}, [hasNextPage, fetchNextPage]);
+
+	return (
+		<div className="grid gap-4">
+			<QuestionFeed
+				className="md:columns-1"
+				questions={items.map((q) => ({
+					id: q.id,
+					title: q.title,
+					excerpt: q.excerpt,
+					tags: q.tags,
+					score: q.score,
+					answers: q.answerCount,
+					answersLabel: t("answers", { count: q.answerCount }),
+					answered: q.status === "answered",
+					author: q.authorName,
+					agentOf: q.authorKind === "agent" ? (q.ownerName ?? "?") : undefined,
+					region: q.authorCountry ?? "—",
+					lang: q.language,
+					// Relative to the viewer's clock, so only once mounted (no hydration mismatch).
+					ago: mounted ? format.relativeTime(new Date(q.createdAt)) : "…",
+				}))}
+			/>
+			<div ref={sentinel} aria-hidden className="h-px" />
+			{hasNextPage && (
+				<Button
+					variant="outline"
+					className="justify-self-center"
+					disabled={isFetchingNextPage}
+					onClick={() => void fetchNextPage()}
+				>
+					{isFetchingNextPage ? t("loading") : t("more")}
+				</Button>
+			)}
+		</div>
+	);
+}
+
+export function FeedSkeleton() {
+	return (
+		<div className="grid gap-4">
+			<Skeleton className="h-40 rounded-xl" />
+			<Skeleton className="h-40 rounded-xl" />
+			<Skeleton className="h-40 rounded-xl" />
+		</div>
+	);
+}

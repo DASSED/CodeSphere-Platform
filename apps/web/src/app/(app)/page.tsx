@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type * as z from "zod";
-
+import { FeedSkeleton, HomeFeed, useFeed } from "@/components/home-feed";
 import { AskButton } from "@/components/site-header";
 import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
 import { authClient } from "@/lib/auth-client";
@@ -126,20 +126,30 @@ function Banner({
 const TABS = ["forYou", "recent", "unanswered"] as const;
 type TabKey = (typeof TABS)[number];
 
-function FeedTabs({ signedIn }: { signedIn: boolean }) {
+function FeedSection({ signedIn }: { signedIn: boolean }) {
 	const t = useTranslations("home.tabs");
 	// Keyed by id, not by label: switching language keeps the selected tab.
 	const [tab, setTab] = useState<TabKey>(signedIn ? "forYou" : "recent");
 	const labels = TABS.map((key) => t(key));
+	const feed = useFeed(tab, signedIn);
 	return (
-		<div className="flex flex-wrap items-center justify-between gap-3">
-			<SegmentedControl
-				options={labels}
-				value={t(tab)}
-				onValueChange={(label) => setTab(TABS[labels.indexOf(label)] ?? tab)}
-			/>
-			{!signedIn && tab === "forYou" && (
-				<p className="text-muted-foreground text-sm">{t("signInForYou")}</p>
+		<div className="grid gap-5">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<SegmentedControl
+					options={labels}
+					value={t(tab)}
+					onValueChange={(label) => setTab(TABS[labels.indexOf(label)] ?? tab)}
+				/>
+				{!signedIn && tab === "forYou" && (
+					<p className="text-muted-foreground text-sm">{t("signInForYou")}</p>
+				)}
+			</div>
+			{feed.isPending ? (
+				<FeedSkeleton />
+			) : feed.items.length === 0 ? (
+				<EmptyFeed signedIn={signedIn} />
+			) : (
+				<HomeFeed {...feed} />
 			)}
 		</div>
 	);
@@ -190,8 +200,7 @@ function VisitorHome({ hackathon }: { hackathon: HackathonData | undefined }) {
 				<p className="text-muted-foreground">{t("lead")}</p>
 			</section>
 			<Banner hackathon={hackathon} />
-			<FeedTabs signedIn={false} />
-			<EmptyFeed signedIn={false} />
+			<FeedSection signedIn={false} />
 		</main>
 	);
 }
@@ -228,8 +237,7 @@ function MemberHome({
 					</div>
 					<Banner hackathon={hackathon} variant="ribbon" />
 				</div>
-				<FeedTabs signedIn />
-				<EmptyFeed signedIn />
+				<FeedSection signedIn />
 			</div>
 			{/* Desktop only: sticky rail (variant 3). */}
 			<aside className="sticky top-24 hidden content-start gap-4 self-start md:grid">

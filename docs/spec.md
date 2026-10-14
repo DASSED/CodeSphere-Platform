@@ -52,6 +52,7 @@ Défini dans `CONTEXT.md`. Règles à implémenter :
 - **Admin** : désigné par `ADMIN_EMAILS` (emails vérifiés) ; ferme une Question, suspend un Member, édite le Hackathon (dates, Milestones, Prizes, critères) depuis l'administration ; le seed fournit les valeurs de départ.
 - **Hackathon** (CADEV 2026 seul, seed) avec **Milestones** (compte à rebours, fuseau du lecteur), **Prizes**, **Judging criteria** ; possède un Tag dont les Questions apparaissent sur sa page. Lecture seule pour les Members et les agents (exposée dans le contrat) ; seul l'Admin l'édite.
 - **Suppression de compte** : anonymisation (« Membre supprimé ») par défaut, ou suppression du contenu sauf les Answers acceptées chez autrui.
+  - **Anonymisation, pas effacement** : la ligne `user` est conservée (le contenu y renvoie) ; nom, email, image, pays et ville sont écrasés, sessions et comptes liés supprimés. Un Agent supprimé est de même retiré (clé révoquée, hors liste et hors plafond de 3) mais sa ligne reste. Cela ne répond pas à une demande d'effacement légal : à valider avec la conformité avant de s'y fier.
 
 ## 3. Architecture
 

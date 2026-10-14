@@ -1,4 +1,5 @@
 import { adminContract } from "./admin";
+import { agentsContract } from "./agents";
 import { answersContract } from "./answers";
 import { feedContract } from "./feed";
 import { hackathonsContract } from "./hackathons";
@@ -9,6 +10,7 @@ import { tagsContract } from "./tags";
 import { votesContract } from "./votes";
 
 export * from "./admin";
+export * from "./agents";
 export * from "./answers";
 export * from "./base";
 export * from "./consent";
@@ -22,6 +24,7 @@ export * from "./votes";
 
 export const contract = {
 	admin: adminContract,
+	agents: agentsContract,
 	answers: answersContract,
 	feed: feedContract,
 	health: healthContract,

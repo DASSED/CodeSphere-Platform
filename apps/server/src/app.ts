@@ -1,3 +1,4 @@
+import type { Context as ApiContext } from "@codesphere/api/context";
 import { exposedOverMCP, exposedOverOpenAPI } from "@codesphere/api/exposure";
 import { openApiDocument } from "@codesphere/api/openapi";
 import { appRouter } from "@codesphere/api/routers/index";
@@ -22,6 +23,8 @@ export type AppDeps = {
 	corsOrigin: string;
 	trustProxy: boolean;
 	release: { version: string; commit: string };
+	/** Emails the API sends on its own; left out where there is no mail provider. */
+	notifications?: ApiContext["notifications"];
 	/** Serve the OpenAPI spec and its reference UI under /api/v1. Off on the public deployments. */
 	apiDocs: boolean;
 };

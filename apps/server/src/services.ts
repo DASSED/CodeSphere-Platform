@@ -3,13 +3,14 @@ import { createDb } from "@codesphere/db";
 import { createLogger } from "@codesphere/logger";
 
 import { ENV } from "./env.server";
-import { createMailHooks } from "./mail";
+import { createMailHooks, createNotifications } from "./mail";
 
 export const db = createDb(ENV);
 export const logger = createLogger({
 	level: ENV.LOG_LEVEL,
 	pretty: ENV.NODE_ENV === "development",
 });
+export const notifications = createNotifications(ENV, logger);
 export const auth = createAuth(
 	ENV,
 	db,

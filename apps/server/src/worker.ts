@@ -5,7 +5,7 @@ import { createLogger } from "@codesphere/logger";
 import type { ExecutionContext, Hono } from "hono";
 
 import { type AppDeps, createApp } from "./app";
-import { createMailHooks } from "./mail";
+import { createMailHooks, createNotifications } from "./mail";
 
 /**
  * Cloudflare Worker entry for the API (pull request previews, staging; #103).
@@ -101,6 +101,7 @@ function buildApp(env: WorkerEnv) {
 		},
 		// The public Worker never serves the spec or its UI: they are for development only.
 		apiDocs: false,
+		notifications: createNotifications(env, logger),
 	};
 	return createApp(deps) as unknown as Hono<never>;
 }

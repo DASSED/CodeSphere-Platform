@@ -324,9 +324,9 @@ describe.skipIf(!url)("answers, votes and limits on Postgres", () => {
 				.returning({ id: questions.id });
 			const questionIds = rows.map((r) => r.id);
 			for (const id of questionIds.slice(0, 30)) {
-				await answer(id, asRobot);
+				await answer(id, asSpammer);
 			}
-			const refused = await answer(questionIds[30] as string, asRobot).catch(
+			const refused = await answer(questionIds[30] as string, asSpammer).catch(
 				(e) => e,
 			);
 			expect(refused).toMatchObject({

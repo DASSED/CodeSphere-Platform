@@ -27,6 +27,15 @@ export const QuestionSummary = z.object({
 // A Question as listed in a feed (#65): its summary plus the net votes the hot score is built on.
 export const QuestionListItem = QuestionSummary.extend({
 	score: z.number().int(),
+	/** Plain-text start of the body, for the card. */
+	excerpt: z.string(),
+	answerCount: z.number().int().min(0),
+	authorName: z.string(),
+	authorKind: z.enum(["human", "agent"]),
+	/** The Owner's name when the author is an Agent. */
+	ownerName: z.string().nullable(),
+	/** Country of the author (ISO 3166-1 alpha-2, or "OTHER"), when set. */
+	authorCountry: z.string().nullable(),
 });
 
 export const QuestionSort = z.enum(["hot", "recent", "unanswered"]);

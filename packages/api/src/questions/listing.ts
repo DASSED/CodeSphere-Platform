@@ -5,13 +5,15 @@ import type {
 } from "@codesphere/contract";
 import type { Database } from "@codesphere/db";
 import { user } from "@codesphere/db/schema/auth";
-import { questions } from "@codesphere/db/schema/questions";
+import { answers, questions } from "@codesphere/db/schema/questions";
 import { tagFollows } from "@codesphere/db/schema/tags";
 import {
 	and,
 	arrayOverlaps,
+	count,
 	desc,
 	eq,
+	inArray,
 	isNull,
 	lt,
 	lte,
@@ -28,8 +30,30 @@ export class InvalidCursorError extends Error {}
 
 type Row = typeof questions.$inferSelect;
 
-function toItem(row: Row): QuestionListItem {
+const EXCERPT_LENGTH = 180;
+
+/** The start of a Markdown body as plain text: no fences, links or emphasis marks. */
+export function excerptOf(markdown: string): string {
+	const text = markdown
+		.replace(/```[\s\S]*?```/g, " ")
+		.replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
+		.replace(/[`*_>#~-]+/g, " ")
+		.replace(/\s+/g, " ")
+		.trim();
+	return text.length > EXCERPT_LENGTH
+		? `${text.slice(0, EXCERPT_LENGTH).trimEnd()}…`
+		: text;
+}
+
+type Extras = Pick<
+	QuestionListItem,
+	"answerCount" | "authorName" | "authorKind" | "ownerName" | "authorCountry"
+>;
+
+function toItem(row: Row, extras: Extras): QuestionListItem {
 	return {
+		...extras,
+		excerpt: excerptOf(row.body),
 		id: row.id,
 		title: row.title,
 		authorId: row.authorId,
@@ -51,6 +75,63 @@ function hotExpr(snapshotAt: Date) {
 }
 
 export function createListingService(db: Database) {
+	// Author, Owner and Answer count of a page of Questions: two reads for the whole page.
+	async function extrasFor(rows: Row[]): Promise<Map<string, Extras>> {
+		const out = new Map<string, Extras>();
+		if (rows.length === 0) {
+			return out;
+		}
+		const authorIds = [...new Set(rows.map((r) => r.authorId))];
+		const authors = await db
+			.select({
+				id: user.id,
+				name: user.name,
+				kind: user.kind,
+				ownerId: user.ownerId,
+				country: user.country,
+			})
+			.from(user)
+			.where(inArray(user.id, authorIds));
+		const ownerIds = [
+			...new Set(
+				authors.map((a) => a.ownerId).filter((id): id is string => !!id),
+			),
+		];
+		const owners = ownerIds.length
+			? await db
+					.select({ id: user.id, name: user.name })
+					.from(user)
+					.where(inArray(user.id, ownerIds))
+			: [];
+		const counts = await db
+			.select({ questionId: answers.questionId, n: count() })
+			.from(answers)
+			.where(
+				and(
+					inArray(
+						answers.questionId,
+						rows.map((r) => r.id),
+					),
+					isNull(answers.deletedAt),
+				),
+			)
+			.groupBy(answers.questionId);
+		const countOf = new Map(counts.map((c) => [c.questionId, c.n]));
+		const ownerName = new Map(owners.map((o) => [o.id, o.name]));
+		const authorOf = new Map(authors.map((a) => [a.id, a]));
+		for (const row of rows) {
+			const a = authorOf.get(row.authorId);
+			out.set(row.id, {
+				answerCount: countOf.get(row.id) ?? 0,
+				authorName: a?.name ?? "",
+				authorKind: a?.kind === "agent" ? "agent" : "human",
+				ownerName: a?.ownerId ? (ownerName.get(a.ownerId) ?? null) : null,
+				authorCountry: a?.country ?? null,
+			});
+		}
+		return out;
+	}
+
 	function filters(input: Pick<ListQuestionsInput, "language" | "status">) {
 		return [
 			isNull(questions.deletedAt),
@@ -94,8 +175,9 @@ export function createListingService(db: Database) {
 			.limit(input.limit + 1);
 		const page = rows.slice(0, input.limit).map((r) => r.q);
 		const last = page.at(-1);
+		const extras = await extrasFor(page);
 		return {
-			items: page.map(toItem),
+			items: page.map((q) => toItem(q, extras.get(q.id) as Extras)),
 			nextCursor:
 				rows.length > input.limit && last
 					? encodeCursor(last.createdAt, last.id)
@@ -142,8 +224,9 @@ export function createListingService(db: Database) {
 			.limit(input.limit + 1);
 		const page = rows.slice(0, input.limit);
 		const last = page.at(-1);
+		const extras = await extrasFor(page.map((r) => r.q));
 		return {
-			items: page.map((r) => toItem(r.q)),
+			items: page.map((r) => toItem(r.q, extras.get(r.q.id) as Extras)),
 			nextCursor:
 				rows.length > input.limit && last
 					? encodeHotCursor({

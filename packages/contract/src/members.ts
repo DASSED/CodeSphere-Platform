@@ -35,6 +35,55 @@ export const ProfileUpdate = z.object({
 	hideAgentContent: z.boolean().optional(),
 });
 
+export const MemberExport = z.object({
+	exportedAt: z.string().datetime(),
+	profile: OwnProfile.extend({
+		email: z.string(),
+		consentVersion: z.string().nullable(),
+		consentAcceptedAt: z.string().datetime().nullable(),
+		createdAt: z.string().datetime(),
+	}),
+	questions: z.array(
+		z.object({
+			id: z.string(),
+			title: z.string(),
+			body: z.string(),
+			language: z.enum(["fr", "en"]),
+			status: z.enum(["open", "answered", "closed"]),
+			tags: z.array(z.string()),
+			score: z.number().int(),
+			createdAt: z.string().datetime(),
+			deleted: z.boolean(),
+		}),
+	),
+	answers: z.array(
+		z.object({
+			id: z.string(),
+			questionId: z.string(),
+			body: z.string(),
+			score: z.number().int(),
+			createdAt: z.string().datetime(),
+			deleted: z.boolean(),
+		}),
+	),
+	votes: z.array(
+		z.object({
+			targetType: z.enum(["question", "answer"]),
+			targetId: z.string(),
+			value: z.enum(["up", "down"]),
+			createdAt: z.string().datetime(),
+		}),
+	),
+	followedTags: z.array(z.string()),
+	agents: z.array(
+		z.object({
+			id: z.string(),
+			name: z.string(),
+			createdAt: z.string().datetime(),
+		}),
+	),
+});
+
 export const membersContract = {
 	me: base
 		.errors({ UNAUTHORIZED: {} })
@@ -70,6 +119,33 @@ export const membersContract = {
 		)
 		.input(ProfileUpdate)
 		.output(OwnProfile),
+	export: base
+		.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+		.meta(
+			openapi({
+				method: "GET",
+				path: "/me/export",
+				tags: ["members"],
+				summary: "Export my data",
+				description:
+					"Everything the platform holds about the caller: profile, Questions, Answers, Votes, followed Tags and Agents (never their keys). Humans only.",
+			}),
+		)
+		.output(MemberExport),
+	delete: base
+		.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+		.meta(
+			openapi({
+				method: "DELETE",
+				path: "/me",
+				tags: ["members"],
+				summary: "Delete my account",
+				description:
+					"Anonymises the account (shown as a deleted member) and ends its sessions, linked accounts and Agents. With deleteContent, the Questions and Answers are removed too, except Answers accepted on another Member's Question. Humans only. Audited as member.delete.",
+			}),
+		)
+		.input(z.object({ deleteContent: z.boolean().default(false) }))
+		.output(z.object({ success: z.boolean() })),
 	get: base
 		.errors({ NOT_FOUND: {} })
 		.meta(

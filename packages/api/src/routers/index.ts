@@ -7,12 +7,16 @@ import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { updateHackathon } from "../admin-hackathons";
 import { listMembers, setSuspension } from "../admin-members";
 import { createTag, deleteTag, listTags, renameTag } from "../admin-tags";
+import { createAgentsHandlers } from "../agents/handlers";
+import { agentPreset } from "../agents/service";
 import { requireAdmin } from "../authorization";
 import { decodeCursor, encodeCursor } from "../cursor";
 import { unexpectedErrors } from "../errors";
 import { isRead } from "../exposure";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
+import { deleteMember } from "../members-delete";
+import { exportMember } from "../members-export";
 import { ownProfile, publicProfile } from "../profile";
 import {
 	createAnswersHandlers,
@@ -81,9 +85,27 @@ const refuseSuspendedWrites = impl.middleware(
 	},
 );
 
+// An Agent's key carries a preset (spec §2): a read-only key refuses every write (#52).
+const enforceAgentPreset = impl.middleware(
+	async ({ context, procedure, next }) => {
+		const user = context.session?.user as
+			| { id: string; kind?: string }
+			| undefined;
+		if (user?.kind === "agent" && !isRead(procedure)) {
+			if ((await agentPreset(context.db, user.id)) !== "contribute") {
+				throw new ORPCError("FORBIDDEN", {
+					message: "This key is read-only.",
+				});
+			}
+		}
+		return next();
+	},
+);
+
 export const appRouter = impl
 	.use(unexpectedErrors)
 	.use(refuseSuspendedWrites)
+	.use(enforceAgentPreset)
 	.router({
 		health: {
 			check: impl.health.check.handler(({ context }) => ({
@@ -130,6 +152,37 @@ export const appRouter = impl
 						throw errors.UNAUTHORIZED();
 					}
 					return ownProfile(row);
+				},
+			),
+			export: impl.members.export.handler(async ({ context, errors }) => {
+				const me = context.session?.user as
+					| { id: string; kind?: string }
+					| undefined;
+				if (!me) {
+					throw errors.UNAUTHORIZED();
+				}
+				if (me.kind !== "human") {
+					throw errors.FORBIDDEN();
+				}
+				const data = await exportMember(context.db, me.id);
+				if (!data) {
+					throw errors.UNAUTHORIZED();
+				}
+				return data;
+			}),
+			delete: impl.members.delete.handler(
+				async ({ context, input, errors }) => {
+					const me = context.session?.user as
+						| { id: string; kind?: string }
+						| undefined;
+					if (!me) {
+						throw errors.UNAUTHORIZED();
+					}
+					if (me.kind !== "human") {
+						throw errors.FORBIDDEN();
+					}
+					await deleteMember(context.db, me.id, input.deleteContent);
+					return { success: true };
 				},
 			),
 			get: impl.members.get.handler(async ({ context, input, errors }) => {
@@ -399,6 +452,7 @@ export const appRouter = impl
 				return { success: true };
 			}),
 		},
+		agents: createAgentsHandlers(),
 		answers: createAnswersHandlers(),
 		questions: createQuestionsHandlers(),
 		votes: createVotesHandlers(),
