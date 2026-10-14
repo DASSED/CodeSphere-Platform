@@ -221,7 +221,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
+import { auditEntries, moderationRows } from "./sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
 /** The caller sorts: the table only reports the click. */
