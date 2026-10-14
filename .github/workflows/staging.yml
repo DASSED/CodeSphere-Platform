@@ -19,10 +19,7 @@ name: Staging
 # The Run workflow button needs this file on the default branch (main): GitHub registers
 # workflow_dispatch from there. The run itself uses the file of the branch picked.
 #
-# Variables: NEON_PROJECT_ID, NEON_PARENT_BRANCH (the staging branch), EMAIL_FROM
-# Secrets (environment "preview", shared with the previews): CLOUDFLARE_API_TOKEN,
-#   CLOUDFLARE_ACCOUNT_ID, NEON_API_KEY, PREVIEW_BETTER_AUTH_SECRET, PREVIEW_OAUTH_PROXY_SECRET,
-#   PREVIEW_{GITHUB,GITLAB,GOOGLE}_CLIENT_{ID,SECRET}, RESEND_API_KEY
+# Variables and secrets: docs/staging.md.
 on:
   workflow_dispatch:
 
@@ -224,21 +221,23 @@ jobs:
             --secrets-file staging-secrets.json
           rm -f staging-secrets.json
 
-      # Bot Fight Mode challenges GitHub runners (403 + cf-mitigated): reachable, not checked.
-      - name: Wait for staging to be reachable
+      # Liveness (#106): GET /api/v1/health must answer 200. Bot Fight Mode challenges GitHub
+      # runners (403 + cf-mitigated): reachable but unchecked, flagged as a warning until the
+      # staging host is exempted (docs/staging.md).
+      - name: Check /api/v1/health
         run: |
           for attempt in $(seq 1 30); do
-            headers=$(curl -sS -m 10 -o /dev/null -D - "$ORIGIN/api/v1/ready" || true)
+            headers=$(curl -sS -m 10 -o /dev/null -D - "$ORIGIN/api/v1/health" || true)
             status=$(printf '%s' "$headers" | awk 'toupper($1) ~ /^HTTP/ {code=$2} END {print code}')
-            if [ "${status:0:1}" = "2" ]; then
-              echo "ready after $attempt attempt(s)"
+            if [ "$status" = "200" ]; then
+              echo "healthy after $attempt attempt(s)"
               exit 0
             fi
             if [ "$status" = "403" ] && printf '%s' "$headers" | grep -qi '^cf-mitigated: *challenge'; then
-              echo "::notice::reachable, readiness not checked: Cloudflare challenged the runner"
+              echo "::warning::health not checked: Cloudflare challenged the runner (see docs/staging.md)"
               exit 0
             fi
             sleep 10
           done
-          echo "::error::$ORIGIN is not reachable after 5 minutes (last status: ${status:-none})"
+          echo "::error::$ORIGIN/api/v1/health did not answer 200 within 5 minutes (last status: ${status:-none})"
           exit 1

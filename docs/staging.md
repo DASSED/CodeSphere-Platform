@@ -1,0 +1,52 @@
+# Staging
+
+`https://staging.codesphereplatform.xyz` : Worker Cloudflare `codesphere-staging` (`wrangler --env staging`, `apps/web/wrangler.jsonc`) sur la branche Neon dont partent les previews. C'est aussi l'URL de production du proxy OAuth : la seule callback connue des fournisseurs d'identité ([#100](https://github.com/DASSED/CodeSphere-Platform/issues/100)).
+
+Workflow : [`.github/workflows/staging.yml`](../.github/workflows/staging.yml) ([#106](https://github.com/DASSED/CodeSphere-Platform/issues/106)).
+
+## Lancer un déploiement
+
+Manuel uniquement, depuis `develop` :
+
+```sh
+gh workflow run staging.yml --ref develop
+```
+
+ou Actions › Staging › Run workflow, branche `develop`. Le bouton n'apparaît que si `staging.yml` est sur `main` (GitHub enregistre `workflow_dispatch` depuis la branche par défaut). Un push sur `develop` ne déploie pas.
+
+Étapes : `gate` (le run `ci.yml` du commit doit être vert) → `database` (migrations et seed) et `build` (OpenNext, artefact) en parallèle → `deploy` (`wrangler deploy`, puis `GET /api/v1/health`).
+
+## Variables (Settings › Secrets and variables › Actions › Variables)
+
+| Nom | Rôle | Défaut |
+| --- | --- | --- |
+| `NEON_PROJECT_ID` | Projet Neon | requis |
+| `NEON_PARENT_BRANCH` | Branche Neon de staging | `staging` |
+| `EMAIL_FROM` | Expéditeur `Nom <adresse>` sur le domaine vérifié chez Resend | vide : e-mail désactivé |
+
+## Secrets (environnement `preview`, partagé avec les previews)
+
+| Nom | Rôle | Requis |
+| --- | --- | --- |
+| `CLOUDFLARE_API_TOKEN` | `wrangler deploy` du Worker et de son domaine personnalisé | oui |
+| `CLOUDFLARE_ACCOUNT_ID` | Compte Cloudflare | oui |
+| `NEON_API_KEY` | Chaîne de connexion de la branche Neon | oui |
+| `PREVIEW_BETTER_AUTH_SECRET` | `BETTER_AUTH_SECRET` du Worker | oui (le déploiement échoue sans) |
+| `PREVIEW_OAUTH_PROXY_SECRET` | `OAUTH_PROXY_SECRET`, partagé staging/previews (proxy OAuth) | pour la connexion OAuth |
+| `PREVIEW_GITHUB_CLIENT_ID`, `PREVIEW_GITHUB_CLIENT_SECRET` | App OAuth GitHub, callback sur l'URL de staging | pour « Se connecter avec GitHub » |
+| `PREVIEW_GITLAB_CLIENT_ID`, `PREVIEW_GITLAB_CLIENT_SECRET` | Idem GitLab | optionnel |
+| `PREVIEW_GOOGLE_CLIENT_ID`, `PREVIEW_GOOGLE_CLIENT_SECRET` | Idem Google | optionnel |
+| `RESEND_API_KEY` | Envoi d'e-mails (staging seulement) | optionnel |
+
+Les secrets passent au Worker par un fichier (`scripts/preview-secrets.mjs`), jamais par la ligne de commande ; une valeur absente est ignorée. Le workflow ajoute en `--var` : `BETTER_AUTH_URL`, `CORS_ORIGIN`, `OAUTH_PROXY_PRODUCTION_URL` (l'origine de staging) et `GIT_SHA`.
+
+## Vérification `/api/v1/health`
+
+Le job `deploy` attend jusqu'à 5 minutes un `200` sur `/api/v1/health`. Si Cloudflare Bot Fight Mode défie le runner GitHub (`403` + `cf-mitigated: challenge`), l'étape passe avec un avertissement : le Worker est joignable mais la santé n'est pas vérifiée.
+
+Pour obtenir un vrai `200` depuis la CI, il faut que la zone ne défie plus les runners sur `staging.codesphereplatform.xyz` (réglage Cloudflare, hors dépôt) :
+
+- Bot Fight Mode (offre gratuite) ne s'exempte pas par règle : le désactiver sur la zone ;
+- ou, avec Super Bot Fight Mode, une règle WAF « Skip » sur `http.host eq "staging.codesphereplatform.xyz" and starts_with(http.request.uri.path, "/api/v1/health")`.
+
+Vérification manuelle depuis un poste : `curl -i https://staging.codesphereplatform.xyz/api/v1/health` doit répondre `200` avec `{"status":"ok",...}`.
