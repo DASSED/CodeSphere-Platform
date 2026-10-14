@@ -5,7 +5,9 @@ import {
 	hackathonMilestone,
 	hackathonPrize,
 } from "../schema/hackathons";
+import { tag } from "../schema/tags";
 import { cadev2026, type SeedHackathon } from "./cadev";
+import { STARTER_TAGS } from "./tags";
 
 /**
  * Inserts a Hackathon with its starting values, once. Replaying the seed changes nothing: an
@@ -45,7 +47,23 @@ export async function seedHackathon(
 	return "created";
 }
 
-/** Every starting value of the platform. Tags are seeded by the Tags ticket (#44), not here. */
+/** Inserts the starting Tags, once each; a Tag that exists (or was renamed by an Admin) is left alone. */
+export async function seedTags(
+	db: Database,
+	names: readonly string[] = STARTER_TAGS,
+): Promise<{ created: number; kept: number }> {
+	const created = await db
+		.insert(tag)
+		.values(names.map((name) => ({ name })))
+		.onConflictDoNothing({ target: tag.name })
+		.returning({ id: tag.id });
+	return { created: created.length, kept: names.length - created.length };
+}
+
+/** Every starting value of the platform: the CADEV 2026 and the starting Tags (#61). */
 export async function seed(db: Database) {
-	return { "cadev-2026": await seedHackathon(db, cadev2026) };
+	return {
+		"cadev-2026": await seedHackathon(db, cadev2026),
+		tags: await seedTags(db),
+	};
 }
