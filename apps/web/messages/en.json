@@ -114,7 +114,9 @@
 		"settings": "Settings",
 		"admin": "Administration",
 		"signOut": "Sign out",
-		"toggleTheme": "Switch theme"
+		"toggleTheme": "Switch theme",
+		"menu": "Menu",
+		"language": "Language"
 	},
 	"home": {
 		"tabs": {

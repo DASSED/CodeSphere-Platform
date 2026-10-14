@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import LocaleSwitcher from "@/components/locale-switcher";
+import { MobileMenu } from "@/components/mobile-menu";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import UserMenu from "@/components/user-menu";
 import { authClient } from "@/lib/auth-client";
@@ -40,7 +41,10 @@ export function AskButton({ className }: { className?: string }) {
 	);
 }
 
-/** The site's bar (#129): logo, language, « Poser une question », then the account. No feed tabs here. */
+/**
+ * The site's bar (#129): logo, theme, language, « Poser une question », then the account. On a
+ * phone only the logo, the theme and a menu holding the rest. No feed tabs here.
+ */
 export default function SiteHeader() {
 	const t = useTranslations("header");
 	return (
@@ -48,9 +52,15 @@ export default function SiteHeader() {
 			actions={
 				<>
 					<ThemeToggle aria-label={t("toggleTheme")} />
-					<LocaleSwitcher />
-					<AskButton />
-					<UserMenu />
+					{/* From `sm` up, everything inline; on a phone, one menu holds the rest. */}
+					<div className="flex items-center gap-3 max-sm:hidden">
+						<LocaleSwitcher />
+						<AskButton />
+						<UserMenu />
+					</div>
+					<div className="sm:hidden">
+						<MobileMenu />
+					</div>
 				</>
 			}
 		/>

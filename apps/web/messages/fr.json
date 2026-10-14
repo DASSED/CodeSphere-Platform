@@ -114,7 +114,9 @@
 		"settings": "Réglages",
 		"admin": "Administration",
 		"signOut": "Se déconnecter",
-		"toggleTheme": "Changer de thème"
+		"toggleTheme": "Changer de thème",
+		"menu": "Menu",
+		"language": "Langue"
 	},
 	"home": {
 		"tabs": {
