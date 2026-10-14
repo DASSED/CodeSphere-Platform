@@ -15,6 +15,7 @@ import {
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, MessageSquareIcon, TagIcon } from "lucide-react";
+import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type * as z from "zod";
@@ -159,7 +160,11 @@ function EmptyFeed({ signedIn }: { signedIn: boolean }) {
 			<EmptyContent className="flex-row flex-wrap justify-center">
 				<AskButton />
 				{signedIn && (
-					<Button variant="outline" disabled>
+					<Button
+						variant="outline"
+						render={<Link href="/onboarding/tags" />}
+						nativeButton={false}
+					>
 						<TagIcon />
 						{t("followTags")}
 					</Button>

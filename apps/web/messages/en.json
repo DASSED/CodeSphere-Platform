@@ -42,6 +42,18 @@
 			"title": "Privacy",
 			"cityPublic": "Make my city public",
 			"cityPublicHint": "Otherwise only your country is visible to other members."
+		},
+		"tags": {
+			"title": "Tags",
+			"description": "The Tags you follow drive your “For you” feed.",
+			"followed": "Followed Tags",
+			"none": "You follow no Tag.",
+			"unfollow": "Unfollow {name}",
+			"search": "Find a Tag to follow",
+			"searchPlaceholder": "mobile-money, ussd…",
+			"follow": "Follow {name}",
+			"noResult": "No Tag found.",
+			"failed": "The change failed."
 		}
 	},
 	"signin": {
@@ -262,5 +274,9 @@
 			"clean": "No changes",
 			"edit": "Edit"
 		}
+	},
+	"onboarding": {
+		"loading": "Loading Tags…",
+		"failed": "Could not save your Tags. Try again."
 	}
 }

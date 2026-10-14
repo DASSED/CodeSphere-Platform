@@ -24,6 +24,94 @@ type Draft = {
 };
 
 // Settings first (spec §2, #64): public profile, preferences and privacy of the signed-in member.
+function TagsSection() {
+	const t = useTranslations("settings.tags");
+	const queryClient = useQueryClient();
+	const [q, setQ] = useState("");
+	const followed = useQuery(orpc.tags.followed.queryOptions());
+	const found = useQuery({
+		...orpc.tags.search.queryOptions({
+			input: { q: q.trim() || undefined, limit: 8 },
+		}),
+		enabled: q.trim().length > 0,
+	});
+	const refresh = () => {
+		void queryClient.invalidateQueries({ queryKey: orpc.tags.key() });
+		void queryClient.invalidateQueries({ queryKey: orpc.feed.key() });
+	};
+	const follow = useMutation(
+		orpc.tags.follow.mutationOptions({
+			onSuccess: refresh,
+			onError: () => toast.error(t("failed")),
+		}),
+	);
+	const unfollow = useMutation(
+		orpc.tags.unfollow.mutationOptions({
+			onSuccess: refresh,
+			onError: () => toast.error(t("failed")),
+		}),
+	);
+	const items = followed.data?.items ?? [];
+
+	return (
+		<SettingsSection title={t("title")} description={t("description")}>
+			<div className="flex flex-col gap-3">
+				<h3 className="font-medium text-sm">{t("followed")}</h3>
+				{items.length === 0 ? (
+					<p className="text-muted-foreground text-sm">{t("none")}</p>
+				) : (
+					<ul className="flex flex-wrap gap-2">
+						{items.map((tag) => (
+							<li key={tag.name}>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									aria-label={t("unfollow", { name: tag.name })}
+									disabled={unfollow.isPending}
+									onClick={() => unfollow.mutate({ tag: tag.name })}
+								>
+									# {tag.name} ×
+								</Button>
+							</li>
+						))}
+					</ul>
+				)}
+				<Field id="tag-search" label={t("search")}>
+					<Input
+						id="tag-search"
+						type="search"
+						placeholder={t("searchPlaceholder")}
+						value={q}
+						onChange={(event) => setQ(event.target.value)}
+					/>
+				</Field>
+				{q.trim() && found.data && (
+					<ul className="flex flex-wrap gap-2">
+						{found.data.items.length === 0 && (
+							<li className="text-muted-foreground text-sm">{t("noResult")}</li>
+						)}
+						{found.data.items.map((tag) => (
+							<li key={tag.name}>
+								<Button
+									type="button"
+									variant={tag.followed ? "secondary" : "default"}
+									size="sm"
+									aria-label={t("follow", { name: tag.name })}
+									disabled={tag.followed || follow.isPending}
+									onClick={() => follow.mutate({ tag: tag.name })}
+								>
+									# {tag.name}
+								</Button>
+							</li>
+						))}
+					</ul>
+				)}
+			</div>
+		</SettingsSection>
+	);
+}
+
 export default function SettingsPage() {
 	const t = useTranslations("settings");
 	const queryClient = useQueryClient();
@@ -119,6 +207,8 @@ export default function SettingsPage() {
 					</Field>
 				</div>
 			</SettingsSection>
+
+			<TagsSection />
 
 			<SettingsSection title={t("preferences.title")}>
 				<SettingRow

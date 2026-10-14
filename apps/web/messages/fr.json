@@ -42,6 +42,18 @@
 			"title": "Confidentialité",
 			"cityPublic": "Rendre ma ville publique",
 			"cityPublicHint": "Sinon, seul le pays est visible par les autres membres."
+		},
+		"tags": {
+			"title": "Tags",
+			"description": "Les Tags que vous suivez alimentent votre fil « Pour toi ».",
+			"followed": "Tags suivis",
+			"none": "Vous ne suivez aucun Tag.",
+			"unfollow": "Ne plus suivre {name}",
+			"search": "Chercher un Tag à suivre",
+			"searchPlaceholder": "mobile-money, ussd…",
+			"follow": "Suivre {name}",
+			"noResult": "Aucun Tag trouvé.",
+			"failed": "La modification a échoué."
 		}
 	},
 	"signin": {
@@ -262,5 +274,9 @@
 			"clean": "Aucune modification",
 			"edit": "Modifier"
 		}
+	},
+	"onboarding": {
+		"loading": "Chargement des Tags…",
+		"failed": "Impossible d'enregistrer vos Tags. Réessayez."
 	}
 }
