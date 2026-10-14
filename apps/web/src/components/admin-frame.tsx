@@ -7,6 +7,7 @@ import {
 	LogOutIcon,
 	ScrollTextIcon,
 	ShieldIcon,
+	TrophyIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,6 +19,7 @@ import { authClient } from "@/lib/auth-client";
 
 const NAV = [
 	{ key: "moderation", href: "/admin", icon: ShieldIcon },
+	{ key: "hackathons", href: "/admin/hackathons", icon: TrophyIcon },
 	{ key: "kpi", href: "/admin/kpi", icon: BarChart3Icon },
 	{ key: "audit", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;

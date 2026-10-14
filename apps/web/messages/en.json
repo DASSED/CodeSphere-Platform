@@ -108,6 +108,7 @@
 	"admin": {
 		"role": "Administrator",
 		"moderation": "Moderation",
+		"hackathons": "Hackathon",
 		"kpi": "KPIs",
 		"audit": "Audit log",
 		"signOut": "Sign out"
