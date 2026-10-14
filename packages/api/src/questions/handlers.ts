@@ -3,6 +3,7 @@ import { requireAdmin } from "../authorization";
 import { impl } from "../index";
 import { answerLimiter, consume, questionLimiter } from "../rate-limit";
 import { createVoteService, VoteError } from "../votes/service";
+import { authorsById, UNKNOWN_AUTHOR, votesOf } from "./authors";
 import { createListingService, InvalidCursorError } from "./listing";
 import { createQuestionService, QuestionError } from "./service";
 
@@ -54,7 +55,23 @@ export function createQuestionsHandlers() {
 
 		get: impl.questions.get.handler(async ({ context, input, errors }) => {
 			try {
-				return await createQuestionService(context.db).getQuestion(input.id);
+				const question = await createQuestionService(context.db).getQuestion(
+					input.id,
+				);
+				const [extras, mine] = await Promise.all([
+					createListingService(context.db).extrasFor([question]),
+					votesOf(context.db, context.session?.user.id ?? null, "question", [
+						question.id,
+					]),
+				]);
+				return {
+					...question,
+					...(extras.get(question.id) ?? {
+						...UNKNOWN_AUTHOR,
+						answerCount: 0,
+					}),
+					myVote: mine.get(question.id) ?? null,
+				};
 			} catch (err) {
 				if (err instanceof QuestionError && err.code === "NOT_FOUND") {
 					throw errors.NOT_FOUND();
@@ -207,7 +224,30 @@ export function createAnswersHandlers() {
 	return {
 		list: impl.answers.list.handler(async ({ context, input, errors }) => {
 			try {
-				return await createAnswerService(context.db).list(input.questionId);
+				const { items } = await createAnswerService(context.db).list(
+					input.questionId,
+				);
+				const ids = items.map((a) => a.id);
+				const [authors, mine] = await Promise.all([
+					authorsById(
+						context.db,
+						items.map((a) => a.authorId),
+					),
+					votesOf(context.db, context.session?.user.id ?? null, "answer", ids),
+				]);
+				return {
+					items: items.map((a) => {
+						const { authorName, authorKind, ownerName } =
+							authors.get(a.authorId) ?? UNKNOWN_AUTHOR;
+						return {
+							...a,
+							authorName,
+							authorKind,
+							ownerName,
+							myVote: mine.get(a.id) ?? null,
+						};
+					}),
+				};
 			} catch (err) {
 				if (err instanceof AnswerError && err.code === "NOT_FOUND") {
 					throw errors.NOT_FOUND();

@@ -274,6 +274,8 @@ function toDTO(row: typeof questions.$inferSelect) {
 		status: row.status,
 		tags: row.tags,
 		version: row.version,
+		// Read by `questions.get` (QuestionView); the other outputs strip it.
+		score: row.score,
 		createdAt: row.createdAt.toISOString(),
 		updatedAt: row.updatedAt.toISOString(),
 	};

@@ -59,6 +59,22 @@ export const QuestionDetail = QuestionSummary.extend({
 	bodyHtml: z.string(),
 });
 
+/** The caller's own vote on a Question or an Answer; null for a visitor or without a vote. */
+export const MyVote = z.enum(["up", "down"]).nullable();
+
+// The Question page (#69): the detail plus who wrote it, its Score, its Answer count and the
+// caller's own vote, so the page renders from one read.
+export const QuestionView = QuestionDetail.extend({
+	score: z.number().int(),
+	answerCount: z.number().int().min(0),
+	authorName: z.string(),
+	authorKind: z.enum(["human", "agent"]),
+	/** The Owner's name when the author is an Agent. */
+	ownerName: z.string().nullable(),
+	authorCountry: z.string().nullable(),
+	myVote: MyVote,
+});
+
 export const CreateQuestionInput = z.object({
 	idempotencyKey: IdempotencyKey,
 	title: z.string().trim().min(1).max(200),
@@ -123,7 +139,7 @@ export const questionsContract = {
 				tags: ["questions"],
 				summary: "Get a question",
 				description:
-					"One question with its Markdown body and rendered HTML. Returns 404 NOT_FOUND for an unknown id.",
+					"One question with its Markdown body, rendered HTML, author, Score, Answer count and the caller's own vote. Returns 404 NOT_FOUND for an unknown id.",
 			}),
 		)
 		.meta(
@@ -133,7 +149,7 @@ export const questionsContract = {
 			}),
 		)
 		.input(z.object({ id: Id }))
-		.output(QuestionDetail),
+		.output(QuestionView),
 
 	update: base
 		.errors({
@@ -217,6 +233,7 @@ export const questionsContract = {
 };
 
 export type QuestionDetail = z.infer<typeof QuestionDetail>;
+export type QuestionView = z.infer<typeof QuestionView>;
 export type CreateQuestionInput = z.infer<typeof CreateQuestionInput>;
 export type UpdateQuestionInput = z.infer<typeof UpdateQuestionInput>;
 export type ListQuestionsInput = z.infer<typeof ListQuestionsInput>;

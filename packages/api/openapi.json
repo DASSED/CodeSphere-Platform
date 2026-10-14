@@ -2365,7 +2365,7 @@
 			"get": {
 				"operationId": "answers.list",
 				"summary": "List the answers of a question",
-				"description": "Accepted answer first, then by Score. 404 for an unknown question.",
+				"description": "Accepted answer first, then by Score, each with its author and the caller's own vote. 404 for an unknown question.",
 				"tags": ["answers"],
 				"parameters": [
 					{
@@ -2436,6 +2436,27 @@
 														"type": "string",
 														"format": "date-time",
 														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													},
+													"authorName": {
+														"type": "string"
+													},
+													"authorKind": {
+														"type": "string",
+														"enum": ["human", "agent"]
+													},
+													"ownerName": {
+														"type": ["string", "null"]
+													},
+													"myVote": {
+														"anyOf": [
+															{
+																"type": "string",
+																"enum": ["up", "down"]
+															},
+															{
+																"type": "null"
+															}
+														]
 													}
 												},
 												"required": [
@@ -2448,7 +2469,11 @@
 													"accepted",
 													"version",
 													"createdAt",
-													"updatedAt"
+													"updatedAt",
+													"authorName",
+													"authorKind",
+													"ownerName",
+													"myVote"
 												],
 												"additionalProperties": false
 											}
@@ -5981,7 +6006,7 @@
 			"get": {
 				"operationId": "questions.get",
 				"summary": "Get a question",
-				"description": "One question with its Markdown body and rendered HTML. Returns 404 NOT_FOUND for an unknown id.",
+				"description": "One question with its Markdown body, rendered HTML, author, Score, Answer count and the caller's own vote. Returns 404 NOT_FOUND for an unknown id.",
 				"tags": ["questions"],
 				"parameters": [
 					{
@@ -6053,6 +6078,40 @@
 										},
 										"bodyHtml": {
 											"type": "string"
+										},
+										"score": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"answerCount": {
+											"type": "integer",
+											"minimum": 0,
+											"maximum": 9007199254740991
+										},
+										"authorName": {
+											"type": "string"
+										},
+										"authorKind": {
+											"type": "string",
+											"enum": ["human", "agent"]
+										},
+										"ownerName": {
+											"type": ["string", "null"]
+										},
+										"authorCountry": {
+											"type": ["string", "null"]
+										},
+										"myVote": {
+											"anyOf": [
+												{
+													"type": "string",
+													"enum": ["up", "down"]
+												},
+												{
+													"type": "null"
+												}
+											]
 										}
 									},
 									"required": [
@@ -6066,7 +6125,14 @@
 										"createdAt",
 										"updatedAt",
 										"body",
-										"bodyHtml"
+										"bodyHtml",
+										"score",
+										"answerCount",
+										"authorName",
+										"authorKind",
+										"ownerName",
+										"authorCountry",
+										"myVote"
 									],
 									"additionalProperties": false
 								}
