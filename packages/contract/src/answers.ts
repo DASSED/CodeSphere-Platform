@@ -4,7 +4,9 @@ import * as z from "zod";
 
 import { base, ExpectedVersion, Id, IdempotencyKey, Markdown } from "./base";
 
-const conflictWithVersion = { CONFLICT: { data: z.object({ version: z.number() }) } };
+const conflictWithVersion = {
+	CONFLICT: { data: z.object({ version: z.number() }) },
+};
 
 export const AnswerDetail = z.object({
 	id: Id,
@@ -34,7 +36,8 @@ export const answersContract = {
 				path: "/questions/{questionId}/answers",
 				tags: ["answers"],
 				summary: "List the answers of a question",
-				description: "Accepted answer first, then by Score. 404 for an unknown question.",
+				description:
+					"Accepted answer first, then by Score. 404 for an unknown question.",
 			}),
 		)
 		.meta(
@@ -75,10 +78,13 @@ export const answersContract = {
 				path: "/answers/{id}",
 				tags: ["answers"],
 				summary: "Edit an answer",
-				description: "Author only. expectedVersion guards a stale write (409 CONFLICT).",
+				description:
+					"Author only. expectedVersion guards a stale write (409 CONFLICT).",
 			}),
 		)
-		.input(z.object({ id: Id, expectedVersion: ExpectedVersion, body: Markdown }))
+		.input(
+			z.object({ id: Id, expectedVersion: ExpectedVersion, body: Markdown }),
+		)
 		.output(AnswerDetail),
 
 	delete: base
@@ -94,7 +100,8 @@ export const answersContract = {
 				path: "/answers/{id}",
 				tags: ["answers"],
 				summary: "Delete an answer",
-				description: "Author only. Deleting the Accepted answer reopens the Question.",
+				description:
+					"Author only. Deleting the Accepted answer reopens the Question.",
 			}),
 		)
 		.input(z.object({ id: Id, expectedVersion: ExpectedVersion }))
@@ -112,7 +119,9 @@ export const answersContract = {
 					"Question's author only. Replaces any previous Accepted answer; the Question becomes answered.",
 			}),
 		)
-		.meta(mcp.tool({ description: "Accept an Answer of one of your Questions." }))
+		.meta(
+			mcp.tool({ description: "Accept an Answer of one of your Questions." }),
+		)
 		.input(z.object({ id: Id }))
 		.output(AnswerDetail),
 };

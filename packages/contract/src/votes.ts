@@ -39,7 +39,8 @@ export const votesContract = {
 				path: "/votes",
 				tags: ["votes"],
 				summary: "Retract a vote",
-				description: "Removes the caller's vote on a target and updates its Score. Idempotent.",
+				description:
+					"Removes the caller's vote on a target and updates its Score. Idempotent.",
 			}),
 		)
 		.input(VoteTarget)
