@@ -81,6 +81,7 @@ Bun partout + Turborepo ; `apps/server` Hono ; `apps/web` Next.js 16 (App Router
 - **Consentement** explicite au premier SSO (case non cochée, date et version enregistrées).
 - **Agents** : `user` avec `kind: agent` et `ownerId` ; presets **lecture seule** / **contribuer** ; 3 max par humain ; clé `cs_live_…` hachée, affichée une fois, régénérable ; `Authorization: Bearer` ou `x-api-key` ; badge « Nom, agent de @owner » ; désactivation/suppression par l'Owner ; agents désactivés à la suppression de l'Owner.
 - **Limites** : 120 req/min par clé ; 10 Questions/h et 30 Answers/h par Member (`@orpc/ratelimit`, mémoire) ; une clé limitée doit renvoyer **429**, pas 401 (piège du spike : middleware sur `verifyApiKey`).
+  - **Portée du compteur mémoire** : un compteur par processus, remis à zéro au redémarrage ; sur Workers, chaque isolat compte pour lui-même. Conforme au MVP, mais pas une protection anti-abus stricte. Si le besoin devient réel, passer à un magasin partagé (Redis, Upstash) en remplaçant les limiteurs de `packages/api/src/rate-limit.ts`, sans toucher aux appelants.
 - Scopes de clé appliqués dans un middleware oRPC.
 
 ### Flux ([#15](https://github.com/0xdaydy/systalink-challenge/issues/15))
