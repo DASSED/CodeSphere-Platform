@@ -49,7 +49,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:17
+        # Same line as docker-compose.prod.yml: the integration tests run on production's PostgreSQL.
+        image: postgres:18.0
         env:
           POSTGRES_USER: codesphere
           POSTGRES_PASSWORD: codesphere

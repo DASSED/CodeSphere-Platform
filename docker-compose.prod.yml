@@ -1,0 +1,180 @@
+# Production stack: Caddy (TLS, two hosts) -> web + server -> PostgreSQL 18.
+#
+# Only Caddy publishes ports (80, 443). PostgreSQL, the web app and the server stay on the
+# internal compose network.
+#
+# First deploy on the host (values in a `.env` next to this file, never committed):
+#   PUBLIC_HOST=codesphereplatform.xyz
+#   ADMIN_HOST=admin.codesphereplatform.xyz
+#   ACME_EMAIL=ops@example.org
+#   POSTGRES_PASSWORD=<long random value>
+#   APP_VERSION=vX.Y.Z  GIT_SHA=<commit>
+# plus apps/server/.env (secrets, SSO ids) and apps/web/.env (public values only; do NOT set
+# NEXT_PUBLIC_SERVER_URL there: the web image is built for same-origin API calls).
+#
+#   docker compose -f docker-compose.prod.yml build
+#   docker compose -f docker-compose.prod.yml up -d --wait
+#
+# The migrate service applies the schema before the server starts. Backups: deploy/backup.sh.
+
+name: codesphere
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-server-build: &server-build
+  context: .
+  dockerfile: apps/server/Dockerfile
+  args:
+    APP_VERSION: ${APP_VERSION:-dev}
+    GIT_SHA: ${GIT_SHA:-dev}
+
+x-database-url: &database-url postgresql://${POSTGRES_USER:-codesphere}:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-codesphere}
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?Set PUBLIC_HOST}
+      ADMIN_HOST: ${ADMIN_HOST:?Set ADMIN_HOST}
+      ACME_EMAIL: ${ACME_EMAIL:?Set ACME_EMAIL}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      web:
+        condition: service_healthy
+      server:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *logging
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      # BuildKit secret mounts: available only while the install and build steps run, never
+      # written to an image layer. The server file is mounted because the shared env schema is
+      # validated at build time; its values are not baked in.
+      secrets:
+        - web_env
+        - server_env
+      args:
+        # Empty on purpose: the browser calls the API on the host it was loaded from.
+        NEXT_PUBLIC_SERVER_URL: ""
+        APP_VERSION: ${APP_VERSION:-dev}
+        GIT_SHA: ${GIT_SHA:-dev}
+    env_file:
+      - apps/web/.env
+    environment:
+      # Server-side rendering reaches the API on the internal network.
+      SERVER_URL: http://server:3000
+    expose:
+      - "3001"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://localhost:3001/').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    init: true
+    restart: unless-stopped
+    logging: *logging
+
+  migrate:
+    build: *server-build
+    image: codesphere-server:${APP_VERSION:-dev}
+    command: ["sh", "-c", "cd /app/packages/db && bunx drizzle-kit migrate"]
+    env_file:
+      - apps/server/.env
+    environment:
+      DATABASE_URL: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    logging: *logging
+
+  server:
+    build: *server-build
+    image: codesphere-server:${APP_VERSION:-dev}
+    env_file:
+      - apps/server/.env
+    environment:
+      DATABASE_URL: *database-url
+      # Behind Caddy, which sets x-forwarded-for.
+      TRUST_PROXY: "true"
+      # The two public hosts. Auth and CORS trust them; the session cookie spans the parent domain.
+      BETTER_AUTH_URL: https://${PUBLIC_HOST:?Set PUBLIC_HOST}
+      CORS_ORIGIN: https://${PUBLIC_HOST}
+      ADMIN_ORIGIN: https://${ADMIN_HOST:?Set ADMIN_HOST}
+      # The apex host: a cookie with Domain=<apex> is also sent to admin.<apex>.
+      COOKIE_DOMAIN: ${PUBLIC_HOST}
+      NODE_ENV: production
+      # Passwordless email code is for local development and previews only.
+      EMAIL_OTP_SIGNIN: "false"
+    expose:
+      - "3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://localhost:3000/api/v1/ready').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    init: true
+    restart: unless-stopped
+    logging: *logging
+
+  postgres:
+    # Pinned to the 18.x line the schema was built and tested on (CI runs the same major).
+    image: postgres:18.0
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-codesphere}
+      POSTGRES_USER: ${POSTGRES_USER:-codesphere}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      # PostgreSQL 18 images keep the data under /var/lib/postgresql (version subdirectory).
+      - codesphere_postgres_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+    restart: unless-stopped
+    logging: *logging
+
+volumes:
+  codesphere_postgres_data:
+  caddy_data:
+  caddy_config:
+
+# BuildKit makes these available only while the install and build steps run.
+secrets:
+  web_env:
+    file: apps/web/.env
+  server_env:
+    file: apps/server/.env
