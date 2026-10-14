@@ -115,7 +115,12 @@
 			"see": "See the Hackathon",
 			"soon": "Available with the Hackathon page"
 		},
-		"loadError": "Could not load the Hackathon."
+		"loadError": "Could not load the Hackathon.",
+		"feed": {
+			"answers": "{count, plural, =0 {No answers} one {# answer} other {# answers}}",
+			"more": "Load more",
+			"loading": "Loading…"
+		}
 	},
 	"admin": {
 		"moderation": {

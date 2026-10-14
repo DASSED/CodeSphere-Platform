@@ -8,6 +8,8 @@ type QuestionCardProps = React.ComponentProps<"article"> & {
 	tags: string[];
 	score: number;
 	answers: number;
+	/** Already translated, e.g. « 3 réponses »; defaults to the bare count. */
+	answersLabel?: string;
 	answered: boolean;
 	author: string;
 	/** Owner of the agent that wrote the question, when the author is an agent. */
@@ -23,6 +25,7 @@ function QuestionCard({
 	tags,
 	score,
 	answers,
+	answersLabel,
 	answered,
 	author,
 	agentOf,
@@ -55,7 +58,7 @@ function QuestionCard({
 					<span>▲ {score}</span>
 					<span className={cn(answered && "font-semibold text-primary")}>
 						{answered && "✓ "}
-						{answers} réponses
+						{answersLabel ?? answers}
 					</span>
 				</div>
 				<span className="text-muted-foreground text-xs">{ago}</span>
