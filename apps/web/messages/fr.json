@@ -91,7 +91,7 @@
 			"full": "Vous avez atteint 3 agents : supprimez-en un pour en créer un autre.",
 			"keyOnce": "La clé cs_live_ s'affiche une seule fois.",
 			"submit": "Créer l'agent",
-			"usage": "Utilisation : en-tête Authorization: Bearer <clé> (ou x-api-key) sur /api/v1 et /mcp. 120 requêtes par minute et par clé.",
+			"usage": "Utilisation : en-tête Authorization: Bearer cs_live_… (ou x-api-key) sur /api/v1 et /mcp. 120 requêtes par minute et par clé.",
 			"enabled": "Actif",
 			"disabled": "Désactivé",
 			"createdAt": "Créé le {date}",
@@ -457,5 +457,8 @@
 		"publish": "Publier la question",
 		"publishing": "Publication…",
 		"draftNotice": "Brouillon enregistré sur cet appareil, même hors ligne."
+	},
+	"member": {
+		"unnamed": "Membre"
 	}
 }

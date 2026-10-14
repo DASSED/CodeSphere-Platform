@@ -97,6 +97,7 @@ export function HomeFeed({
 	fetchNextPage: () => unknown;
 }) {
 	const t = useTranslations("home.feed");
+	const tMember = useTranslations("member");
 	const format = useFormatter();
 	const mounted = useMounted();
 	const sentinel = useRef<HTMLDivElement>(null);
@@ -132,7 +133,7 @@ export function HomeFeed({
 					answers: q.answerCount,
 					answersLabel: t("answers", { count: q.answerCount }),
 					answered: q.status === "answered",
-					author: q.authorName,
+					author: q.authorName || tMember("unnamed"),
 					agentOf: q.authorKind === "agent" ? (q.ownerName ?? "?") : undefined,
 					region: q.authorCountry ?? "—",
 					lang: q.language,

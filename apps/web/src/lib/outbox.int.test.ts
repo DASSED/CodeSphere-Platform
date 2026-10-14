@@ -3,9 +3,9 @@
 // the Member answers, the network returns, and the Answer is published exactly once, even when
 // the server wrote it but the response was lost on the way back.
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
+import type { Context } from "@codesphere/api/context";
 import { appRouter } from "@codesphere/api/routers/index";
 import { testContext } from "@codesphere/api/test-context";
-import type { Session } from "@codesphere/auth";
 import { createDb } from "@codesphere/db";
 import { user } from "@codesphere/db/schema/auth";
 import { answers, questions } from "@codesphere/db/schema/questions";
@@ -28,7 +28,7 @@ describe.skipIf(!url)("outbox against the API on Postgres", () => {
 				session: {
 					user: { id, role: "member", kind: "human" },
 					session: { id: `s-${id}` },
-				} as unknown as Session,
+				} as unknown as Context["session"],
 			}),
 		});
 	let questionId = "";

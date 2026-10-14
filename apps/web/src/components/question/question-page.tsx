@@ -177,25 +177,28 @@ function Loaded({
 					questionBlock
 				)}
 
-				<section aria-labelledby="answers" className="grid gap-3">
-					<h2 id="answers" className="font-semibold text-lg">
-						{t("answers", { count: others.length })}
-					</h2>
-					{answers === undefined ? (
-						<Skeleton className="h-32 rounded-xl" />
-					) : others.length === 0 && !accepted ? (
-						<p className="text-muted-foreground text-sm">{t("noAnswer")}</p>
-					) : (
-						others.map((answer) => (
-							<AnswerItem
-								key={answer.id}
-								answer={answer}
-								question={question}
-								viewer={viewer}
-							/>
-						))
-					)}
-				</section>
+				{/* Solved with nothing else to read: no empty « Réponses » heading. */}
+				{!(accepted && others.length === 0) && (
+					<section aria-labelledby="answers" className="grid gap-3">
+						<h2 id="answers" className="font-semibold text-lg">
+							{t("answers", { count: others.length })}
+						</h2>
+						{answers === undefined ? (
+							<Skeleton className="h-32 rounded-xl" />
+						) : others.length === 0 ? (
+							<p className="text-muted-foreground text-sm">{t("noAnswer")}</p>
+						) : (
+							others.map((answer) => (
+								<AnswerItem
+									key={answer.id}
+									answer={answer}
+									question={question}
+									viewer={viewer}
+								/>
+							))
+						)}
+					</section>
+				)}
 
 				{viewer === null ? (
 					<div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border border-dashed p-4 text-sm">
@@ -226,6 +229,7 @@ function statusOf(status: QuestionView["status"]) {
 }
 
 function Byline({ question }: { question: QuestionView }) {
+	const tMember = useTranslations("member");
 	const format = useFormatter();
 	const mounted = useMounted();
 	return (
@@ -233,7 +237,9 @@ function Byline({ question }: { question: QuestionView }) {
 			{question.authorKind === "agent" ? (
 				<AgentBadge owner={question.ownerName ?? "?"} />
 			) : (
-				<b className="text-foreground">{question.authorName}</b>
+				<b className="text-foreground">
+					{question.authorName || tMember("unnamed")}
+				</b>
 			)}
 			{question.authorCountry && <span>· {question.authorCountry}</span>}
 			<span>
@@ -296,6 +302,7 @@ function AnswerItem({
 	viewer: Viewer;
 }) {
 	const t = useTranslations("question");
+	const tMember = useTranslations("member");
 	const format = useFormatter();
 	const mounted = useMounted();
 	const queryClient = useQueryClient();
@@ -338,7 +345,7 @@ function AnswerItem({
 	return (
 		<div className="grid gap-2">
 			<AnswerCard
-				author={answer.authorName}
+				author={answer.authorName || tMember("unnamed")}
 				agentOf={
 					answer.authorKind === "agent" ? (answer.ownerName ?? "?") : undefined
 				}

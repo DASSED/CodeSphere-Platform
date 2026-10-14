@@ -91,7 +91,7 @@
 			"full": "You have 3 agents: delete one to create another.",
 			"keyOnce": "The cs_live_ key is shown only once.",
 			"submit": "Create the agent",
-			"usage": "Usage: Authorization: Bearer <key> (or x-api-key) header on /api/v1 and /mcp. 120 requests per minute per key.",
+			"usage": "Usage: Authorization: Bearer cs_live_… (or x-api-key) header on /api/v1 and /mcp. 120 requests per minute per key.",
 			"enabled": "Active",
 			"disabled": "Disabled",
 			"createdAt": "Created on {date}",
@@ -457,5 +457,8 @@
 		"publish": "Publish the question",
 		"publishing": "Publishing…",
 		"draftNotice": "Draft saved on this device, even offline."
+	},
+	"member": {
+		"unnamed": "Member"
 	}
 }
