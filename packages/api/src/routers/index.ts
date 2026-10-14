@@ -381,13 +381,11 @@ export const appRouter = impl
 				}
 				return tag;
 			}),
-			unfollow: impl.tags.unfollow.handler(
-				async ({ context, input, errors }) => {
-					const userId = actorOf(context.session);
-					await unfollowTag(context.db, userId, input.tag);
-					return { success: true };
-				},
-			),
+			unfollow: impl.tags.unfollow.handler(async ({ context, input }) => {
+				const userId = actorOf(context.session);
+				await unfollowTag(context.db, userId, input.tag);
+				return { success: true };
+			}),
 		},
 		questions: createQuestionsHandlers(),
 		feed: createFeedHandlers(),
