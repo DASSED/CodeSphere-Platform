@@ -15,13 +15,17 @@ export function tagGroup(tag: TagLike): TagGroup {
 	return tag.questionCount > 0 ? "used" : "unused";
 }
 
-/** Why a Tag cannot be deleted, or `null` when it can; shown before the action. */
-export function deleteBlock(tag: TagLike): string | null {
+export type DeleteBlock =
+	| { reason: "owned"; slug: string }
+	| { reason: "used"; count: number };
+
+/** Why a Tag cannot be deleted, or `null` when it can; the page words it before the action. */
+export function deleteBlock(tag: TagLike): DeleteBlock | null {
 	if (tag.ownerHackathon) {
-		return `Protégé : possédé par le Hackathon ${tag.ownerHackathon}`;
+		return { reason: "owned", slug: tag.ownerHackathon };
 	}
 	if (tag.questionCount > 0) {
-		return `Utilisé par ${tag.questionCount} Question${tag.questionCount > 1 ? "s" : ""}`;
+		return { reason: "used", count: tag.questionCount };
 	}
 	return null;
 }

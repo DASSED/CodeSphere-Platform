@@ -11,21 +11,23 @@ import { Field } from "@codesphere/ui/components/molecules/field";
 import { AuditLog } from "@codesphere/ui/components/organisms/audit-log";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { AlertCircleIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import AdminFrame from "@/components/admin-frame";
 import { auditEntryOf, moderationErrorKey } from "@/lib/admin-moderation";
 import { orpc } from "@/utils/orpc";
 
-const dateFormat = new Intl.DateTimeFormat("fr", {
-	dateStyle: "medium",
-	timeStyle: "short",
-});
-
 type Filters = { action: string; actorId: string; targetType: string };
 const NO_FILTERS: Filters = { action: "", actorId: "", targetType: "" };
 
 export default function AuditPage() {
+	const t = useTranslations("admin.audit");
+	const locale = useLocale();
+	const dateFormat = new Intl.DateTimeFormat(locale, {
+		dateStyle: "medium",
+		timeStyle: "short",
+	});
 	const [filters, setFilters] = useState<Filters>(NO_FILTERS);
 	const set = (key: keyof Filters) => (value: string) =>
 		setFilters((current) => ({ ...current, [key]: value }));
@@ -59,19 +61,17 @@ export default function AuditPage() {
 				event,
 				(id) => names.get(id),
 				(iso) => dateFormat.format(new Date(iso)),
+				t("system"),
 			),
 	);
 
 	return (
-		<AdminFrame
-			title="Journal d'audit"
-			description="Les actions du staff : suspensions, modifications, suppressions."
-		>
+		<AdminFrame title={t("title")} description={t("description")}>
 			<form
 				className="grid gap-3 sm:grid-cols-3"
 				onSubmit={(event) => event.preventDefault()}
 			>
-				<Field id="audit-action" label="Action">
+				<Field id="audit-action" label={t("action")}>
 					<Input
 						id="audit-action"
 						placeholder="member.suspend"
@@ -79,14 +79,14 @@ export default function AuditPage() {
 						onChange={(e) => set("action")(e.target.value)}
 					/>
 				</Field>
-				<Field id="audit-actor" label="Acteur (identifiant)">
+				<Field id="audit-actor" label={t("actor")}>
 					<Input
 						id="audit-actor"
 						value={filters.actorId}
 						onChange={(e) => set("actorId")(e.target.value)}
 					/>
 				</Field>
-				<Field id="audit-target" label="Type de cible">
+				<Field id="audit-target" label={t("target")}>
 					<Input
 						id="audit-target"
 						placeholder="member"
@@ -98,22 +98,20 @@ export default function AuditPage() {
 			{log.isError ? (
 				<Alert variant="destructive">
 					<AlertCircleIcon />
-					<AlertTitle>Journal indisponible</AlertTitle>
+					<AlertTitle>{t("unavailable")}</AlertTitle>
 					<AlertDescription>
 						{moderationErrorKey(log.error) === "forbidden"
-							? "Accès réservé au staff."
-							: "Une erreur est survenue."}{" "}
+							? t("forbidden")
+							: t("error")}{" "}
 						<Button variant="link" size="sm" onClick={() => log.refetch()}>
-							Réessayer
+							{t("retry")}
 						</Button>
 					</AlertDescription>
 				</Alert>
 			) : log.isPending ? (
-				<p className="text-muted-foreground text-sm">Chargement…</p>
+				<p className="text-muted-foreground text-sm">{t("loading")}</p>
 			) : entries.length === 0 ? (
-				<p className="text-muted-foreground text-sm">
-					Aucun événement pour ces filtres.
-				</p>
+				<p className="text-muted-foreground text-sm">{t("empty")}</p>
 			) : (
 				<AuditLog entries={entries} />
 			)}
@@ -124,7 +122,7 @@ export default function AuditPage() {
 					disabled={log.isFetchingNextPage}
 					onClick={() => log.fetchNextPage()}
 				>
-					Voir plus
+					{t("more")}
 				</Button>
 			)}
 		</AdminFrame>

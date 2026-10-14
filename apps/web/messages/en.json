@@ -106,11 +106,161 @@
 		"loadError": "Could not load the Hackathon."
 	},
 	"admin": {
-		"moderation": "Moderation",
-		"hackathons": "Hackathon",
-		"tags": "Tags",
+		"moderation": {
+			"title": "Moderation",
+			"description": "Suspend or reactivate a Member. Every action is logged.",
+			"groups": {
+				"active": "Active",
+				"agents": "Agents",
+				"suspended": "Suspended"
+			},
+			"status": {
+				"label": "Status",
+				"all": "All",
+				"active": "Active",
+				"suspended": "Suspended"
+			},
+			"errors": {
+				"forbidden": "Refused: you can only moderate a Member of lower rank.",
+				"conflict": "This Member already changed state. The list was reloaded.",
+				"notFound": "This Member no longer exists.",
+				"generic": "Something went wrong. Try again."
+			},
+			"unavailable": "List unavailable",
+			"retry": "Retry",
+			"list": "Members",
+			"search": "Search a Member",
+			"searchPlaceholder": "Name or email",
+			"loading": "Loading…",
+			"empty": "No Member to show.",
+			"more": "Show more",
+			"pick": "Pick a Member from the list.",
+			"refusal": {
+				"self": "You cannot suspend yourself.",
+				"rank": "Equal or higher rank than yours: you cannot moderate this Member."
+			},
+			"kind": {
+				"agent": "Agent",
+				"human": "Human"
+			},
+			"suspended": "Suspended",
+			"account": "Account",
+			"email": "Email",
+			"role": "Role",
+			"joined": "Joined",
+			"suspendedOn": "Suspended on",
+			"reason": "Reason",
+			"moderate": "Moderation",
+			"reactivate": "Reactivate",
+			"suspend": "Suspend this Member",
+			"reasonLabel": "Reason (required)",
+			"reasonTooShort": "At least 3 characters."
+		},
+		"hackathons": {
+			"title": "Hackathon",
+			"description": "The CADEV, its Milestones and judging criteria.",
+			"list": "Hackathons",
+			"group": "Hackathon",
+			"loading": "Loading…",
+			"empty": "No Hackathon.",
+			"unavailable": "Hackathon unavailable",
+			"unavailableBody": "Could not load the Hackathon.",
+			"retry": "Retry",
+			"general": "General",
+			"name": "Name",
+			"organizer": "Organizer",
+			"teamMin": "Team min.",
+			"teamMax": "Team max.",
+			"team": "Team",
+			"teamRange": "{min} to {max}",
+			"summary": "Summary",
+			"sourceNote": "Source note",
+			"sourceNoteHint": "Where the information comes from, shown next to “verified on”.",
+			"version": "Version",
+			"milestones": "Milestones",
+			"label": "Label",
+			"start": "Start",
+			"end": "End",
+			"timezone": "Dates shown in your timezone.",
+			"criteria": "Judging criteria",
+			"weight": "Weight (%)",
+			"total": "Total: {total}%",
+			"mustBe100": "(must be 100%)",
+			"confirmTitle": "Confirmation",
+			"confirmBody": "Save these changes? They change the public Hackathon page and are logged.",
+			"confirmAction": "Save",
+			"noDelete": "The Hackathon cannot be deleted.",
+			"staleTitle": "Stale version",
+			"stale": "Someone saved in the meantime (server version: {version}). Nothing was overwritten.",
+			"reload": "Reload",
+			"failure": {
+				"forbidden": "Staff only.",
+				"failed": "Saving failed. Try again."
+			}
+		},
+		"tags": {
+			"title": "Tags",
+			"description": "Official Tags: create, rename, delete.",
+			"list": "Tags",
+			"search": "Search a Tag",
+			"searchPlaceholder": "Search",
+			"loading": "Loading…",
+			"empty": "No Tag.",
+			"unavailable": "List unavailable",
+			"retry": "Retry",
+			"groups": {
+				"protected": "Protected",
+				"used": "Used",
+				"unused": "Unused"
+			},
+			"create": "Create a Tag",
+			"newTitle": "New Tag",
+			"general": "General",
+			"name": "Name",
+			"nameHint": "Lowercased, no surrounding spaces.",
+			"questions": "Questions",
+			"owner": "Owner",
+			"ownerHackathon": "Hackathon {slug}",
+			"protected": "Protected",
+			"deletion": "Deletion",
+			"delete": "Delete this Tag",
+			"pick": "Pick a Tag, or create one with “+”.",
+			"blocked": {
+				"owned": "Protected: owned by the Hackathon {slug}",
+				"used": "Used by {count, plural, one {# Question} other {# Questions}}"
+			},
+			"errors": {
+				"conflict": "This name is already taken (same normalized form), or the Tag changed in the meantime.",
+				"forbidden": "Staff only.",
+				"notFound": "This Tag no longer exists.",
+				"generic": "Something went wrong. Try again."
+			}
+		},
 		"kpi": "KPIs",
-		"audit": "Audit log",
-		"signOut": "Sign out"
+		"audit": {
+			"title": "Audit log",
+			"description": "Staff actions: suspensions, edits, deletions.",
+			"action": "Action",
+			"actor": "Actor (id)",
+			"target": "Target type",
+			"unavailable": "Log unavailable",
+			"forbidden": "Staff only.",
+			"error": "Something went wrong.",
+			"retry": "Retry",
+			"loading": "Loading…",
+			"empty": "No event for these filters.",
+			"more": "Show more",
+			"system": "System"
+		},
+		"signOut": "Sign out",
+		"common": {
+			"confirm": "Confirm ({seconds} s)",
+			"cancel": "Cancel",
+			"save": "Save",
+			"create": "Create",
+			"dirty": "Unsaved changes",
+			"clean": "No changes",
+			"edit": "Edit"
+		}
 	}
 }

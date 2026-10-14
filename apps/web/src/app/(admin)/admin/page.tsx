@@ -26,6 +26,7 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { AlertCircleIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type { z } from "zod";
 
@@ -41,31 +42,17 @@ import { orpc } from "@/utils/orpc";
 
 type AdminMember = z.infer<typeof AdminMemberSchema>;
 
-const GROUPS: { key: MemberGroup; label: string }[] = [
-	{ key: "active", label: "Actifs" },
-	{ key: "agents", label: "Agents" },
-	{ key: "suspended", label: "Suspendus" },
-];
+const GROUPS: MemberGroup[] = ["active", "agents", "suspended"];
 
-const ERRORS = {
-	forbidden:
-		"Action refusée : vous ne pouvez modérer qu'un Member de rang inférieur.",
-	conflict: "Ce Member a déjà changé d'état. La liste a été rechargée.",
-	notFound: "Ce Member n'existe plus.",
-	generic: "Une erreur est survenue. Réessayez.",
-} as const;
-
-const dateFormat = new Intl.DateTimeFormat("fr", {
-	dateStyle: "medium",
-	timeStyle: "short",
-});
+type ErrorKey = ReturnType<typeof moderationErrorKey>;
 
 export default function ModerationPage() {
+	const t = useTranslations("admin.moderation");
 	const identity = useAdminIdentity();
 	const queryClient = useQueryClient();
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [reason, setReason] = useState("");
-	const [error, setError] = useState<keyof typeof ERRORS | null>(null);
+	const [error, setError] = useState<ErrorKey | null>(null);
 	const [status, setStatus] = useState<"active" | "suspended" | undefined>();
 
 	const members = useInfiniteQuery(
@@ -108,18 +95,15 @@ export default function ModerationPage() {
 	);
 
 	return (
-		<AdminFrame
-			title="Modération"
-			description="Suspendre ou réactiver un Member. Chaque action est journalisée."
-		>
+		<AdminFrame title={t("title")} description={t("description")}>
 			{members.isError && (
 				<Alert variant="destructive">
 					<AlertCircleIcon />
-					<AlertTitle>Liste indisponible</AlertTitle>
+					<AlertTitle>{t("unavailable")}</AlertTitle>
 					<AlertDescription>
-						{ERRORS[moderationErrorKey(members.error)]}{" "}
+						{t(`errors.${moderationErrorKey(members.error)}`)}{" "}
 						<Button variant="link" size="sm" onClick={() => members.refetch()}>
-							Réessayer
+							{t("retry")}
 						</Button>
 					</AlertDescription>
 				</Alert>
@@ -128,12 +112,12 @@ export default function ModerationPage() {
 				list={
 					<>
 						<fieldset className="mb-2 flex gap-1 border-0 p-0">
-							<legend className="sr-only">Statut</legend>
+							<legend className="sr-only">{t("status.label")}</legend>
 							{(
 								[
-									[undefined, "Tous"],
-									["active", "Actifs"],
-									["suspended", "Suspendus"],
+									[undefined, "all"],
+									["active", "active"],
+									["suspended", "suspended"],
 								] as const
 							).map(([value, label]) => (
 								<Button
@@ -143,18 +127,16 @@ export default function ModerationPage() {
 									aria-pressed={status === value}
 									onClick={() => setStatus(value)}
 								>
-									{label}
+									{t(`status.${label}`)}
 								</Button>
 							))}
 						</fieldset>
 						<GroupedList
-							label="Members"
-							searchLabel="Rechercher un Member"
-							searchPlaceholder="Nom ou e-mail"
-							emptyText={
-								members.isPending ? "Chargement…" : "Aucun Member à afficher."
-							}
-							groups={GROUPS}
+							label={t("list")}
+							searchLabel={t("search")}
+							searchPlaceholder={t("searchPlaceholder")}
+							emptyText={members.isPending ? t("loading") : t("empty")}
+							groups={GROUPS.map((key) => ({ key, label: t(`groups.${key}`) }))}
 							selectedId={selectedId}
 							onSelect={(member) => {
 								setSelectedId(member.id);
@@ -166,7 +148,7 @@ export default function ModerationPage() {
 								name: member.name,
 								group: memberGroup(member),
 								keywords: member.email,
-								meta: member.suspendedAt ? "Suspendu" : undefined,
+								meta: member.suspendedAt ? t("suspended") : undefined,
 							}))}
 						/>
 						{members.hasNextPage && (
@@ -177,7 +159,7 @@ export default function ModerationPage() {
 								disabled={members.isFetchingNextPage}
 								onClick={() => members.fetchNextPage()}
 							>
-								{members.isFetchingNextPage ? "Chargement…" : "Voir plus"}
+								{members.isFetchingNextPage ? t("loading") : t("more")}
 							</Button>
 						)}
 					</>
@@ -190,15 +172,13 @@ export default function ModerationPage() {
 							actorRole={identity?.role}
 							reason={reason}
 							onReasonChange={setReason}
-							error={error ? ERRORS[error] : undefined}
+							error={error ? t(`errors.${error}`) : undefined}
 							busy={suspend.isPending || reactivate.isPending}
 							onSuspend={() => suspend.mutate({ id: selected.id, reason })}
 							onReactivate={() => reactivate.mutate({ id: selected.id })}
 						/>
 					) : (
-						<p className="text-muted-foreground text-sm">
-							Choisissez un Member dans la liste.
-						</p>
+						<p className="text-muted-foreground text-sm">{t("pick")}</p>
 					)
 				}
 			/>
@@ -227,41 +207,48 @@ function MemberSheet({
 	onSuspend: () => void;
 	onReactivate: () => void;
 }) {
+	const t = useTranslations("admin.moderation");
+	const tc = useTranslations("admin.common");
+	const locale = useLocale();
+	const dateFormat = new Intl.DateTimeFormat(locale, {
+		dateStyle: "medium",
+		timeStyle: "short",
+	});
 	const permission = canModerate(member, selfId, actorRole);
 	const refusal = permission.ok
 		? undefined
 		: permission.reason === "self"
-			? "Vous ne pouvez pas vous suspendre vous-même."
-			: "Rang égal ou supérieur au vôtre : vous ne pouvez pas modérer ce Member.";
+			? t("refusal.self")
+			: t("refusal.rank");
 	return (
 		<RecordSheet
 			title={member.name}
 			badges={
 				<>
-					<Badge variant="outline">
-						{member.kind === "agent" ? "Agent" : "Humain"}
-					</Badge>
-					{member.suspendedAt && <Badge variant="destructive">Suspendu</Badge>}
+					<Badge variant="outline">{t(`kind.${member.kind}`)}</Badge>
+					{member.suspendedAt && (
+						<Badge variant="destructive">{t("suspended")}</Badge>
+					)}
 				</>
 			}
 		>
-			<RecordSection title="Compte">
+			<RecordSection title={t("account")}>
 				<RecordFields
 					fields={[
-						{ label: "E-mail", value: member.email },
-						{ label: "Rôle", value: member.role },
+						{ label: t("email"), value: member.email },
+						{ label: t("role"), value: member.role },
 						{
-							label: "Inscrit le",
+							label: t("joined"),
 							value: dateFormat.format(new Date(member.createdAt)),
 						},
 						...(member.suspendedAt
 							? [
 									{
-										label: "Suspendu le",
+										label: t("suspendedOn"),
 										value: dateFormat.format(new Date(member.suspendedAt)),
 									},
 									{
-										label: "Raison",
+										label: t("reason"),
 										value: member.suspensionReason ?? "—",
 									},
 								]
@@ -269,7 +256,7 @@ function MemberSheet({
 					]}
 				/>
 			</RecordSection>
-			<RecordSection title="Modération">
+			<RecordSection title={t("moderate")}>
 				{error && (
 					<Alert variant="destructive">
 						<AlertCircleIcon />
@@ -284,17 +271,21 @@ function MemberSheet({
 						disabled={busy || !permission.ok}
 						onClick={onReactivate}
 					>
-						Réactiver
+						{t("reactivate")}
 					</Button>
 				) : (
 					<>
 						<ReasonField
 							id="suspend-reason"
+							label={t("reasonLabel")}
+							tooShortText={t("reasonTooShort")}
 							value={reason}
 							onValueChange={onReasonChange}
 						/>
 						<ConfirmTwoStep
-							label="Suspendre ce Member"
+							label={t("suspend")}
+							confirmLabel={(seconds) => tc("confirm", { seconds })}
+							cancelLabel={tc("cancel")}
 							disabled={busy || !permission.ok || !isReasonValid(reason)}
 							onConfirm={onSuspend}
 						/>

@@ -46,7 +46,8 @@ const WARNING = /\.(update|rename|reactivate)$/;
 export function auditEntryOf(
 	event: AuditEvent,
 	nameOf: (id: string) => string | undefined,
-	formatDate: (iso: string) => string = (iso) => iso,
+	formatDate: (iso: string) => string,
+	systemLabel: string,
 ): AuditEntry {
 	const target = event.targetId
 		? (nameOf(event.targetId) ?? `${event.targetType} ${event.targetId}`)
@@ -54,7 +55,9 @@ export function auditEntryOf(
 	return {
 		id: event.id,
 		at: formatDate(event.createdAt),
-		actor: event.actorId ? (nameOf(event.actorId) ?? event.actorId) : "Système",
+		actor: event.actorId
+			? (nameOf(event.actorId) ?? event.actorId)
+			: systemLabel,
 		action: event.action,
 		target,
 		tone: DESTRUCTIVE.test(event.action)

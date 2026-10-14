@@ -20,6 +20,7 @@ import {
 } from "@codesphere/ui/components/organisms/record-sheet";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircleIcon } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import AdminFrame from "@/components/admin-frame";
@@ -53,12 +54,14 @@ type Draft = {
 	}[];
 };
 
-const dateFormat = new Intl.DateTimeFormat("fr", {
-	dateStyle: "medium",
-	timeStyle: "short",
-});
-
 export default function AdminHackathonsPage() {
+	const t = useTranslations("admin.hackathons");
+	const tc = useTranslations("admin.common");
+	const locale = useLocale();
+	const dateFormat = new Intl.DateTimeFormat(locale, {
+		dateStyle: "medium",
+		timeStyle: "short",
+	});
 	const queryClient = useQueryClient();
 	const query = useQuery(
 		orpc.hackathons.get.queryOptions({ input: { slug: SLUG } }),
@@ -67,7 +70,7 @@ export default function AdminHackathonsPage() {
 	const [draft, setDraft] = useState<Draft | null>(null);
 	const [confirming, setConfirming] = useState(false);
 	const [conflictVersion, setConflictVersion] = useState<number | null>(null);
-	const [failure, setFailure] = useState<string | null>(null);
+	const [failure, setFailure] = useState<"forbidden" | "failed" | null>(null);
 
 	const original: Draft | null = hackathon
 		? {
@@ -117,11 +120,7 @@ export default function AdminHackathonsPage() {
 					setConflictVersion(data?.version ?? null);
 					setFailure(null);
 				} else {
-					setFailure(
-						code === "FORBIDDEN"
-							? "Action réservée au staff."
-							: "L'enregistrement a échoué. Réessayez.",
-					);
+					setFailure(code === "FORBIDDEN" ? "forbidden" : "failed");
 				}
 			},
 		}),
@@ -169,18 +168,15 @@ export default function AdminHackathonsPage() {
 	};
 
 	return (
-		<AdminFrame
-			title="Hackathon"
-			description="Le CADEV, ses Milestones et ses critères de jugement."
-		>
+		<AdminFrame title={t("title")} description={t("description")}>
 			{query.isError && (
 				<Alert variant="destructive">
 					<AlertCircleIcon />
-					<AlertTitle>Hackathon indisponible</AlertTitle>
+					<AlertTitle>{t("unavailable")}</AlertTitle>
 					<AlertDescription>
-						Impossible de charger le Hackathon.{" "}
+						{t("unavailableBody")}{" "}
 						<Button variant="link" size="sm" onClick={() => query.refetch()}>
-							Réessayer
+							{t("retry")}
 						</Button>
 					</AlertDescription>
 				</Alert>
@@ -188,11 +184,11 @@ export default function AdminHackathonsPage() {
 			<AdminMasterDetail
 				list={
 					<GroupedList
-						label="Hackathons"
-						groups={[{ key: "hackathon", label: "Hackathon" }]}
+						label={t("list")}
+						groups={[{ key: "hackathon", label: t("group") }]}
 						selectedId={hackathon ? SLUG : null}
 						onSelect={() => undefined}
-						emptyText={query.isPending ? "Chargement…" : "Aucun Hackathon."}
+						emptyText={query.isPending ? t("loading") : t("empty")}
 						items={
 							hackathon
 								? [{ id: SLUG, name: hackathon.name, group: "hackathon" }]
@@ -210,12 +206,11 @@ export default function AdminHackathonsPage() {
 							{conflictVersion !== null && (
 								<Alert variant="destructive">
 									<AlertCircleIcon />
-									<AlertTitle>Version périmée</AlertTitle>
+									<AlertTitle>{t("staleTitle")}</AlertTitle>
 									<AlertDescription>
-										Quelqu'un a enregistré entre-temps (version serveur :{" "}
-										{conflictVersion}). Rien n'a été écrasé.{" "}
+										{t("stale", { version: conflictVersion })}{" "}
 										<Button variant="link" size="sm" onClick={reload}>
-											Recharger
+											{t("reload")}
 										</Button>
 									</AlertDescription>
 								</Alert>
@@ -223,20 +218,20 @@ export default function AdminHackathonsPage() {
 							{failure && (
 								<Alert variant="destructive">
 									<AlertCircleIcon />
-									<AlertDescription>{failure}</AlertDescription>
+									<AlertDescription>{t(`failure.${failure}`)}</AlertDescription>
 								</Alert>
 							)}
 							{draft ? (
 								<>
-									<RecordSection title="Général">
-										<Field id="h-name" label="Nom">
+									<RecordSection title={t("general")}>
+										<Field id="h-name" label={t("name")}>
 											<Input
 												id="h-name"
 												value={draft.name}
 												onChange={(e) => set("name", e.target.value)}
 											/>
 										</Field>
-										<Field id="h-organizer" label="Organisateur">
+										<Field id="h-organizer" label={t("organizer")}>
 											<Input
 												id="h-organizer"
 												value={draft.organizer}
@@ -244,7 +239,7 @@ export default function AdminHackathonsPage() {
 											/>
 										</Field>
 										<div className="grid grid-cols-2 gap-3">
-											<Field id="h-min" label="Équipe min.">
+											<Field id="h-min" label={t("teamMin")}>
 												<Input
 													id="h-min"
 													type="number"
@@ -255,7 +250,7 @@ export default function AdminHackathonsPage() {
 													}
 												/>
 											</Field>
-											<Field id="h-max" label="Équipe max.">
+											<Field id="h-max" label={t("teamMax")}>
 												<Input
 													id="h-max"
 													type="number"
@@ -267,7 +262,7 @@ export default function AdminHackathonsPage() {
 												/>
 											</Field>
 										</div>
-										<Field id="h-summary" label="Résumé">
+										<Field id="h-summary" label={t("summary")}>
 											<Textarea
 												id="h-summary"
 												value={draft.summary}
@@ -276,8 +271,8 @@ export default function AdminHackathonsPage() {
 										</Field>
 										<Field
 											id="h-source"
-											label="Note de source"
-											description="D'où vient l'information, affichée à côté de « vérifié le »."
+											label={t("sourceNote")}
+											description={t("sourceNoteHint")}
 										>
 											<Textarea
 												id="h-source"
@@ -287,13 +282,13 @@ export default function AdminHackathonsPage() {
 											/>
 										</Field>
 									</RecordSection>
-									<RecordSection title="Milestones">
+									<RecordSection title={t("milestones")}>
 										{draft.milestones.map((m, index) => (
 											<div
 												key={m.key}
 												className="grid gap-3 sm:grid-cols-[1fr_auto_auto]"
 											>
-												<Field id={`m-${m.key}-label`} label="Libellé">
+												<Field id={`m-${m.key}-label`} label={t("label")}>
 													<Input
 														id={`m-${m.key}-label`}
 														value={m.label}
@@ -309,7 +304,7 @@ export default function AdminHackathonsPage() {
 														}
 													/>
 												</Field>
-												<Field id={`m-${m.key}-start`} label="Début">
+												<Field id={`m-${m.key}-start`} label={t("start")}>
 													<Input
 														id={`m-${m.key}-start`}
 														type="datetime-local"
@@ -326,7 +321,7 @@ export default function AdminHackathonsPage() {
 														}
 													/>
 												</Field>
-												<Field id={`m-${m.key}-end`} label="Fin">
+												<Field id={`m-${m.key}-end`} label={t("end")}>
 													<Input
 														id={`m-${m.key}-end`}
 														type="datetime-local"
@@ -346,16 +341,16 @@ export default function AdminHackathonsPage() {
 											</div>
 										))}
 										<p className="text-muted-foreground text-xs">
-											Dates affichées dans votre fuseau horaire.
+											{t("timezone")}
 										</p>
 									</RecordSection>
-									<RecordSection title="Critères de jugement">
+									<RecordSection title={t("criteria")}>
 										{draft.criteria.map((c, index) => (
 											<div
 												key={c.label}
 												className="grid grid-cols-[1fr_6rem] gap-3"
 											>
-												<Field id={`c-${index}-label`} label="Libellé">
+												<Field id={`c-${index}-label`} label={t("label")}>
 													<Input
 														id={`c-${index}-label`}
 														value={c.label}
@@ -371,7 +366,7 @@ export default function AdminHackathonsPage() {
 														}
 													/>
 												</Field>
-												<Field id={`c-${index}-weight`} label="Poids (%)">
+												<Field id={`c-${index}-weight`} label={t("weight")}>
 													<Input
 														id={`c-${index}-weight`}
 														type="number"
@@ -400,19 +395,18 @@ export default function AdminHackathonsPage() {
 													: "font-medium text-destructive text-sm"
 											}
 										>
-											Total : {total} %{" "}
-											{total === 100 ? "" : "(doit faire 100 %)"}
+											{t("total", { total })}{" "}
+											{total === 100 ? "" : t("mustBe100")}
 										</p>
 									</RecordSection>
 									{confirming && (
-										<RecordSection title="Confirmation">
-											<p className="text-sm">
-												Enregistrer ces modifications ? Elles changent la page
-												publique du Hackathon et sont journalisées.
-											</p>
+										<RecordSection title={t("confirmTitle")}>
+											<p className="text-sm">{t("confirmBody")}</p>
 											<div className="flex flex-wrap gap-2">
 												<ConfirmTwoStep
-													label="Enregistrer"
+													label={t("confirmAction")}
+													confirmLabel={(seconds) => tc("confirm", { seconds })}
+													cancelLabel={tc("cancel")}
 													disabled={save.isPending}
 													onConfirm={submit}
 												/>
@@ -420,7 +414,7 @@ export default function AdminHackathonsPage() {
 													variant="outline"
 													onClick={() => setConfirming(false)}
 												>
-													Annuler
+													{tc("cancel")}
 												</Button>
 											</div>
 										</RecordSection>
@@ -428,6 +422,10 @@ export default function AdminHackathonsPage() {
 									<SaveBar
 										dirty={dirty && total === 100}
 										saving={save.isPending}
+										saveLabel={tc("save")}
+										discardLabel={tc("cancel")}
+										dirtyText={tc("dirty")}
+										cleanText={tc("clean")}
 										onSave={() => setConfirming(true)}
 										onDiscard={() => {
 											setDraft(null);
@@ -435,29 +433,32 @@ export default function AdminHackathonsPage() {
 										}}
 									/>
 									<p className="text-muted-foreground text-xs">
-										Le Hackathon ne se supprime pas.
+										{t("noDelete")}
 									</p>
 								</>
 							) : (
 								<>
-									<RecordSection title="Général">
+									<RecordSection title={t("general")}>
 										<RecordFields
 											fields={[
-												{ label: "Organisateur", value: hackathon.organizer },
+												{ label: t("organizer"), value: hackathon.organizer },
 												{
-													label: "Équipe",
-													value: `${hackathon.teamMin} à ${hackathon.teamMax}`,
+													label: t("team"),
+													value: t("teamRange", {
+														min: hackathon.teamMin,
+														max: hackathon.teamMax,
+													}),
 												},
-												{ label: "Résumé", value: hackathon.summary },
+												{ label: t("summary"), value: hackathon.summary },
 												{
-													label: "Note de source",
+													label: t("sourceNote"),
 													value: hackathon.sourceNote ?? "—",
 												},
-												{ label: "Version", value: hackathon.version },
+												{ label: t("version"), value: hackathon.version },
 											]}
 										/>
 									</RecordSection>
-									<RecordSection title="Milestones">
+									<RecordSection title={t("milestones")}>
 										<RecordFields
 											fields={hackathon.milestones.map((m) => ({
 												label: m.label,
@@ -465,7 +466,7 @@ export default function AdminHackathonsPage() {
 											}))}
 										/>
 									</RecordSection>
-									<RecordSection title="Critères de jugement">
+									<RecordSection title={t("criteria")}>
 										<RecordFields
 											fields={hackathon.criteria.map((c) => ({
 												label: c.label,
@@ -478,7 +479,7 @@ export default function AdminHackathonsPage() {
 						</RecordSheet>
 					) : (
 						<p className="text-muted-foreground text-sm">
-							{query.isPending ? "Chargement…" : "Aucun Hackathon."}
+							{query.isPending ? t("loading") : t("empty")}
 						</p>
 					)
 				}

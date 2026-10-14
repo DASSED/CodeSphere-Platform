@@ -22,15 +22,14 @@ describe("tagGroup", () => {
 
 describe("deleteBlock", () => {
 	test("says why a Tag cannot be deleted, before any action", () => {
-		expect(deleteBlock(tag({ ownerHackathon: "cadev-2026" }))).toBe(
-			"Protégé : possédé par le Hackathon cadev-2026",
-		);
-		expect(deleteBlock(tag({ questionCount: 12 }))).toBe(
-			"Utilisé par 12 Questions",
-		);
-		expect(deleteBlock(tag({ questionCount: 1 }))).toBe(
-			"Utilisé par 1 Question",
-		);
+		expect(deleteBlock(tag({ ownerHackathon: "cadev-2026" }))).toEqual({
+			reason: "owned",
+			slug: "cadev-2026",
+		});
+		expect(deleteBlock(tag({ questionCount: 12 }))).toEqual({
+			reason: "used",
+			count: 12,
+		});
 		expect(deleteBlock(tag())).toBeNull();
 	});
 });

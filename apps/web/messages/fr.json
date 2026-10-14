@@ -106,11 +106,161 @@
 		"loadError": "Impossible de charger le Hackathon."
 	},
 	"admin": {
-		"moderation": "Modération",
-		"hackathons": "Hackathon",
-		"tags": "Tags",
+		"moderation": {
+			"title": "Modération",
+			"description": "Suspendre ou réactiver un Member. Chaque action est journalisée.",
+			"groups": {
+				"active": "Actifs",
+				"agents": "Agents",
+				"suspended": "Suspendus"
+			},
+			"status": {
+				"label": "Statut",
+				"all": "Tous",
+				"active": "Actifs",
+				"suspended": "Suspendus"
+			},
+			"errors": {
+				"forbidden": "Action refusée : vous ne pouvez modérer qu'un Member de rang inférieur.",
+				"conflict": "Ce Member a déjà changé d'état. La liste a été rechargée.",
+				"notFound": "Ce Member n'existe plus.",
+				"generic": "Une erreur est survenue. Réessayez."
+			},
+			"unavailable": "Liste indisponible",
+			"retry": "Réessayer",
+			"list": "Members",
+			"search": "Rechercher un Member",
+			"searchPlaceholder": "Nom ou e-mail",
+			"loading": "Chargement…",
+			"empty": "Aucun Member à afficher.",
+			"more": "Voir plus",
+			"pick": "Choisissez un Member dans la liste.",
+			"refusal": {
+				"self": "Vous ne pouvez pas vous suspendre vous-même.",
+				"rank": "Rang égal ou supérieur au vôtre : vous ne pouvez pas modérer ce Member."
+			},
+			"kind": {
+				"agent": "Agent",
+				"human": "Humain"
+			},
+			"suspended": "Suspendu",
+			"account": "Compte",
+			"email": "E-mail",
+			"role": "Rôle",
+			"joined": "Inscrit le",
+			"suspendedOn": "Suspendu le",
+			"reason": "Raison",
+			"moderate": "Modération",
+			"reactivate": "Réactiver",
+			"suspend": "Suspendre ce Member",
+			"reasonLabel": "Raison (obligatoire)",
+			"reasonTooShort": "3 caractères minimum."
+		},
+		"hackathons": {
+			"title": "Hackathon",
+			"description": "Le CADEV, ses Milestones et ses critères de jugement.",
+			"list": "Hackathons",
+			"group": "Hackathon",
+			"loading": "Chargement…",
+			"empty": "Aucun Hackathon.",
+			"unavailable": "Hackathon indisponible",
+			"unavailableBody": "Impossible de charger le Hackathon.",
+			"retry": "Réessayer",
+			"general": "Général",
+			"name": "Nom",
+			"organizer": "Organisateur",
+			"teamMin": "Équipe min.",
+			"teamMax": "Équipe max.",
+			"team": "Équipe",
+			"teamRange": "{min} à {max}",
+			"summary": "Résumé",
+			"sourceNote": "Note de source",
+			"sourceNoteHint": "D'où vient l'information, affichée à côté de « vérifié le ».",
+			"version": "Version",
+			"milestones": "Milestones",
+			"label": "Libellé",
+			"start": "Début",
+			"end": "Fin",
+			"timezone": "Dates affichées dans votre fuseau horaire.",
+			"criteria": "Critères de jugement",
+			"weight": "Poids (%)",
+			"total": "Total : {total} %",
+			"mustBe100": "(doit faire 100 %)",
+			"confirmTitle": "Confirmation",
+			"confirmBody": "Enregistrer ces modifications ? Elles changent la page publique du Hackathon et sont journalisées.",
+			"confirmAction": "Enregistrer",
+			"noDelete": "Le Hackathon ne se supprime pas.",
+			"staleTitle": "Version périmée",
+			"stale": "Quelqu'un a enregistré entre-temps (version serveur : {version}). Rien n'a été écrasé.",
+			"reload": "Recharger",
+			"failure": {
+				"forbidden": "Action réservée au staff.",
+				"failed": "L'enregistrement a échoué. Réessayez."
+			}
+		},
+		"tags": {
+			"title": "Tags",
+			"description": "Les Tags officiels : création, renommage, suppression.",
+			"list": "Tags",
+			"search": "Rechercher un Tag",
+			"searchPlaceholder": "Rechercher",
+			"loading": "Chargement…",
+			"empty": "Aucun Tag.",
+			"unavailable": "Liste indisponible",
+			"retry": "Réessayer",
+			"groups": {
+				"protected": "Protégés",
+				"used": "Utilisés",
+				"unused": "Inutilisés"
+			},
+			"create": "Créer un Tag",
+			"newTitle": "Nouveau Tag",
+			"general": "Général",
+			"name": "Nom",
+			"nameHint": "Mis en minuscules, sans espaces autour.",
+			"questions": "Questions",
+			"owner": "Propriétaire",
+			"ownerHackathon": "Hackathon {slug}",
+			"protected": "Protégé",
+			"deletion": "Suppression",
+			"delete": "Supprimer ce Tag",
+			"pick": "Choisissez un Tag, ou créez-en un avec « + ».",
+			"blocked": {
+				"owned": "Protégé : possédé par le Hackathon {slug}",
+				"used": "Utilisé par {count, plural, one {# Question} other {# Questions}}"
+			},
+			"errors": {
+				"conflict": "Ce nom est déjà pris (formes normalisées identiques), ou le Tag a changé entre-temps.",
+				"forbidden": "Action réservée au staff.",
+				"notFound": "Ce Tag n'existe plus.",
+				"generic": "Une erreur est survenue. Réessayez."
+			}
+		},
 		"kpi": "KPI",
-		"audit": "Journal d'audit",
-		"signOut": "Se déconnecter"
+		"audit": {
+			"title": "Journal d'audit",
+			"description": "Les actions du staff : suspensions, modifications, suppressions.",
+			"action": "Action",
+			"actor": "Acteur (identifiant)",
+			"target": "Type de cible",
+			"unavailable": "Journal indisponible",
+			"forbidden": "Accès réservé au staff.",
+			"error": "Une erreur est survenue.",
+			"retry": "Réessayer",
+			"loading": "Chargement…",
+			"empty": "Aucun événement pour ces filtres.",
+			"more": "Voir plus",
+			"system": "Système"
+		},
+		"signOut": "Se déconnecter",
+		"common": {
+			"confirm": "Confirmer ({seconds} s)",
+			"cancel": "Annuler",
+			"save": "Enregistrer",
+			"create": "Créer",
+			"dirty": "Modifications non enregistrées",
+			"clean": "Aucune modification",
+			"edit": "Modifier"
+		}
 	}
 }
