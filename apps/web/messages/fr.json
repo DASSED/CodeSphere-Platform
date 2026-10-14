@@ -109,6 +109,7 @@
 		"role": "Administrateur",
 		"moderation": "Modération",
 		"hackathons": "Hackathon",
+		"tags": "Tags",
 		"kpi": "KPI",
 		"audit": "Journal d'audit",
 		"signOut": "Se déconnecter"
