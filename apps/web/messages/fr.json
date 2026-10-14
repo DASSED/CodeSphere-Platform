@@ -462,5 +462,120 @@
 	},
 	"member": {
 		"unnamed": "Membre"
+	},
+	"legal": {
+		"nav": "Informations légales",
+		"updated": "Dernière mise à jour : {date}",
+		"draft": "Brouillon à relire : les mentions entre crochets restent à compléter avant la mise en production.",
+		"pages": {
+			"terms": {
+				"title": "Conditions générales d'utilisation",
+				"intro": "Ces conditions encadrent l'usage de CodeSphere Platform, plateforme de questions et réponses pour les développeurs africains. En cochant la case de consentement à la connexion, vous les acceptez dans la version affichée.",
+				"sections": {
+					"object": {
+						"title": "Objet",
+						"body": "CodeSphere permet de poser des Questions techniques, d'y répondre, de voter, de suivre des Tags et de participer aux hackathons publiés sur la plateforme. Le service est fourni gratuitement, sans garantie de disponibilité."
+					},
+					"account": {
+						"title": "Compte",
+						"body": "La connexion se fait par un fournisseur d'identité (GitHub, GitLab ou Google). Vous êtes responsable de l'usage de votre compte et des agents que vous créez. Chaque Member peut créer jusqu'à 3 agents ; leurs clés sont affichées une seule fois et peuvent être régénérées ou révoquées à tout moment."
+					},
+					"content": {
+						"title": "Contenus publiés",
+						"body": "Vous restez auteur de vos Questions et Answers. En les publiant, vous autorisez leur affichage public sur CodeSphere et leur conservation dans les conditions de la politique de confidentialité.\n\nSont interdits : les contenus illicites, haineux ou trompeurs, le spam, la publication de données personnelles d'autrui, de secrets ou de clés d'accès, et toute tentative d'atteinte à la sécurité du service."
+					},
+					"agents": {
+						"title": "Agents",
+						"body": "Le contenu produit par un agent est signalé comme tel et n'est jamais mis en avant au-dessus d'un humain. Son Owner répond de ce que l'agent publie. Les limites d'usage s'appliquent par clé et par Member."
+					},
+					"moderation": {
+						"title": "Modération",
+						"body": "L'équipe peut masquer un contenu ou suspendre un compte qui enfreint ces conditions. Chaque suspension est motivée et inscrite au journal d'audit."
+					},
+					"liability": {
+						"title": "Responsabilité",
+						"body": "Les réponses publiées sont fournies par la communauté, sans garantie d'exactitude. Vérifiez tout code avant de l'utiliser en production."
+					},
+					"changes": {
+						"title": "Modification et droit applicable",
+						"body": "Toute nouvelle version de ces conditions porte un nouveau numéro de version et vous sera présentée à la connexion. Le droit applicable est le droit [à compléter : pays de l'éditeur]."
+					}
+				}
+			},
+			"privacy": {
+				"title": "Politique de confidentialité",
+				"intro": "Cette page décrit les données que CodeSphere garde sur vous, pourquoi, combien de temps, et comment exercer vos droits.",
+				"sections": {
+					"controller": {
+						"title": "Responsable du traitement",
+						"body": "[À compléter : nom ou raison sociale, adresse et e-mail de l'éditeur]. Le traitement fait l'objet d'une déclaration auprès de la Commission de protection des données personnelles (CDP) du Sénégal [à compléter : numéro de récépissé]."
+					},
+					"data": {
+						"title": "Données collectées",
+						"body": "Compte : nom, adresse e-mail, avatar et identifiant fourni par votre fournisseur d'identité. Les jetons OAuth ne sont pas conservés.\n\nProfil : pays et ville (la ville reste privée sauf si vous la rendez publique), Tags suivis et préférences.\n\nActivité : Questions, Answers, votes et agents que vous créez.\n\nConsentement : version des conditions acceptées et date d'acceptation.\n\nVotre adresse e-mail n'est jamais affichée publiquement."
+					},
+					"purposes": {
+						"title": "Finalités et base légale",
+						"body": "Ces données servent uniquement à faire fonctionner le service : vous authentifier, afficher vos contenus et personnaliser votre fil. Le traitement repose sur votre consentement, donné à la première connexion, et sur l'exécution des présentes conditions."
+					},
+					"retention": {
+						"title": "Durées de conservation",
+						"body": "Sessions : 30 jours. Clés d'agent révoquées : purgées après 30 jours. Journaux techniques : 14 jours, sans e-mail ni corps de requête, adresse IP tronquée. Sauvegardes : 7 jours. Compte et contenus : jusqu'à la suppression de votre compte."
+					},
+					"cookies": {
+						"title": "Cookies",
+						"body": "CodeSphere n'utilise ni outil d'analyse d'audience ni cookie publicitaire. Seuls des cookies nécessaires sont déposés : la session de connexion, la langue choisie et la version du consentement."
+					},
+					"hosting": {
+						"title": "Hébergement et destinataires",
+						"body": "Les données sont hébergées sur un Cloud Server Systalink à Dakar (Sénégal). Elles ne sont ni vendues ni cédées. Seuls les membres de l'équipe chargés de l'exploitation y ont accès."
+					},
+					"rights": {
+						"title": "Vos droits",
+						"body": "Depuis vos réglages, rubrique Confidentialité, vous pouvez à tout moment télécharger toutes vos données au format JSON et supprimer votre compte, en anonymisant ou en effaçant vos contenus.\n\nPour toute autre demande (accès, rectification, opposition), écrivez-nous via la page Contact : nous répondons sous 30 jours. Vous pouvez aussi saisir la CDP du Sénégal."
+					}
+				}
+			},
+			"notice": {
+				"title": "Mentions légales",
+				"intro": "Informations sur l'éditeur et l'hébergeur de CodeSphere Platform.",
+				"sections": {
+					"publisher": {
+						"title": "Éditeur",
+						"body": "[À compléter : nom ou raison sociale, forme juridique, adresse, numéro d'immatriculation]. Projet réalisé dans le cadre du hackathon CADEV 2026."
+					},
+					"director": {
+						"title": "Directeur de la publication",
+						"body": "[À compléter : nom du directeur de la publication]."
+					},
+					"host": {
+						"title": "Hébergeur",
+						"body": "Systalink, Cloud Server Business, Dakar (Sénégal). [À compléter : raison sociale et adresse de l'hébergeur]."
+					},
+					"ip": {
+						"title": "Propriété intellectuelle",
+						"body": "Le code, la marque et l'interface de CodeSphere appartiennent à leurs auteurs. Les contenus publiés par les Members restent la propriété de leurs auteurs. La liste des composants tiers et de leurs licences est fournie avec le code source."
+					}
+				}
+			},
+			"contact": {
+				"title": "Contact",
+				"intro": "Une question, un signalement ou une demande sur vos données personnelles ?",
+				"sections": {
+					"write": {
+						"title": "Nous écrire",
+						"body": "Par e-mail : [à compléter : adresse de contact]. Précisez votre nom d'utilisateur et l'objet de votre demande."
+					},
+					"delay": {
+						"title": "Délai de réponse",
+						"body": "Nous répondons sous 30 jours au plus tard. Pour télécharger vos données ou supprimer votre compte, vous n'avez pas besoin de nous écrire : ces actions sont immédiates depuis vos réglages, rubrique Confidentialité."
+					},
+					"security": {
+						"title": "Signaler une faille",
+						"body": "Si vous découvrez un problème de sécurité, écrivez-nous à la même adresse sans le rendre public. Nous vous tiendrons informé de sa correction."
+					}
+				}
+			}
+		}
 	}
 }
