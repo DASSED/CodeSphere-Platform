@@ -3,7 +3,7 @@ import type { z } from "zod";
 import { outranks } from "@codesphere/contract";
 import type { AuditEntry } from "@codesphere/ui/components/organisms/audit-log";
 
-import { errorCodeOf } from "@/i18n/errors";
+import { adminErrorKey } from "@/i18n/errors";
 
 type AdminMember = z.infer<typeof AdminMemberSchema>;
 type AuditEvent = z.infer<typeof AuditEventSchema>;
@@ -33,21 +33,8 @@ export function canModerate(
 	return { ok: true };
 }
 
-/** Key under `admin.errors` for a failed moderation call. */
-export function moderationErrorKey(
-	error: unknown,
-): "forbidden" | "conflict" | "notFound" | "generic" {
-	switch (errorCodeOf(error)) {
-		case "FORBIDDEN":
-			return "forbidden";
-		case "CONFLICT":
-			return "conflict";
-		case "NOT_FOUND":
-			return "notFound";
-		default:
-			return "generic";
-	}
-}
+/** Key of the message of a failed moderation call. */
+export const moderationErrorKey = adminErrorKey;
 
 const DESTRUCTIVE = /\.(suspend|remove|delete)$/;
 const WARNING = /\.(update|rename|reactivate)$/;

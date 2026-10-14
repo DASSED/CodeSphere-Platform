@@ -49,6 +49,20 @@ const refusal = (
 				})
 			: errors.CONFLICT();
 
+// The signed-in staff member behind an admin write; `isAdmin` has already refused anonymous calls.
+const actorOf = (session: { user: { id: string } } | null) => {
+	if (!session) {
+		throw new ORPCError("UNAUTHORIZED");
+	}
+	return session.user.id;
+};
+
+// The typed refusal of a Tag outcome (#125).
+const tagRefusal = (
+	code: "NOT_FOUND" | "CONFLICT",
+	errors: { NOT_FOUND: () => Error; CONFLICT: () => Error },
+) => (code === "NOT_FOUND" ? errors.NOT_FOUND() : errors.CONFLICT());
+
 // A suspended Member keeps reading but every write is refused with a typed error (#123).
 const refuseSuspendedWrites = impl.middleware(
 	async ({ context, procedure, next }) => {
@@ -145,7 +159,7 @@ export const appRouter = impl
 					.handler(async ({ context, input, errors }) => {
 						const outcome = await updateHackathon(
 							context.db,
-							context.session?.user.id ?? "",
+							actorOf(context.session),
 							input,
 						);
 						if (outcome.ok) {
@@ -181,7 +195,7 @@ export const appRouter = impl
 				suspend: impl.admin.members.suspend
 					.use(isAdmin)
 					.handler(async ({ context, input, errors }) => {
-						const actorId = context.session?.user.id ?? "";
+						const actorId = actorOf(context.session);
 						if (input.id === actorId) {
 							throw errors.FORBIDDEN({
 								message: "An Admin cannot suspend themself.",
@@ -204,7 +218,7 @@ export const appRouter = impl
 					.handler(async ({ context, input, errors }) => {
 						const outcome = await setSuspension(
 							context.db,
-							context.session?.user.id ?? "",
+							actorOf(context.session),
 							String(context.session?.user.role),
 							input.id,
 							{ suspend: false },
@@ -226,7 +240,7 @@ export const appRouter = impl
 					.handler(async ({ context, input, errors }) => {
 						const outcome = await createTag(
 							context.db,
-							context.session?.user.id ?? "",
+							actorOf(context.session),
 							input.name,
 						);
 						if (!outcome.ok) {
@@ -239,13 +253,11 @@ export const appRouter = impl
 					.handler(async ({ context, input, errors }) => {
 						const outcome = await renameTag(
 							context.db,
-							context.session?.user.id ?? "",
+							actorOf(context.session),
 							input,
 						);
 						if (!outcome.ok) {
-							throw outcome.code === "NOT_FOUND"
-								? errors.NOT_FOUND()
-								: errors.CONFLICT();
+							throw tagRefusal(outcome.code, errors);
 						}
 						return outcome.tag;
 					}),
@@ -254,13 +266,11 @@ export const appRouter = impl
 					.handler(async ({ context, input, errors }) => {
 						const outcome = await deleteTag(
 							context.db,
-							context.session?.user.id ?? "",
+							actorOf(context.session),
 							input.id,
 						);
 						if (!outcome.ok) {
-							throw outcome.code === "NOT_FOUND"
-								? errors.NOT_FOUND()
-								: errors.CONFLICT();
+							throw tagRefusal(outcome.code, errors);
 						}
 						return { success: true };
 					}),

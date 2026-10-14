@@ -1,4 +1,4 @@
-import { errorCodeOf } from "@/i18n/errors";
+import { adminErrorKey } from "@/i18n/errors";
 
 type TagLike = {
 	questionCount: number;
@@ -26,17 +26,4 @@ export function deleteBlock(tag: TagLike): string | null {
 	return null;
 }
 
-export function tagMutationErrorKey(
-	error: unknown,
-): "conflict" | "forbidden" | "notFound" | "generic" {
-	switch (errorCodeOf(error)) {
-		case "CONFLICT":
-			return "conflict";
-		case "FORBIDDEN":
-			return "forbidden";
-		case "NOT_FOUND":
-			return "notFound";
-		default:
-			return "generic";
-	}
-}
+export const tagMutationErrorKey = adminErrorKey;

@@ -23,7 +23,18 @@ export function fromLocalInput(value: string) {
 	return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
 
-/** Whether the draft differs from what was loaded. */
+const stable = (value: unknown): unknown =>
+	Array.isArray(value)
+		? value.map(stable)
+		: value && typeof value === "object"
+			? Object.fromEntries(
+					Object.entries(value)
+						.sort(([a], [b]) => a.localeCompare(b))
+						.map(([key, item]) => [key, stable(item)]),
+				)
+			: value;
+
+/** Whether the draft differs from what was loaded, whatever the order of the keys. */
 export function isDirty(original: unknown, draft: unknown) {
-	return JSON.stringify(original) !== JSON.stringify(draft);
+	return JSON.stringify(stable(original)) !== JSON.stringify(stable(draft));
 }
