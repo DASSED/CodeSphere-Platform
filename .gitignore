@@ -17,6 +17,8 @@ local.db-*
 .env
 # Database dumps written by deploy/backup.sh
 backups/
+# Alerting credentials of deploy/monitor.sh (the .example file is committed)
+deploy/.env.monitor
 .env*.local
 
 # IDEs and editors

@@ -9,6 +9,8 @@
 #   KEEP_DAYS        retention in days               (default: 7, spec « Supervision »)
 #   OFFSITE_REMOTE   rclone destination for an off-server copy, e.g. `r2-crypt:codesphere`
 #                    (an rclone `crypt` remote over R2, so the copy is encrypted). Unset: no copy.
+#   BACKUP_HEARTBEAT_URL   healthchecks.io ping, sent only when the dump (and the off-server copy,
+#                    if configured) succeeded: a missed night alerts the team. Unset: no ping.
 #
 # Restore into an empty database:
 #   docker compose -f docker-compose.prod.yml exec -T postgres \
@@ -20,6 +22,7 @@ cd "$(dirname "$0")/.."
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 KEEP_DAYS="${KEEP_DAYS:-7}"
 OFFSITE_REMOTE="${OFFSITE_REMOTE:-}"
+BACKUP_HEARTBEAT_URL="${BACKUP_HEARTBEAT_URL:-}"
 COMPOSE="docker compose -f docker-compose.prod.yml"
 
 mkdir -p "$BACKUP_DIR"
@@ -51,6 +54,11 @@ if [ -n "$OFFSITE_REMOTE" ]; then
 		echo "offsite copy FAILED: $OFFSITE_REMOTE" >&2
 		exit 1
 	fi
+fi
+
+# Heartbeat last: it only fires when everything above worked.
+if [ -n "$BACKUP_HEARTBEAT_URL" ]; then
+	curl -fsS -m 10 --retry 3 "$BACKUP_HEARTBEAT_URL" > /dev/null
 fi
 
 # Retention: delete dumps older than KEEP_DAYS.
