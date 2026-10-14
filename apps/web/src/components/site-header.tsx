@@ -4,14 +4,16 @@ import { Button } from "@codesphere/ui/components/atoms/button";
 import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
 import { PlusIcon } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import LocaleSwitcher from "@/components/locale-switcher";
+import { MobileMenu } from "@/components/mobile-menu";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import UserMenu from "@/components/user-menu";
 import { useHydratedSession } from "@/lib/use-hydrated-session";
 
-/** « Poser une question »: opens the sign-in for a visitor; the form itself is another ticket. */
+/** « Poser une question »: opens the sign-in for a visitor, the ask form (#68) for a Member. */
 export function AskButton({ className }: { className?: string }) {
 	const t = useTranslations("header");
 	const { data: session } = useHydratedSession();
@@ -29,13 +31,20 @@ export function AskButton({ className }: { className?: string }) {
 		);
 	}
 	return (
-		<Button className={className} disabled title={t("askSoon")}>
+		<Button
+			className={className}
+			render={<Link href="/ask" />}
+			nativeButton={false}
+		>
 			{content}
 		</Button>
 	);
 }
 
-/** The site's bar (#129): logo, language, « Poser une question », then the account. No feed tabs here. */
+/**
+ * The site's bar (#129): logo, theme, language, « Poser une question », then the account. On a
+ * phone only the logo, the theme and a menu holding the rest. No feed tabs here.
+ */
 export default function SiteHeader() {
 	const t = useTranslations("header");
 	return (
@@ -43,9 +52,15 @@ export default function SiteHeader() {
 			actions={
 				<>
 					<ThemeToggle aria-label={t("toggleTheme")} />
-					<LocaleSwitcher />
-					<AskButton />
-					<UserMenu />
+					{/* From `sm` up, everything inline; on a phone, one menu holds the rest. */}
+					<div className="flex items-center gap-3 max-sm:hidden">
+						<LocaleSwitcher />
+						<AskButton />
+						<UserMenu />
+					</div>
+					<div className="sm:hidden">
+						<MobileMenu />
+					</div>
 				</>
 			}
 		/>

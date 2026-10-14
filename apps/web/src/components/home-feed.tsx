@@ -5,10 +5,13 @@ import { Button } from "@codesphere/ui/components/atoms/button";
 import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import type { Route } from "next";
+import Link from "next/link";
 import { useFormatter, useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 import { HAS_DATABASE } from "@/lib/deployment";
+import { type FeedFilter, visibleItems } from "@/lib/home";
 import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
 
@@ -21,8 +24,13 @@ const PAGE_SIZE = 20;
  * has none, sees the hottest Questions instead. `snapshotAt` and the cursors keep the order stable,
  * so pages never repeat a Question.
  */
-export function useFeed(tab: FeedTab, signedIn: boolean) {
+export function useFeed(tab: FeedTab, signedIn: boolean, filter: FeedFilter) {
 	const forYou = tab === "forYou" && signedIn;
+	const language =
+		filter.language === "fr" || filter.language === "en"
+			? filter.language
+			: undefined;
+	const country = filter.country === "all" ? undefined : filter.country;
 	const personal = useInfiniteQuery({
 		...orpc.feed.forYou.infiniteOptions({
 			input: (cursor: string | undefined) => ({ cursor, limit: PAGE_SIZE }),
@@ -36,6 +44,8 @@ export function useFeed(tab: FeedTab, signedIn: boolean) {
 			input: (cursor: string | undefined) => ({
 				cursor,
 				limit: PAGE_SIZE,
+				language,
+				country,
 				sort:
 					tab === "forYou"
 						? ("hot" as const)
@@ -50,16 +60,10 @@ export function useFeed(tab: FeedTab, signedIn: boolean) {
 	});
 	const query = forYou ? personal : listed;
 	// A Question never appears twice, even if a page boundary moves under a live feed.
-	const seen = new Set<string>();
-	const items = (query.data?.pages ?? [])
-		.flatMap((page) => page.items)
-		.filter((q) => {
-			if (seen.has(q.id)) {
-				return false;
-			}
-			seen.add(q.id);
-			return true;
-		});
+	const items = visibleItems(
+		(query.data?.pages ?? []).flatMap((page) => page.items),
+		filter,
+	);
 	return {
 		items,
 		isPending: HAS_DATABASE && query.isPending,
@@ -67,6 +71,18 @@ export function useFeed(tab: FeedTab, signedIn: boolean) {
 		isFetchingNextPage: query.isFetchingNextPage,
 		fetchNextPage: query.fetchNextPage,
 	};
+}
+
+/** The card's link: built from a Question id, so a route the typed `Link` cannot check. */
+function CardLink({
+	href,
+	...props
+}: {
+	href: string;
+	className?: string;
+	children?: React.ReactNode;
+}) {
+	return <Link href={href as Route} {...props} />;
 }
 
 export function HomeFeed({
@@ -81,6 +97,7 @@ export function HomeFeed({
 	fetchNextPage: () => unknown;
 }) {
 	const t = useTranslations("home.feed");
+	const tMember = useTranslations("member");
 	const format = useFormatter();
 	const mounted = useMounted();
 	const sentinel = useRef<HTMLDivElement>(null);
@@ -116,10 +133,12 @@ export function HomeFeed({
 					answers: q.answerCount,
 					answersLabel: t("answers", { count: q.answerCount }),
 					answered: q.status === "answered",
-					author: q.authorName,
+					author: q.authorName || tMember("unnamed"),
 					agentOf: q.authorKind === "agent" ? (q.ownerName ?? "?") : undefined,
 					region: q.authorCountry ?? "—",
 					lang: q.language,
+					href: `/questions/${q.id}`,
+					linkAs: CardLink,
 					// Relative to the viewer's clock, so only once mounted (no hydration mismatch).
 					ago: mounted ? format.relativeTime(new Date(q.createdAt)) : "…",
 				}))}

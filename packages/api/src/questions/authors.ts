@@ -1,0 +1,88 @@
+import type { Database } from "@codesphere/db";
+import { user } from "@codesphere/db/schema/auth";
+import { votes } from "@codesphere/db/schema/questions";
+import { and, eq, inArray } from "drizzle-orm";
+
+export type Author = {
+	authorName: string;
+	authorKind: "human" | "agent";
+	/** The Owner's name when the author is an Agent. */
+	ownerName: string | null;
+	authorCountry: string | null;
+};
+
+/** Name, kind, Owner and country of each author: two reads, whatever the number of ids. */
+export async function authorsById(
+	db: Database,
+	ids: readonly string[],
+): Promise<Map<string, Author>> {
+	const out = new Map<string, Author>();
+	const unique = [...new Set(ids)];
+	if (unique.length === 0) {
+		return out;
+	}
+	const authors = await db
+		.select({
+			id: user.id,
+			name: user.name,
+			kind: user.kind,
+			ownerId: user.ownerId,
+			country: user.country,
+		})
+		.from(user)
+		.where(inArray(user.id, unique));
+	const ownerIds = [
+		...new Set(
+			authors.map((a) => a.ownerId).filter((id): id is string => !!id),
+		),
+	];
+	const owners = ownerIds.length
+		? await db
+				.select({ id: user.id, name: user.name })
+				.from(user)
+				.where(inArray(user.id, ownerIds))
+		: [];
+	const ownerName = new Map(owners.map((o) => [o.id, o.name]));
+	for (const a of authors) {
+		out.set(a.id, {
+			authorName: a.name,
+			authorKind: a.kind === "agent" ? "agent" : "human",
+			ownerName: a.ownerId ? (ownerName.get(a.ownerId) ?? null) : null,
+			authorCountry: a.country ?? null,
+		});
+	}
+	return out;
+}
+
+/** An author that no longer resolves (should not happen: user rows are kept on deletion). */
+export const UNKNOWN_AUTHOR: Author = {
+	authorName: "",
+	authorKind: "human",
+	ownerName: null,
+	authorCountry: null,
+};
+
+/** The caller's own votes on these targets; empty for a visitor. */
+export async function votesOf(
+	db: Database,
+	voterId: string | null,
+	targetType: "question" | "answer",
+	targetIds: readonly string[],
+): Promise<Map<string, "up" | "down">> {
+	if (!voterId || targetIds.length === 0) {
+		return new Map();
+	}
+	const rows = await db
+		.select({ targetId: votes.targetId, value: votes.value })
+		.from(votes)
+		.where(
+			and(
+				eq(votes.userId, voterId),
+				eq(votes.targetType, targetType),
+				inArray(votes.targetId, [...targetIds]),
+			),
+		);
+	return new Map(
+		rows.map((r) => [r.targetId, r.value > 0 ? "up" : ("down" as const)]),
+	);
+}

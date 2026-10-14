@@ -12,12 +12,18 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@codesphere/ui/components/molecules/dropdown-menu";
-import { LogOutIcon, SettingsIcon, ShieldIcon, UserIcon } from "lucide-react";
+import {
+	LogInIcon,
+	LogOutIcon,
+	SettingsIcon,
+	ShieldIcon,
+	UserIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { useSignOut } from "@/components/outbox-provider";
 import SsoLoginDialog from "@/components/sso-login-dialog";
-import { authClient } from "@/lib/auth-client";
 import { useHydratedSession } from "@/lib/use-hydrated-session";
 
 function initials(name: string) {
@@ -34,6 +40,7 @@ export default function UserMenu() {
 	const t = useTranslations("header");
 	const router = useRouter();
 	const { data: session, isPending } = useHydratedSession();
+	const signOut = useSignOut();
 
 	if (isPending) {
 		return <Skeleton className="size-9 rounded-full" />;
@@ -42,7 +49,13 @@ export default function UserMenu() {
 	if (!session) {
 		return (
 			<SsoLoginDialog
-				trigger={<Button variant="outline">{t("signIn")}</Button>}
+				trigger={
+					<Button variant="outline" aria-label={t("signIn")}>
+						<LogInIcon />
+						{/* Icon only on a phone, where the bar has no room for the label. */}
+						<span className="max-sm:sr-only">{t("signIn")}</span>
+					</Button>
+				}
 			/>
 		);
 	}
@@ -86,11 +99,8 @@ export default function UserMenu() {
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						variant="destructive"
-						onClick={() =>
-							authClient.signOut({
-								fetchOptions: { onSuccess: () => router.push("/") },
-							})
-						}
+						// Signing out also empties the device: cache, outbox and Drafts (#73).
+						onClick={() => void signOut(() => router.push("/"))}
 					>
 						<LogOutIcon />
 						{t("signOut")}

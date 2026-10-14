@@ -34,8 +34,9 @@ function AppHeader<T extends string>({
 			)}
 			{...props}
 		>
-			<div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 md:px-6">
-				<Logo />
+			<div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-6">
+				{/* On a phone the mark alone: the name stays readable by screen readers. */}
+				<Logo className="[&>[data-slot=logo-text]]:max-sm:sr-only" />
 				{nav}
 				{tabs && activeTab !== undefined && onTabChange && (
 					<SegmentedControl
@@ -44,7 +45,11 @@ function AppHeader<T extends string>({
 						onValueChange={onTabChange}
 					/>
 				)}
-				{actions && <div className="flex items-center gap-3">{actions}</div>}
+				{actions && (
+					<div className="flex min-w-0 items-center gap-1.5 sm:gap-3">
+						{actions}
+					</div>
+				)}
 			</div>
 		</header>
 	);

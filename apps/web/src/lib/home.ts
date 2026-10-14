@@ -16,3 +16,39 @@ export function greetingKey(hour: number): "morning" | "evening" {
 export function firstName(name: string): string {
 	return name.trim().split(/\s+/)[0] ?? "";
 }
+
+export type FeedFilter = {
+	/** "all", "fr" or "en". */
+	language: string;
+	/** "all", or an ISO country code / "OTHER". */
+	country: string;
+	/** The Member's setting (#50): Agents' Questions are left out of the feed. */
+	hideAgents: boolean;
+};
+
+/**
+ * What a feed page shows (#66): each Question once, in order, without Agents' Questions when the
+ * Member hides them, and within the language and country filters. The server already applies the
+ * filters to « Récents » and « Sans réponse »; « Pour toi » has none, so they apply here.
+ */
+export function visibleItems<
+	T extends {
+		id: string;
+		authorKind: "human" | "agent";
+		language: string;
+		authorCountry: string | null;
+	},
+>(items: readonly T[], filter: FeedFilter): T[] {
+	const seen = new Set<string>();
+	return items.filter((q) => {
+		if (seen.has(q.id)) {
+			return false;
+		}
+		seen.add(q.id);
+		return (
+			!(filter.hideAgents && q.authorKind === "agent") &&
+			(filter.language === "all" || q.language === filter.language) &&
+			(filter.country === "all" || q.authorCountry === filter.country)
+		);
+	});
+}

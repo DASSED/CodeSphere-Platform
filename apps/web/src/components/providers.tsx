@@ -9,6 +9,7 @@ import { useState } from "react";
 import { setupPersistence } from "@/lib/persist";
 import { createQueryClient } from "@/utils/orpc";
 
+import { OutboxProvider } from "./outbox-provider";
 import { ThemeProvider } from "./theme-provider";
 
 export default function Providers({ children }: { children: React.ReactNode }) {
@@ -28,7 +29,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 			disableTransitionOnChange
 		>
 			<QueryClientProvider client={queryClient}>
-				{children}
+				<OutboxProvider>{children}</OutboxProvider>
 				<ReactQueryDevtools />
 			</QueryClientProvider>
 			<Toaster richColors />
