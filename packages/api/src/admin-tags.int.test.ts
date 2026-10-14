@@ -5,8 +5,11 @@ import type { Session } from "@codesphere/auth";
 import { createDb } from "@codesphere/db";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
+import { hackathon } from "@codesphere/db/schema/hackathons";
 import { questions } from "@codesphere/db/schema/questions";
 import { tag } from "@codesphere/db/schema/tags";
+import { cadev2026 } from "@codesphere/db/seed/cadev";
+import { seedHackathon } from "@codesphere/db/seed/seed";
 import { createRouterClient } from "@orpc/server";
 import { eq, inArray } from "drizzle-orm";
 
@@ -126,15 +129,23 @@ describe.skipIf(!url)("admin.tags on Postgres (#125)", () => {
 	});
 
 	test("the Hackathon's Tag is protected, a non-admin is FORBIDDEN", async () => {
-		const owned = (await admin().admin.tags.list({})).items.find(
-			(t) => t.name === "cadev-2026",
-		);
-		if (owned) {
-			expect(owned.ownerHackathon).toBe("cadev-2026");
-			await expect(
-				admin().admin.tags.delete({ id: owned.id }),
-			).rejects.toMatchObject({ code: "CONFLICT" });
-		}
+		// A Tag named like a Hackathon's slug belongs to it: own copy, the shared seed stays untouched.
+		const slug = name("hack");
+		await seedHackathon(db, { ...cadev2026, slug });
+		const owned = await admin().admin.tags.create({ name: slug });
+		expect(owned.ownerHackathon).toBe(slug);
+		await expect(
+			admin().admin.tags.delete({ id: owned.id }),
+		).rejects.toMatchObject({ code: "CONFLICT" });
+		await expect(
+			admin().admin.tags.rename({
+				id: owned.id,
+				name: name("x"),
+				expectedVersion: owned.version,
+			}),
+		).rejects.toMatchObject({ code: "CONFLICT" });
+		await db.delete(hackathon).where(eq(hackathon.slug, slug));
+		await db.delete(tag).where(eq(tag.id, owned.id));
 		await expect(clientAs("member").admin.tags.list({})).rejects.toMatchObject({
 			code: "FORBIDDEN",
 		});
