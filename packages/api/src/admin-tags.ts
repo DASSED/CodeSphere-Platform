@@ -47,6 +47,11 @@ async function findTag(db: Database, id: string) {
 	return row ? adminTag(row) : null;
 }
 
+const isUniqueViolation = (error: unknown): boolean => {
+	const { code, cause } = (error ?? {}) as { code?: unknown; cause?: unknown };
+	return code === "23505" || (cause !== undefined && isUniqueViolation(cause));
+};
+
 export type TagOutcome =
 	| { ok: true; tag: ReturnType<typeof adminTag> }
 	| { ok: false; code: "NOT_FOUND" | "CONFLICT" };
@@ -110,9 +115,18 @@ export async function renameTag(
 						AND NOT EXISTS (SELECT 1 FROM hackathon h WHERE h.slug = ${tag.name})`,
 				)
 				.returning({ id: tag.id }),
+			// The Questions carry the Tag by name: they follow the rename, in the same statement.
+			[
+				sql`UPDATE questions SET tags = array_replace(tags, ${before.name}, ${normalizeTagName(input.name)})
+					WHERE ${before.name} = ANY (tags) AND EXISTS (SELECT 1 FROM m)`,
+			],
 		);
-	} catch {
-		return { ok: false, code: "CONFLICT" };
+	} catch (error) {
+		// Only the unique index (another Tag already has this name) is a CONFLICT.
+		if (isUniqueViolation(error)) {
+			return { ok: false, code: "CONFLICT" };
+		}
+		throw error;
 	}
 	if (changed.length === 0) {
 		return { ok: false, code: "CONFLICT" };

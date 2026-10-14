@@ -58,7 +58,7 @@ export default function AdminFrame({
 					? {
 							name: identity.name,
 							email: identity.email,
-							role: identity.role === "admin" ? t("role") : identity.role,
+							role: identity.role,
 						}
 					: undefined
 			}

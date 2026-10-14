@@ -106,7 +106,6 @@
 		"loadError": "Could not load the Hackathon."
 	},
 	"admin": {
-		"role": "Administrator",
 		"moderation": "Moderation",
 		"hackathons": "Hackathon",
 		"tags": "Tags",

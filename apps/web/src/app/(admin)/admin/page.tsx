@@ -66,10 +66,11 @@ export default function ModerationPage() {
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [reason, setReason] = useState("");
 	const [error, setError] = useState<keyof typeof ERRORS | null>(null);
+	const [status, setStatus] = useState<"active" | "suspended" | undefined>();
 
 	const members = useInfiniteQuery(
 		orpc.admin.members.list.infiniteOptions({
-			input: (cursor: string | undefined) => ({ limit: 50, cursor }),
+			input: (cursor: string | undefined) => ({ limit: 50, cursor, status }),
 			initialPageParam: undefined as string | undefined,
 			getNextPageParam: (page) => page.nextCursor ?? undefined,
 		}),
@@ -126,6 +127,25 @@ export default function ModerationPage() {
 			<AdminMasterDetail
 				list={
 					<>
+						<div className="mb-2 flex gap-1" role="group" aria-label="Statut">
+							{(
+								[
+									[undefined, "Tous"],
+									["active", "Actifs"],
+									["suspended", "Suspendus"],
+								] as const
+							).map(([value, label]) => (
+								<Button
+									key={label}
+									size="sm"
+									variant={status === value ? "default" : "outline"}
+									aria-pressed={status === value}
+									onClick={() => setStatus(value)}
+								>
+									{label}
+								</Button>
+							))}
+						</div>
 						<GroupedList
 							label="Members"
 							searchLabel="Rechercher un Member"

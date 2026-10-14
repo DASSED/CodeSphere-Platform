@@ -97,6 +97,34 @@ describe.skipIf(!url)("admin.tags on Postgres (#125)", () => {
 		).rejects.toMatchObject({ code: "CONFLICT" });
 	});
 
+	test("renaming a used Tag moves its Questions with it", async () => {
+		const t = await admin().admin.tags.create({ name: name("d") });
+		const [q] = await db
+			.insert(questions)
+			.values({
+				authorId: adminId,
+				idempotencyKey: crypto.randomUUID(),
+				title: "t",
+				body: "b",
+				bodyHtml: "<p>b</p>",
+				language: "fr",
+				tags: [name("d")],
+			})
+			.returning({ id: questions.id });
+		const renamed = await admin().admin.tags.rename({
+			id: t.id,
+			name: name("e"),
+			expectedVersion: t.version,
+		});
+		expect(renamed.questionCount).toBe(1);
+		const [after] = await db
+			.select({ tags: questions.tags })
+			.from(questions)
+			.where(eq(questions.id, q?.id ?? ""));
+		expect(after?.tags).toEqual([name("e")]);
+		await db.delete(tag).where(eq(tag.id, t.id));
+	});
+
 	test("the Hackathon's Tag is protected, a non-admin is FORBIDDEN", async () => {
 		const owned = (await admin().admin.tags.list({})).items.find(
 			(t) => t.name === "cadev-2026",
