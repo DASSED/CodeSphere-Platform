@@ -166,6 +166,26 @@ export const questionsContract = {
 		.input(CloseQuestionInput)
 		.output(QuestionSummary),
 
+	reopen: base
+		.errors({
+			UNAUTHORIZED: {},
+			FORBIDDEN: {},
+			NOT_FOUND: {},
+			CONFLICT: { data: z.object({ version: z.number() }) },
+		})
+		.meta(
+			openapi({
+				method: "POST",
+				path: "/questions/{id}/reopen",
+				tags: ["questions"],
+				summary: "Reopen a question",
+				description:
+					"Reopens a closed question: answered again if it has an Accepted answer, open otherwise. Allowed for its author or an admin. expectedVersion guards a stale write (409 CONFLICT).",
+			}),
+		)
+		.input(CloseQuestionInput)
+		.output(QuestionSummary),
+
 	delete: base
 		.errors({
 			UNAUTHORIZED: {},

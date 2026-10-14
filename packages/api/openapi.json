@@ -249,6 +249,23 @@
 					}
 				},
 				"required": ["defined", "code", "message", "data"]
+			},
+			"Conflict2": {
+				"title": "CONFLICT",
+				"type": "object",
+				"properties": {
+					"defined": {
+						"const": true
+					},
+					"code": {
+						"const": "CONFLICT"
+					},
+					"message": {
+						"type": "string"
+					},
+					"data": {}
+				},
+				"required": ["defined", "code", "message"]
 			}
 		}
 	},
@@ -1321,6 +1338,1088 @@
 									"oneOf": [
 										{
 											"$ref": "#/components/schemas/Conflict"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/questions/{questionId}/answers": {
+			"get": {
+				"operationId": "answers.list",
+				"summary": "List the answers of a question",
+				"description": "Accepted answer first, then by Score. 404 for an unknown question.",
+				"tags": ["answers"],
+				"parameters": [
+					{
+						"in": "path",
+						"required": true,
+						"name": "questionId",
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"items": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string",
+														"format": "uuid",
+														"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+													},
+													"questionId": {
+														"type": "string",
+														"format": "uuid",
+														"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+													},
+													"authorId": {
+														"type": "string",
+														"minLength": 1
+													},
+													"body": {
+														"type": "string",
+														"minLength": 1,
+														"maxLength": 20000
+													},
+													"bodyHtml": {
+														"type": "string"
+													},
+													"score": {
+														"type": "integer",
+														"minimum": -9007199254740991,
+														"maximum": 9007199254740991
+													},
+													"accepted": {
+														"type": "boolean"
+													},
+													"version": {
+														"type": "integer",
+														"minimum": 1,
+														"maximum": 9007199254740991
+													},
+													"createdAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													},
+													"updatedAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													}
+												},
+												"required": [
+													"id",
+													"questionId",
+													"authorId",
+													"body",
+													"bodyHtml",
+													"score",
+													"accepted",
+													"version",
+													"createdAt",
+													"updatedAt"
+												],
+												"additionalProperties": false
+											}
+										}
+									},
+									"required": ["items"],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			},
+			"post": {
+				"operationId": "answers.create",
+				"summary": "Answer a question",
+				"description": "One answer per Member and Question (a replay of the idempotencyKey returns it; a second distinct answer is 409 CONFLICT). A closed question takes no answer (409).",
+				"tags": ["answers"],
+				"parameters": [
+					{
+						"in": "path",
+						"required": true,
+						"name": "questionId",
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"idempotencyKey": {
+										"type": "string",
+										"format": "uuid",
+										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+									},
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 20000
+									}
+								},
+								"required": ["idempotencyKey", "body"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"questionId": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"authorId": {
+											"type": "string",
+											"minLength": 1
+										},
+										"body": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 20000
+										},
+										"bodyHtml": {
+											"type": "string"
+										},
+										"score": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"accepted": {
+											"type": "boolean"
+										},
+										"version": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 9007199254740991
+										},
+										"createdAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										},
+										"updatedAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										}
+									},
+									"required": [
+										"id",
+										"questionId",
+										"authorId",
+										"body",
+										"bodyHtml",
+										"score",
+										"accepted",
+										"version",
+										"createdAt",
+										"updatedAt"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "409",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Conflict2"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/answers/{id}": {
+			"patch": {
+				"operationId": "answers.update",
+				"summary": "Edit an answer",
+				"description": "Author only. expectedVersion guards a stale write (409 CONFLICT).",
+				"tags": ["answers"],
+				"parameters": [
+					{
+						"in": "path",
+						"required": true,
+						"name": "id",
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"expectedVersion": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 9007199254740991
+									},
+									"body": {
+										"type": "string",
+										"minLength": 1,
+										"maxLength": 20000
+									}
+								},
+								"required": ["expectedVersion", "body"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"questionId": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"authorId": {
+											"type": "string",
+											"minLength": 1
+										},
+										"body": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 20000
+										},
+										"bodyHtml": {
+											"type": "string"
+										},
+										"score": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"accepted": {
+											"type": "boolean"
+										},
+										"version": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 9007199254740991
+										},
+										"createdAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										},
+										"updatedAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										}
+									},
+									"required": [
+										"id",
+										"questionId",
+										"authorId",
+										"body",
+										"bodyHtml",
+										"score",
+										"accepted",
+										"version",
+										"createdAt",
+										"updatedAt"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "409",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Conflict"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "answers.delete",
+				"summary": "Delete an answer",
+				"description": "Author only. Deleting the Accepted answer reopens the Question.",
+				"tags": ["answers"],
+				"parameters": [
+					{
+						"in": "path",
+						"required": true,
+						"name": "id",
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"expectedVersion": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 9007199254740991
+									}
+								},
+								"required": ["expectedVersion"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"success": {
+											"type": "boolean"
+										}
+									},
+									"required": ["success"],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "409",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Conflict"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/answers/{id}/accept": {
+			"post": {
+				"operationId": "answers.accept",
+				"summary": "Accept an answer",
+				"description": "Question's author only. Replaces any previous Accepted answer; the Question becomes answered.",
+				"tags": ["answers"],
+				"parameters": [
+					{
+						"in": "path",
+						"required": true,
+						"name": "id",
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+						}
+					}
+				],
+				"requestBody": {
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {}
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"questionId": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"authorId": {
+											"type": "string",
+											"minLength": 1
+										},
+										"body": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 20000
+										},
+										"bodyHtml": {
+											"type": "string"
+										},
+										"score": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"accepted": {
+											"type": "boolean"
+										},
+										"version": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 9007199254740991
+										},
+										"createdAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										},
+										"updatedAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										}
+									},
+									"required": [
+										"id",
+										"questionId",
+										"authorId",
+										"body",
+										"bodyHtml",
+										"score",
+										"accepted",
+										"version",
+										"createdAt",
+										"updatedAt"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
 										},
 										{
 											"$ref": "#/components/schemas/UndefinedError"
@@ -4227,6 +5326,249 @@
 				}
 			}
 		},
+		"/questions/{id}/reopen": {
+			"post": {
+				"operationId": "questions.reopen",
+				"summary": "Reopen a question",
+				"description": "Reopens a closed question: answered again if it has an Accepted answer, open otherwise. Allowed for its author or an admin. expectedVersion guards a stale write (409 CONFLICT).",
+				"tags": ["questions"],
+				"parameters": [
+					{
+						"in": "path",
+						"required": true,
+						"name": "id",
+						"schema": {
+							"type": "string",
+							"format": "uuid",
+							"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"expectedVersion": {
+										"type": "integer",
+										"minimum": 1,
+										"maximum": 9007199254740991
+									}
+								},
+								"required": ["expectedVersion"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"id": {
+											"type": "string",
+											"format": "uuid",
+											"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+										},
+										"title": {
+											"type": "string",
+											"minLength": 1,
+											"maxLength": 200
+										},
+										"authorId": {
+											"type": "string",
+											"minLength": 1
+										},
+										"language": {
+											"type": "string",
+											"enum": ["fr", "en"]
+										},
+										"status": {
+											"type": "string",
+											"enum": ["open", "answered", "closed"]
+										},
+										"tags": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"version": {
+											"type": "integer",
+											"minimum": 1,
+											"maximum": 9007199254740991
+										},
+										"createdAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										},
+										"updatedAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										}
+									},
+									"required": [
+										"id",
+										"title",
+										"authorId",
+										"language",
+										"status",
+										"tags",
+										"version",
+										"createdAt",
+										"updatedAt"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"409": {
+						"description": "409",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Conflict"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/tags": {
 			"get": {
 				"operationId": "tags.search",
@@ -4830,6 +6172,370 @@
 									"oneOf": [
 										{
 											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/votes": {
+			"put": {
+				"operationId": "votes.cast",
+				"summary": "Cast or change a vote",
+				"description": "Up or down on a Question or an Answer; replaces the caller's previous vote. FORBIDDEN for an Agent or on one's own content.",
+				"tags": ["votes"],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"targetType": {
+										"type": "string",
+										"enum": ["question", "answer"]
+									},
+									"targetId": {
+										"type": "string",
+										"format": "uuid",
+										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+									},
+									"value": {
+										"type": "string",
+										"enum": ["up", "down"]
+									}
+								},
+								"required": ["targetType", "targetId", "value"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"score": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"vote": {
+											"anyOf": [
+												{
+													"type": "string",
+													"enum": ["up", "down"]
+												},
+												{
+													"type": "null"
+												}
+											]
+										}
+									},
+									"required": ["score", "vote"],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			},
+			"delete": {
+				"operationId": "votes.retract",
+				"summary": "Retract a vote",
+				"description": "Removes the caller's vote on a target and updates its Score. Idempotent.",
+				"tags": ["votes"],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"properties": {
+									"targetType": {
+										"type": "string",
+										"enum": ["question", "answer"]
+									},
+									"targetId": {
+										"type": "string",
+										"format": "uuid",
+										"pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+									}
+								},
+								"required": ["targetType", "targetId"]
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"score": {
+											"type": "integer",
+											"minimum": -9007199254740991,
+											"maximum": 9007199254740991
+										},
+										"vote": {
+											"anyOf": [
+												{
+													"type": "string",
+													"enum": ["up", "down"]
+												},
+												{
+													"type": "null"
+												}
+											]
+										}
+									},
+									"required": ["score", "vote"],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"404": {
+						"description": "404",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/NotFound"
 										},
 										{
 											"$ref": "#/components/schemas/UndefinedError"

@@ -213,6 +213,28 @@ export function createQuestionService(db: Database) {
 			return toDTO(await findLive(id));
 		},
 
+		/**
+		 * Reopens a closed Question, by its author or by staff: answered again if it has an Accepted
+		 * answer, open otherwise. Staff acting on someone else's Question is audited (#52).
+		 */
+		async reopenQuestion(actor: Actor, id: string, expectedVersion: number) {
+			const q = await findLive(id);
+			if (!actor.isStaff && q.authorId !== actor.id) {
+				throw new QuestionError("FORBIDDEN");
+			}
+			if (q.status !== "closed") {
+				throw new QuestionError("CONFLICT", q.version);
+			}
+			const status = q.acceptedAnswerId ? "answered" : "open";
+			if (q.authorId === actor.id) {
+				return toDTO(await writeIfVersion(id, expectedVersion, { status }));
+			}
+			await moderate(actor, id, expectedVersion, "question.reopen", {
+				status,
+			});
+			return toDTO(await findLive(id));
+		},
+
 		/** Removed by staff, whoever wrote it. Audited like every moderation action (#122). */
 		async removeQuestion(actor: Actor, id: string, expectedVersion: number) {
 			if (!actor.isStaff) {

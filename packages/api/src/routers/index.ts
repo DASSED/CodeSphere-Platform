@@ -15,8 +15,10 @@ import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
 import { ownProfile, publicProfile } from "../profile";
 import {
+	createAnswersHandlers,
 	createFeedHandlers,
 	createQuestionsHandlers,
+	createVotesHandlers,
 } from "../questions/handlers";
 import { createQuestionService, QuestionError } from "../questions/service";
 import { isSuspended } from "../suspension";
@@ -397,7 +399,9 @@ export const appRouter = impl
 				return { success: true };
 			}),
 		},
+		answers: createAnswersHandlers(),
 		questions: createQuestionsHandlers(),
+		votes: createVotesHandlers(),
 		feed: createFeedHandlers(),
 	});
 
