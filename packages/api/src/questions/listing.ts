@@ -13,6 +13,7 @@ import {
 	count,
 	desc,
 	eq,
+	ilike,
 	inArray,
 	isNull,
 	lt,
@@ -24,6 +25,23 @@ import {
 
 import { decodeCursor, encodeCursor } from "../cursor";
 import { decodeHotCursor, encodeHotCursor, HOT_GRAVITY } from "../feed";
+import { authorsById, UNKNOWN_AUTHOR } from "./authors";
+
+/**
+ * The words a title search matches on (#68): those of 3 characters or more, at most 5. Words are
+ * split on everything but letters, digits and `+#.`, so the LIKE wildcards `%` and `_` never reach
+ * the pattern. A Question matches when its title contains any of them.
+ */
+export function titleWords(q: string | undefined): string[] {
+	if (!q) {
+		return [];
+	}
+	const words = q
+		.toLowerCase()
+		.split(/[^\p{L}\p{N}+#.]+/u)
+		.filter((w) => w.length >= 3);
+	return [...new Set(words)].slice(0, 5);
+}
 
 /** The cursor of a list was not issued by the server. */
 export class InvalidCursorError extends Error {}
@@ -76,33 +94,17 @@ function hotExpr(snapshotAt: Date) {
 
 export function createListingService(db: Database) {
 	// Author, Owner and Answer count of a page of Questions: two reads for the whole page.
-	async function extrasFor(rows: Row[]): Promise<Map<string, Extras>> {
+	async function extrasFor(
+		rows: Pick<Row, "id" | "authorId">[],
+	): Promise<Map<string, Extras>> {
 		const out = new Map<string, Extras>();
 		if (rows.length === 0) {
 			return out;
 		}
-		const authorIds = [...new Set(rows.map((r) => r.authorId))];
-		const authors = await db
-			.select({
-				id: user.id,
-				name: user.name,
-				kind: user.kind,
-				ownerId: user.ownerId,
-				country: user.country,
-			})
-			.from(user)
-			.where(inArray(user.id, authorIds));
-		const ownerIds = [
-			...new Set(
-				authors.map((a) => a.ownerId).filter((id): id is string => !!id),
-			),
-		];
-		const owners = ownerIds.length
-			? await db
-					.select({ id: user.id, name: user.name })
-					.from(user)
-					.where(inArray(user.id, ownerIds))
-			: [];
+		const authorOf = await authorsById(
+			db,
+			rows.map((r) => r.authorId),
+		);
 		const counts = await db
 			.select({ questionId: answers.questionId, n: count() })
 			.from(answers)
@@ -117,24 +119,24 @@ export function createListingService(db: Database) {
 			)
 			.groupBy(answers.questionId);
 		const countOf = new Map(counts.map((c) => [c.questionId, c.n]));
-		const ownerName = new Map(owners.map((o) => [o.id, o.name]));
-		const authorOf = new Map(authors.map((a) => [a.id, a]));
 		for (const row of rows) {
-			const a = authorOf.get(row.authorId);
 			out.set(row.id, {
 				answerCount: countOf.get(row.id) ?? 0,
-				authorName: a?.name ?? "",
-				authorKind: a?.kind === "agent" ? "agent" : "human",
-				ownerName: a?.ownerId ? (ownerName.get(a.ownerId) ?? null) : null,
-				authorCountry: a?.country ?? null,
+				...(authorOf.get(row.authorId) ?? UNKNOWN_AUTHOR),
 			});
 		}
 		return out;
 	}
 
-	function filters(input: Pick<ListQuestionsInput, "language" | "status">) {
+	function filters(
+		input: Pick<ListQuestionsInput, "language" | "status"> & { q?: string },
+	) {
+		const words = titleWords(input.q);
 		return [
 			isNull(questions.deletedAt),
+			words.length
+				? or(...words.map((w) => ilike(questions.title, `%${w}%`)))
+				: undefined,
 			input.language ? eq(questions.language, input.language) : undefined,
 			input.status ? eq(questions.status, input.status) : undefined,
 		];
@@ -240,6 +242,8 @@ export function createListingService(db: Database) {
 	}
 
 	return {
+		extrasFor,
+
 		/** `questions.list`: filters apply to every sort; `unanswered` is open Questions, newest first. */
 		async list(input: ListQuestionsInput) {
 			if (input.sort === "hot") {

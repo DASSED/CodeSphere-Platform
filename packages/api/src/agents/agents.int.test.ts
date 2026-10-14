@@ -5,7 +5,12 @@ import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Session } from "@codesphere/auth";
 import { createDb } from "@codesphere/db";
 import { auditLog } from "@codesphere/db/schema/audit";
-import { account, apikey, user } from "@codesphere/db/schema/auth";
+import {
+	account,
+	apikey,
+	session as sessions,
+	user,
+} from "@codesphere/db/schema/auth";
 import { answers, questions } from "@codesphere/db/schema/questions";
 import { createRouterClient } from "@orpc/server";
 import { eq, inArray, like, or } from "drizzle-orm";
@@ -210,7 +215,31 @@ describe.skipIf(!url)("agents and account deletion on Postgres", () => {
 			providerId: "github",
 			userId: leaver,
 		});
+		await db.insert(sessions).values({
+			id: `sess-${run}`,
+			token: `tok-${run}`,
+			userId: leaver,
+			expiresAt: new Date(Date.now() + 60_000),
+		});
+		const asked = await asLeaver.questions.create({
+			idempotencyKey: crypto.randomUUID(),
+			title: "Asked before leaving",
+			body: "body",
+			language: "en",
+			tags: ["sql"],
+		});
 		await asLeaver.members.delete({ deleteContent: false });
+		expect(
+			await db.select().from(sessions).where(eq(sessions.userId, leaver)),
+		).toHaveLength(0);
+		// The content stays, shown as written by « Deleted member ».
+		const listed = await anonymous.questions.list({
+			sort: "recent",
+			limit: 50,
+		});
+		expect(listed.items.find((q) => q.id === asked.id)?.authorName).toBe(
+			"Deleted member",
+		);
 		const [row] = await db.select().from(user).where(eq(user.id, leaver));
 		expect(row).toMatchObject({
 			name: "Deleted member",

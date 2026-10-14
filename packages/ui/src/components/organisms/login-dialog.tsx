@@ -19,6 +19,8 @@ type LoginDialogProps = Omit<LoginCardProps, "hideHeading" | "className"> & {
 	trigger?: React.ReactElement;
 	open?: boolean;
 	onOpenChange?: (open: boolean) => void;
+	/** No trigger of its own: the dialog is opened by `open`, e.g. from a menu item. */
+	withoutTrigger?: boolean;
 };
 
 /** Reusable login: a button that opens the SSO sign-in in a modal. */
@@ -26,17 +28,22 @@ function LoginDialog({
 	trigger,
 	open,
 	onOpenChange,
+	withoutTrigger = false,
 	...cardProps
 }: LoginDialogProps) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogTrigger
-				render={
-					trigger ?? <Button size="lg" className="h-10 min-w-44 px-6 text-sm" />
-				}
-			>
-				{trigger ? undefined : "Se connecter"}
-			</DialogTrigger>
+			{!withoutTrigger && (
+				<DialogTrigger
+					render={
+						trigger ?? (
+							<Button size="lg" className="h-10 min-w-44 px-6 text-sm" />
+						)
+					}
+				>
+					{trigger ? undefined : "Se connecter"}
+				</DialogTrigger>
+			)}
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>Se connecter</DialogTitle>

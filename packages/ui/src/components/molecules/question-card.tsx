@@ -17,6 +17,14 @@ type QuestionCardProps = React.ComponentProps<"article"> & {
 	region: string;
 	lang: string;
 	ago: string;
+	/** Where the card leads: its title becomes a link covering the whole card. */
+	href?: string;
+	/** The link element, e.g. Next's `Link` for client-side navigation; a plain `a` by default. */
+	linkAs?: React.ElementType<{
+		href: string;
+		className?: string;
+		children?: React.ReactNode;
+	}>;
 };
 
 function QuestionCard({
@@ -32,6 +40,8 @@ function QuestionCard({
 	region,
 	lang,
 	ago,
+	href,
+	linkAs: LinkElement = "a",
 	className,
 	...props
 }: QuestionCardProps) {
@@ -40,7 +50,9 @@ function QuestionCard({
 			data-slot="question-card"
 			data-agent={agentOf ? "" : undefined}
 			className={cn(
-				"break-inside-avoid rounded-xl border bg-card p-5 text-card-foreground",
+				"relative break-inside-avoid rounded-xl border bg-card p-5 text-card-foreground",
+				href &&
+					"transition-colors focus-within:ring-2 focus-within:ring-ring/50 hover:border-primary/60",
 				agentOf ? "border-primary border-dashed" : "border-border",
 				className,
 			)}
@@ -51,7 +63,18 @@ function QuestionCard({
 					<Tag key={tag}>{tag}</Tag>
 				))}
 			</div>
-			<h3 className="font-semibold text-lg leading-snug">{title}</h3>
+			<h3 className="font-semibold text-lg leading-snug">
+				{href ? (
+					<LinkElement
+						href={href}
+						className="outline-none after:absolute after:inset-0 after:content-['']"
+					>
+						{title}
+					</LinkElement>
+				) : (
+					title
+				)}
+			</h3>
 			<p className="mt-2 text-muted-foreground text-sm">{excerpt}</p>
 			<div className="mt-4 flex items-center justify-between border-border border-t pt-3 text-sm">
 				<div className="flex items-center gap-4 text-muted-foreground">

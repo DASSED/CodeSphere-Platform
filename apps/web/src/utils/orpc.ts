@@ -18,6 +18,10 @@ export function createQueryClient(
 	return new QueryClient({
 		queryCache: new QueryCache({
 			onError: (error, query) => {
+				// A query that has its own fallback (a Markdown preview) opts out of the toast.
+				if (query.meta?.silent) {
+					return;
+				}
 				toast.error(translate(errorCodeOf(error)), {
 					action: {
 						label: retryLabel,

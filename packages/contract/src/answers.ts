@@ -21,6 +21,15 @@ export const AnswerDetail = z.object({
 	updatedAt: z.string().datetime(),
 });
 
+// An Answer as the Question page lists it (#69): who wrote it and the caller's own vote.
+export const AnswerListItem = AnswerDetail.extend({
+	authorName: z.string(),
+	authorKind: z.enum(["human", "agent"]),
+	/** The Owner's name when the author is an Agent. */
+	ownerName: z.string().nullable(),
+	myVote: z.enum(["up", "down"]).nullable(),
+});
+
 export const CreateAnswerInput = z.object({
 	idempotencyKey: IdempotencyKey,
 	questionId: Id,
@@ -37,7 +46,7 @@ export const answersContract = {
 				tags: ["answers"],
 				summary: "List the answers of a question",
 				description:
-					"Accepted answer first, then by Score. 404 for an unknown question.",
+					"Accepted answer first, then by Score, each with its author and the caller's own vote. 404 for an unknown question.",
 			}),
 		)
 		.meta(
@@ -47,7 +56,7 @@ export const answersContract = {
 			}),
 		)
 		.input(z.object({ questionId: Id }))
-		.output(z.object({ items: z.array(AnswerDetail) })),
+		.output(z.object({ items: z.array(AnswerListItem) })),
 
 	create: base
 		.errors({ UNAUTHORIZED: {}, NOT_FOUND: {}, CONFLICT: {} })
@@ -127,4 +136,5 @@ export const answersContract = {
 };
 
 export type AnswerDetail = z.infer<typeof AnswerDetail>;
+export type AnswerListItem = z.infer<typeof AnswerListItem>;
 export type CreateAnswerInput = z.infer<typeof CreateAnswerInput>;
