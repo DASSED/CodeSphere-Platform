@@ -93,7 +93,9 @@ export function createListingService(db: Database) {
 			.from(user)
 			.where(inArray(user.id, authorIds));
 		const ownerIds = [
-			...new Set(authors.map((a) => a.ownerId).filter((id): id is string => !!id)),
+			...new Set(
+				authors.map((a) => a.ownerId).filter((id): id is string => !!id),
+			),
 		];
 		const owners = ownerIds.length
 			? await db

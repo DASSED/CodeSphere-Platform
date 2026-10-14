@@ -6,15 +6,17 @@ import { user } from "@codesphere/db/schema/auth";
 import { answers, questions } from "@codesphere/db/schema/questions";
 import { inArray } from "drizzle-orm";
 
-import { excerptOf, createListingService } from "./listing";
+import { createListingService, excerptOf } from "./listing";
 
 const url = process.env.TEST_DATABASE_URL;
 
 describe("excerptOf", () => {
 	test("drops code fences and Markdown marks, and truncates", () => {
-		expect(excerptOf("Use **an index**.\n```sql\nSELECT 1;\n```\nSee [docs](http://x).")).toBe(
-			"Use an index . See docs.",
-		);
+		expect(
+			excerptOf(
+				"Use **an index**.\n```sql\nSELECT 1;\n```\nSee [docs](http://x).",
+			),
+		).toBe("Use an index . See docs.");
 		expect(excerptOf("a".repeat(300))).toHaveLength(181);
 	});
 });

@@ -3544,22 +3544,13 @@
 													},
 													"authorKind": {
 														"type": "string",
-														"enum": [
-															"human",
-															"agent"
-														]
+														"enum": ["human", "agent"]
 													},
 													"ownerName": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"authorCountry": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													}
 												},
 												"required": [
@@ -5875,22 +5866,13 @@
 													},
 													"authorKind": {
 														"type": "string",
-														"enum": [
-															"human",
-															"agent"
-														]
+														"enum": ["human", "agent"]
 													},
 													"ownerName": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"authorCountry": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													}
 												},
 												"required": [

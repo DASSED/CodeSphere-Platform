@@ -19,10 +19,9 @@ import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type * as z from "zod";
-
+import { FeedSkeleton, HomeFeed, useFeed } from "@/components/home-feed";
 import { AskButton } from "@/components/site-header";
 import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
-import { FeedSkeleton, HomeFeed, useFeed } from "@/components/home-feed";
 import { authClient } from "@/lib/auth-client";
 import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";

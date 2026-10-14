@@ -266,7 +266,7 @@ export const appRouter = impl
 			members: 
 				list: impl.admin.members.list
 					.use(isAdmin)
-					.handler(async ({ context, input, errors }) => {
+					.handler(async (context, input, errors ) => {
 						const page = await listMembers(context.db, input);
 						if (!page) {
 							throw errors.BAD_REQUEST({
@@ -316,9 +316,8 @@ export const appRouter = impl
 			tags: 
 				list: impl.admin.tags.list
 					.use(isAdmin)
-					.handler(async ({ context }) => ({
-						items: await listTags(context.db),
-					})),
+					.handler(async (context ) => (
+						items: await listTags(context.db),)),
 				create: impl.admin.tags.create
 					.use(isAdmin)
 					.handler(async (context, input, errors ) => {
@@ -361,7 +360,7 @@ export const appRouter = impl
 			auditLog: 
 				list: impl.admin.auditLog.list
 					.use(isAdmin)
-					.handler(async ({ context, input, errors }) => {
+					.handler(async (context, input, errors ) => {
 						const position = input.cursor ? decodeCursor(input.cursor) : null;
 						if (input.cursor && !position) {
 							throw errors.BAD_REQUEST({
@@ -416,7 +415,7 @@ export const appRouter = impl
 			questions: 
 				remove: impl.admin.questions.remove
 					.use(isAdmin)
-					.handler(async ({ context, input, errors }) => {
+					.handler(async (context, input, errors ) => {
 						const actorId = context.session?.user.id;
 						if (!actorId) {
 							throw errors.UNAUTHORIZED();
