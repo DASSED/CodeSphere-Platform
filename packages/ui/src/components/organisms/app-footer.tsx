@@ -5,6 +5,8 @@ type AppFooterProps = Omit<React.ComponentProps<"footer">, "children"> & {
 	/** Commit the build was made from; shortened to 7 characters. */
 	sha: string;
 	links?: readonly { label: string; href: string }[];
+	/** Accessible name of the links' navigation, in the reader's language. */
+	navLabel?: string;
 };
 
 /** Footer with the version and the commit, so a bug report can name the exact build (#42). */
@@ -12,6 +14,7 @@ function AppFooter({
 	version,
 	sha,
 	links = [],
+	navLabel = "Pied de page",
 	className,
 	...props
 }: AppFooterProps) {
@@ -32,7 +35,7 @@ function AppFooter({
 				</span>
 			</p>
 			{links.length > 0 && (
-				<nav aria-label="Pied de page">
+				<nav aria-label={navLabel}>
 					<ul className="flex flex-wrap gap-4">
 						{links.map((link) => (
 							<li key={link.href}>

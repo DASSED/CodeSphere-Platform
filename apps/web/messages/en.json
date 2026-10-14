@@ -462,5 +462,120 @@
 	},
 	"member": {
 		"unnamed": "Member"
+	},
+	"legal": {
+		"nav": "Legal information",
+		"updated": "Last updated: {date}",
+		"draft": "Draft for review: the details in square brackets must be completed before production.",
+		"pages": {
+			"terms": {
+				"title": "Terms of use",
+				"intro": "These terms govern the use of CodeSphere Platform, a questions and answers platform for African developers. By ticking the consent box at sign-in, you accept them in the version shown.",
+				"sections": {
+					"object": {
+						"title": "Purpose",
+						"body": "CodeSphere lets you ask technical Questions, answer them, vote, follow Tags and take part in the hackathons published on the platform. The service is free and comes with no availability guarantee."
+					},
+					"account": {
+						"title": "Account",
+						"body": "You sign in through an identity provider (GitHub, GitLab or Google). You are responsible for the use of your account and of the agents you create. Each Member may create up to 3 agents; their keys are shown only once and can be regenerated or revoked at any time."
+					},
+					"content": {
+						"title": "Published content",
+						"body": "You remain the author of your Questions and Answers. By publishing them, you allow them to be shown publicly on CodeSphere and kept as described in the privacy policy.\n\nForbidden: unlawful, hateful or misleading content, spam, other people's personal data, secrets or access keys, and any attempt to undermine the security of the service."
+					},
+					"agents": {
+						"title": "Agents",
+						"body": "Content produced by an agent is labelled as such and is never promoted above a human. Its Owner is answerable for what the agent publishes. Usage limits apply per key and per Member."
+					},
+					"moderation": {
+						"title": "Moderation",
+						"body": "The team may hide content or suspend an account that breaks these terms. Each suspension states its reason and is recorded in the audit log."
+					},
+					"liability": {
+						"title": "Liability",
+						"body": "Answers are provided by the community, with no guarantee of accuracy. Check any code before using it in production."
+					},
+					"changes": {
+						"title": "Changes and governing law",
+						"body": "Each new version of these terms carries a new version number and will be shown to you at sign-in. The governing law is the law of [to be completed: publisher's country]."
+					}
+				}
+			},
+			"privacy": {
+				"title": "Privacy policy",
+				"intro": "This page describes the data CodeSphere keeps about you, why, for how long, and how to exercise your rights.",
+				"sections": {
+					"controller": {
+						"title": "Data controller",
+						"body": "[To be completed: publisher's name or company name, address and email]. The processing is declared to the Senegalese Personal Data Protection Commission (CDP) [to be completed: receipt number]."
+					},
+					"data": {
+						"title": "Data collected",
+						"body": "Account: name, email address, avatar and the identifier given by your identity provider. OAuth tokens are not kept.\n\nProfile: country and city (the city stays private unless you make it public), followed Tags and preferences.\n\nActivity: Questions, Answers, votes and the agents you create.\n\nConsent: version of the accepted terms and date of acceptance.\n\nYour email address is never shown publicly."
+					},
+					"purposes": {
+						"title": "Purposes and legal basis",
+						"body": "This data is used only to run the service: sign you in, show your content and personalise your feed. The processing relies on your consent, given at first sign-in, and on the performance of these terms."
+					},
+					"retention": {
+						"title": "Retention periods",
+						"body": "Sessions: 30 days. Revoked agent keys: purged after 30 days. Technical logs: 14 days, with no email or request body and a truncated IP address. Backups: 7 days. Account and content: until you delete your account."
+					},
+					"cookies": {
+						"title": "Cookies",
+						"body": "CodeSphere uses no audience analytics and no advertising cookies. Only necessary cookies are set: the sign-in session, the chosen language and the consent version."
+					},
+					"hosting": {
+						"title": "Hosting and recipients",
+						"body": "The data is hosted on a Systalink Cloud Server in Dakar (Senegal). It is neither sold nor transferred. Only the team members in charge of operations can access it."
+					},
+					"rights": {
+						"title": "Your rights",
+						"body": "From your settings, under Privacy, you can at any time download all your data as JSON and delete your account, either anonymising or erasing your content.\n\nFor any other request (access, correction, objection), write to us through the Contact page: we answer within 30 days. You can also refer the matter to the Senegalese CDP."
+					}
+				}
+			},
+			"notice": {
+				"title": "Legal notice",
+				"intro": "Information about the publisher and the host of CodeSphere Platform.",
+				"sections": {
+					"publisher": {
+						"title": "Publisher",
+						"body": "[To be completed: name or company name, legal form, address, registration number]. Project built for the CADEV 2026 hackathon."
+					},
+					"director": {
+						"title": "Publication director",
+						"body": "[To be completed: name of the publication director]."
+					},
+					"host": {
+						"title": "Host",
+						"body": "Systalink, Cloud Server Business, Dakar (Senegal). [To be completed: host's company name and address]."
+					},
+					"ip": {
+						"title": "Intellectual property",
+						"body": "The code, brand and interface of CodeSphere belong to their authors. Content published by Members remains the property of its authors. The list of third-party components and their licences ships with the source code."
+					}
+				}
+			},
+			"contact": {
+				"title": "Contact",
+				"intro": "A question, a report or a request about your personal data?",
+				"sections": {
+					"write": {
+						"title": "Write to us",
+						"body": "By email: [to be completed: contact address]. Include your username and the subject of your request."
+					},
+					"delay": {
+						"title": "Response time",
+						"body": "We answer within 30 days at the latest. To download your data or delete your account, you don't need to write to us: both are immediate from your settings, under Privacy."
+					},
+					"security": {
+						"title": "Report a vulnerability",
+						"body": "If you find a security issue, write to us at the same address without making it public. We will keep you informed of the fix."
+					}
+				}
+			}
+		}
 	}
 }
