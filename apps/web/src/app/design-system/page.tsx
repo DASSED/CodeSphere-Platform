@@ -221,7 +221,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
+import { auditEntries, moderationRows } from "./sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
 /** The caller sorts: the table only reports the click. */
@@ -1094,8 +1094,9 @@ export default function DesignSystemPage() {
 					</Specimen>
 					<Specimen label="QuestionCard">
 						<div className="grid w-full gap-4 md:grid-cols-2">
-							<QuestionCard {...SAMPLE_QUESTIONS[0]!} />
-							<QuestionCard {...SAMPLE_QUESTIONS[1]!} />
+							{SAMPLE_QUESTIONS.slice(0, 2).map((question) => (
+								<QuestionCard key={question.id} {...question} />
+							))}
 						</div>
 					</Specimen>
 					<Specimen label="CadevBanner">

@@ -106,8 +106,9 @@
 		"loadError": "Impossible de charger le Hackathon."
 	},
 	"admin": {
-		"role": "Administrateur",
 		"moderation": "Modération",
+		"hackathons": "Hackathon",
+		"tags": "Tags",
 		"kpi": "KPI",
 		"audit": "Journal d'audit",
 		"signOut": "Se déconnecter"

@@ -7,6 +7,8 @@ import {
 	LogOutIcon,
 	ScrollTextIcon,
 	ShieldIcon,
+	TagIcon,
+	TrophyIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -18,6 +20,8 @@ import { authClient } from "@/lib/auth-client";
 
 const NAV = [
 	{ key: "moderation", href: "/admin", icon: ShieldIcon },
+	{ key: "hackathons", href: "/admin/hackathons", icon: TrophyIcon },
+	{ key: "tags", href: "/admin/tags", icon: TagIcon },
 	{ key: "kpi", href: "/admin/kpi", icon: BarChart3Icon },
 	{ key: "audit", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;
@@ -54,7 +58,7 @@ export default function AdminFrame({
 					? {
 							name: identity.name,
 							email: identity.email,
-							role: identity.role === "admin" ? t("role") : identity.role,
+							role: identity.role,
 						}
 					: undefined
 			}

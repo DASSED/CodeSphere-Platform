@@ -24,3 +24,19 @@ export function errorCodeOf(error: unknown): ErrorCode {
 			: undefined;
 	return toErrorCode(code);
 }
+
+/** Key under the admin screens' error messages for a failed admin call: shared by every admin page. */
+export function adminErrorKey(
+	error: unknown,
+): "forbidden" | "conflict" | "notFound" | "generic" {
+	switch (errorCodeOf(error)) {
+		case "FORBIDDEN":
+			return "forbidden";
+		case "CONFLICT":
+			return "conflict";
+		case "NOT_FOUND":
+			return "notFound";
+		default:
+			return "generic";
+	}
+}
