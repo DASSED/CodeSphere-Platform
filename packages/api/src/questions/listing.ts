@@ -13,6 +13,7 @@ import {
 	count,
 	desc,
 	eq,
+	ilike,
 	inArray,
 	isNull,
 	lt,
@@ -25,6 +26,22 @@ import {
 import { decodeCursor, encodeCursor } from "../cursor";
 import { decodeHotCursor, encodeHotCursor, HOT_GRAVITY } from "../feed";
 import { authorsById, UNKNOWN_AUTHOR } from "./authors";
+
+/**
+ * The words a title search matches on (#68): those of 3 characters or more, at most 5. Words are
+ * split on everything but letters, digits and `+#.`, so the LIKE wildcards `%` and `_` never reach
+ * the pattern. A Question matches when its title contains any of them.
+ */
+export function titleWords(q: string | undefined): string[] {
+	if (!q) {
+		return [];
+	}
+	const words = q
+		.toLowerCase()
+		.split(/[^\p{L}\p{N}+#.]+/u)
+		.filter((w) => w.length >= 3);
+	return [...new Set(words)].slice(0, 5);
+}
 
 /** The cursor of a list was not issued by the server. */
 export class InvalidCursorError extends Error {}
@@ -111,9 +128,15 @@ export function createListingService(db: Database) {
 		return out;
 	}
 
-	function filters(input: Pick<ListQuestionsInput, "language" | "status">) {
+	function filters(
+		input: Pick<ListQuestionsInput, "language" | "status"> & { q?: string },
+	) {
+		const words = titleWords(input.q);
 		return [
 			isNull(questions.deletedAt),
+			words.length
+				? or(...words.map((w) => ilike(questions.title, `%${w}%`)))
+				: undefined,
 			input.language ? eq(questions.language, input.language) : undefined,
 			input.status ? eq(questions.status, input.status) : undefined,
 		];

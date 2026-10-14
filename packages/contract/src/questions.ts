@@ -41,6 +41,8 @@ export const QuestionListItem = QuestionSummary.extend({
 export const QuestionSort = z.enum(["hot", "recent", "unanswered"]);
 
 export const ListQuestionsInput = z.object({
+	/** Words of a title: Questions whose title contains any of them (related questions, #68). */
+	q: z.string().trim().max(200).optional(),
 	/** Questions carrying at least one of these Tags. */
 	tags: z.array(z.string().toLowerCase().trim().min(1)).max(10).optional(),
 	language: z.enum(["fr", "en"]).optional(),
@@ -123,7 +125,7 @@ export const questionsContract = {
 		.meta(
 			mcp.tool({
 				description:
-					"List Questions, filtered by Tag, language, author country or status, sorted hot, recent or unanswered.",
+					"List Questions, filtered by title words, Tag, language, author country or status, sorted hot, recent or unanswered.",
 				annotations: { readOnlyHint: true },
 			}),
 		)

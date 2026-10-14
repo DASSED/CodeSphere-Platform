@@ -15,6 +15,7 @@ import { unexpectedErrors } from "../errors";
 import { isRead } from "../exposure";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
+import { sanitizeMarkdown } from "../markdown/sanitizer";
 import { deleteMember } from "../members-delete";
 import { exportMember } from "../members-export";
 import { ownProfile, publicProfile } from "../profile";
@@ -462,6 +463,14 @@ export const appRouter = impl
 				const userId = actorOf(context.session);
 				await unfollowTag(context.db, userId, input.tag);
 				return { success: true };
+			}),
+		},
+		markdown: {
+			preview: impl.markdown.preview.handler(({ context, input, errors }) => {
+				if (!context.session) {
+					throw errors.UNAUTHORIZED();
+				}
+				return { html: sanitizeMarkdown(input.body).html };
 			}),
 		},
 		agents: createAgentsHandlers(),

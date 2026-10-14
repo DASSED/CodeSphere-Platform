@@ -129,4 +129,29 @@ describe.skipIf(!url)("Question page reads on Postgres", () => {
 			clientAs(null).answers.list({ questionId: missing }),
 		).rejects.toMatchObject({ code: "NOT_FOUND" });
 	});
+
+	test("questions.list q finds Questions by a word of their title", async () => {
+		const found = await clientAs(null).questions.list({
+			q: "which btree INDEX",
+			limit: 50,
+		});
+		expect(found.items.map((q) => q.id)).toContain(questionId);
+		const none = await clientAs(null).questions.list({
+			q: "zzqqxx-nothing",
+			limit: 50,
+		});
+		expect(none.items.map((q) => q.id)).not.toContain(questionId);
+	});
+
+	test("markdown.preview renders like a save; a visitor is UNAUTHORIZED", async () => {
+		const { html } = await clientAs(voter).markdown.preview({
+			body: "**bold** <script>alert(1)</script> [x](https://example.com)",
+		});
+		expect(html).toContain("<strong>bold</strong>");
+		expect(html).not.toContain("<script");
+		expect(html).toContain('rel="nofollow noopener"');
+		await expect(
+			clientAs(null).markdown.preview({ body: "hi" }),
+		).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+	});
 });
