@@ -46,6 +46,7 @@
       "devDependencies": {
         "@codesphere/config": "workspace:*",
         "@types/bun": "catalog:",
+        "drizzle-orm": "catalog:",
         "tsdown": "^0.23.0",
         "typescript": "catalog:",
       },

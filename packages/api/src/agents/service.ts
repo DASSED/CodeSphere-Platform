@@ -16,9 +16,11 @@ const DELETED = "deleted";
 const ALPHABET =
 	"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-// 40 random base62 characters (~238 bits) behind the `cs_live_` prefix.
+// 64 random base62 characters (~381 bits) behind the `cs_live_` prefix. better-auth's api-key
+// plugin refuses any key shorter than its `defaultKeyLength` (64) before even looking it up.
+const KEY_LENGTH = 64;
 function generateKey() {
-	const bytes = crypto.getRandomValues(new Uint8Array(40));
+	const bytes = crypto.getRandomValues(new Uint8Array(KEY_LENGTH));
 	let out = KEY_PREFIX;
 	for (const byte of bytes) {
 		out += ALPHABET[byte % ALPHABET.length];

@@ -75,6 +75,17 @@ const tagRefusal = (
 	errors: { NOT_FOUND: () => Error; CONFLICT: () => Error },
 ) => (code === "NOT_FOUND" ? errors.NOT_FOUND() : errors.CONFLICT());
 
+// A key over its 120 requests per minute is refused with 429 and the wait (spec §3), never
+// treated as anonymous: an agent must back off, not re-authenticate (#50).
+const refuseRateLimitedKeys = impl.middleware(async ({ context, next }) => {
+	if (context.apiKeyRetryAfter !== undefined) {
+		throw new ORPCError("TOO_MANY_REQUESTS", {
+			data: { retryAfter: context.apiKeyRetryAfter },
+		});
+	}
+	return next();
+});
+
 // A suspended Member keeps reading but every write is refused with a typed error (#123).
 const refuseSuspendedWrites = impl.middleware(
 	async ({ context, procedure, next }) => {
@@ -104,6 +115,7 @@ const enforceAgentPreset = impl.middleware(
 
 export const appRouter = impl
 	.use(unexpectedErrors)
+	.use(refuseRateLimitedKeys)
 	.use(refuseSuspendedWrites)
 	.use(enforceAgentPreset)
 	.router({

@@ -10,6 +10,12 @@ export type Context = {
 	/** Id of the HTTP request, returned in `x-request-id` and in INTERNAL_SERVER_ERROR. */
 	requestId: string;
 	/**
+	 * Seconds until the request's API key may be used again, when the key went over its 120
+	 * requests per minute (spec §3): every procedure then answers TOO_MANY_REQUESTS, not
+	 * UNAUTHORIZED.
+	 */
+	apiKeyRetryAfter?: number;
+	/**
 	 * Messages the API sends on its own initiative (#52). Optional: a deployment or a test with no
 	 * mail provider leaves it out, and a failed send never fails the request.
 	 */
