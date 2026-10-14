@@ -20,6 +20,7 @@ import {
 } from "@codesphere/ui/components/organisms/record-sheet";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircleIcon, PlusIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import AdminFrame from "@/components/admin-frame";
@@ -31,30 +32,22 @@ import {
 } from "@/lib/admin-tags";
 import { orpc } from "@/utils/orpc";
 
-const GROUPS: { key: TagGroup; label: string }[] = [
-	{ key: "protected", label: "Protégés" },
-	{ key: "used", label: "Utilisés" },
-	{ key: "unused", label: "Inutilisés" },
-];
+const GROUPS: TagGroup[] = ["protected", "used", "unused"];
 
-const ERRORS = {
-	conflict:
-		"Ce nom est déjà pris (formes normalisées identiques), ou le Tag a changé entre-temps.",
-	forbidden: "Action réservée au staff.",
-	notFound: "Ce Tag n'existe plus.",
-	generic: "Une erreur est survenue. Réessayez.",
-} as const;
+type ErrorKey = ReturnType<typeof tagMutationErrorKey>;
 
 type Mode = "read" | "edit" | "create";
 
 export default function AdminTagsPage() {
+	const t = useTranslations("admin.tags");
+	const tc = useTranslations("admin.common");
 	const queryClient = useQueryClient();
 	const tags = useQuery(orpc.admin.tags.list.queryOptions({ input: {} }));
 	const items = tags.data?.items ?? [];
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const [mode, setMode] = useState<Mode>("read");
 	const [name, setName] = useState("");
-	const [error, setError] = useState<keyof typeof ERRORS | null>(null);
+	const [error, setError] = useState<ErrorKey | null>(null);
 	const selected = items.find((tag) => tag.id === selectedId) ?? null;
 
 	const settled = (nextId: string | null) => {
@@ -94,18 +87,15 @@ export default function AdminTagsPage() {
 	const busy = create.isPending || rename.isPending || remove.isPending;
 
 	return (
-		<AdminFrame
-			title="Tags"
-			description="Les Tags officiels : création, renommage, suppression."
-		>
+		<AdminFrame title={t("title")} description={t("description")}>
 			{tags.isError && (
 				<Alert variant="destructive">
 					<AlertCircleIcon />
-					<AlertTitle>Liste indisponible</AlertTitle>
+					<AlertTitle>{t("unavailable")}</AlertTitle>
 					<AlertDescription>
-						{ERRORS[tagMutationErrorKey(tags.error)]}{" "}
+						{t(`errors.${tagMutationErrorKey(tags.error)}`)}{" "}
 						<Button variant="link" size="sm" onClick={() => tags.refetch()}>
-							Réessayer
+							{t("retry")}
 						</Button>
 					</AlertDescription>
 				</Alert>
@@ -113,11 +103,11 @@ export default function AdminTagsPage() {
 			<AdminMasterDetail
 				list={
 					<GroupedList
-						label="Tags"
-						searchLabel="Rechercher un Tag"
-						searchPlaceholder="Rechercher"
-						emptyText={tags.isPending ? "Chargement…" : "Aucun Tag."}
-						groups={GROUPS}
+						label={t("list")}
+						searchLabel={t("search")}
+						searchPlaceholder={t("searchPlaceholder")}
+						emptyText={tags.isPending ? t("loading") : t("empty")}
+						groups={GROUPS.map((key) => ({ key, label: t(`groups.${key}`) }))}
 						selectedId={mode === "create" ? null : selectedId}
 						onSelect={(tag) => {
 							setSelectedId(tag.id);
@@ -128,7 +118,7 @@ export default function AdminTagsPage() {
 							<Button
 								variant="outline"
 								size="icon"
-								aria-label="Créer un Tag"
+								aria-label={t("create")}
 								onClick={() => {
 									setMode("create");
 									setName("");
@@ -148,13 +138,13 @@ export default function AdminTagsPage() {
 				}
 				detail={
 					mode === "create" ? (
-						<RecordSheet title="Nouveau Tag" editing>
-							<RecordSection title="Général">
+						<RecordSheet title={t("newTitle")} editing>
+							<RecordSection title={t("general")}>
 								<Field
 									id="tag-new"
-									label="Nom"
-									description="Mis en minuscules, sans espaces autour."
-									error={error ? ERRORS[error] : undefined}
+									label={t("name")}
+									description={t("nameHint")}
+									error={error ? t(`errors.${error}`) : undefined}
 								>
 									<Input
 										id="tag-new"
@@ -169,7 +159,10 @@ export default function AdminTagsPage() {
 								saving={busy}
 								onSave={() => create.mutate({ name })}
 								onDiscard={() => setMode("read")}
-								saveLabel="Créer"
+								saveLabel={tc("create")}
+								discardLabel={tc("cancel")}
+								dirtyText={tc("dirty")}
+								cleanText={tc("clean")}
 							/>
 						</RecordSheet>
 					) : selected ? (
@@ -177,7 +170,7 @@ export default function AdminTagsPage() {
 							title={selected.name}
 							badges={
 								selected.ownerHackathon ? (
-									<Badge variant="outline">Protégé</Badge>
+									<Badge variant="outline">{t("protected")}</Badge>
 								) : undefined
 							}
 							editing={mode === "edit"}
@@ -191,12 +184,12 @@ export default function AdminTagsPage() {
 										}
 							}
 						>
-							<RecordSection title="Général">
+							<RecordSection title={t("general")}>
 								{mode === "edit" ? (
 									<Field
 										id="tag-name"
-										label="Nom"
-										error={error ? ERRORS[error] : undefined}
+										label={t("name")}
+										error={error ? t(`errors.${error}`) : undefined}
 									>
 										<Input
 											id="tag-name"
@@ -208,15 +201,17 @@ export default function AdminTagsPage() {
 								) : (
 									<RecordFields
 										fields={[
-											{ label: "Nom", value: selected.name },
+											{ label: t("name"), value: selected.name },
 											{
-												label: "Questions",
+												label: t("questions"),
 												value: String(selected.questionCount),
 											},
 											{
-												label: "Propriétaire",
+												label: t("owner"),
 												value: selected.ownerHackathon
-													? `Hackathon ${selected.ownerHackathon}`
+													? t("ownerHackathon", {
+															slug: selected.ownerHackathon,
+														})
 													: "—",
 											},
 										]}
@@ -240,18 +235,26 @@ export default function AdminTagsPage() {
 									onDiscard={() => setMode("read")}
 								/>
 							) : (
-								<RecordSection title="Suppression">
+								<RecordSection title={t("deletion")}>
 									{error && (
 										<Alert variant="destructive">
 											<AlertCircleIcon />
-											<AlertDescription>{ERRORS[error]}</AlertDescription>
+											<AlertDescription>
+												{t(`errors.${error}`)}
+											</AlertDescription>
 										</Alert>
 									)}
 									{block && (
-										<p className="text-muted-foreground text-sm">{block}</p>
+										<p className="text-muted-foreground text-sm">
+											{block.reason === "owned"
+												? t("blocked.owned", { slug: block.slug })
+												: t("blocked.used", { count: block.count })}
+										</p>
 									)}
 									<ConfirmTwoStep
-										label="Supprimer ce Tag"
+										label={t("delete")}
+										confirmLabel={(seconds) => tc("confirm", { seconds })}
+										cancelLabel={tc("cancel")}
 										disabled={busy || block !== null}
 										onConfirm={() => remove.mutate({ id: selected.id })}
 									/>
@@ -259,9 +262,7 @@ export default function AdminTagsPage() {
 							)}
 						</RecordSheet>
 					) : (
-						<p className="text-muted-foreground text-sm">
-							Choisissez un Tag, ou créez-en un avec « + ».
-						</p>
+						<p className="text-muted-foreground text-sm">{t("pick")}</p>
 					)
 				}
 			/>

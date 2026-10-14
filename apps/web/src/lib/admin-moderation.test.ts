@@ -80,7 +80,12 @@ describe("auditEntryOf", () => {
 	};
 
 	test("names the actor and target from the lookup, keeps the reason", () => {
-		const entry = auditEntryOf(event, (id) => (id === "a1" ? "Admin" : "Awa"));
+		const entry = auditEntryOf(
+			event,
+			(id) => (id === "a1" ? "Admin" : "Awa"),
+			(iso) => iso,
+			"Système",
+		);
 		expect(entry).toMatchObject({
 			id: "e1",
 			actor: "Admin",
@@ -95,6 +100,8 @@ describe("auditEntryOf", () => {
 		const entry = auditEntryOf(
 			{ ...event, actorId: null, details: null },
 			() => undefined,
+			(iso) => iso,
+			"Système",
 		);
 		expect(entry.actor).toBe("Système");
 		expect(entry.target).toBe("member u1");
