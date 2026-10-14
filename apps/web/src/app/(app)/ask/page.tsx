@@ -7,12 +7,12 @@ import { Suspense } from "react";
 
 import { AskForm } from "@/components/ask/ask-form";
 import SsoLoginDialog from "@/components/sso-login-dialog";
-import { authClient } from "@/lib/auth-client";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 
 // « Poser une question » (#68). A visitor is asked to sign in first.
 export default function AskPage() {
 	const t = useTranslations("ask");
-	const { data: session, isPending } = authClient.useSession();
+	const { data: session, isPending } = useHydratedSession();
 	return (
 		<main className="mx-auto grid max-w-3xl gap-6 px-4 py-6 md:px-6 md:py-8">
 			<header className="grid gap-1">

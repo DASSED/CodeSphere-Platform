@@ -11,12 +11,12 @@ import LocaleSwitcher from "@/components/locale-switcher";
 import { MobileMenu } from "@/components/mobile-menu";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import UserMenu from "@/components/user-menu";
-import { authClient } from "@/lib/auth-client";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 
 /** « Poser une question »: opens the sign-in for a visitor, the ask form (#68) for a Member. */
 export function AskButton({ className }: { className?: string }) {
 	const t = useTranslations("header");
-	const { data: session } = authClient.useSession();
+	const { data: session } = useHydratedSession();
 	const content = (
 		<>
 			<PlusIcon />

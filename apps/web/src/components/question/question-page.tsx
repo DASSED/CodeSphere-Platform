@@ -37,7 +37,7 @@ import { useOutbox } from "@/components/outbox-provider";
 import { RenderedMarkdown } from "@/components/rendered-markdown";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import { errorCodeOf } from "@/i18n/errors";
-import { authClient } from "@/lib/auth-client";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
 
@@ -54,7 +54,7 @@ type Viewer = { id: string; kind: "human" | "agent" } | null;
  */
 export function QuestionPage({ id }: { id: string }) {
 	const t = useTranslations("question");
-	const { data: session } = authClient.useSession();
+	const { data: session } = useHydratedSession();
 	const viewer: Viewer = session
 		? {
 				id: session.user.id,

@@ -30,7 +30,7 @@ import { useSignOut } from "@/components/outbox-provider";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import { setLocale } from "@/i18n/actions";
 import { isLocale } from "@/i18n/config";
-import { authClient } from "@/lib/auth-client";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 
 /**
  * The site's bar on a phone (#129): one menu button gathers the language, « Poser une question »
@@ -43,7 +43,7 @@ export function MobileMenu() {
 	const router = useRouter();
 	const locale = useLocale();
 	const [, startTransition] = useTransition();
-	const { data: session } = authClient.useSession();
+	const { data: session } = useHydratedSession();
 	const signOut = useSignOut();
 	const [signInOpen, setSignInOpen] = useState(false);
 
