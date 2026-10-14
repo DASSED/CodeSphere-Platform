@@ -1,6 +1,6 @@
 # Déploiement de CodeSphere (pile de production)
 
-Une pile Docker Compose sur un seul serveur : Caddy (HTTPS, deux hôtes), le web, le serveur, PostgreSQL 18. Elle remplace le squelette de la branche `chore/35-deploy-skeleton`, dont les pièces opérationnelles (supervision, sauvegarde hors serveur, notes de release, mise en place) sont reprises ici.
+Une pile Docker Compose sur un seul serveur : Caddy (HTTPS, deux hôtes), le web, le serveur, PostgreSQL 18. Le squelette de `chore/35-deploy-skeleton` (déploiement par environnement) est aussi présent, désactivé : voir plus bas.
 
 ## Fichiers
 
@@ -56,13 +56,18 @@ Faire une sauvegarde, vérifier sa présence sur R2, en rapatrier une copie et l
 
 Rotation par Docker (`json-file`, 5 fichiers de 10 Mo par conteneur). En SSH : `docker compose -f docker-compose.prod.yml logs -f --since 1h server`.
 
-## Non repris de `chore/35-deploy-skeleton`
+## Déploiement par environnement (images GHCR)
 
-Volontairement laissé de côté, à rouvrir si le besoin apparaît :
+Une seconde approche, issue de `chore/35-deploy-skeleton`, est présente mais **désactivée** : préproduction et production sur le même serveur, chacune avec sa pile, à partir d'images publiées sur GHCR.
 
-- `deploy.yml` (build des images en CI vers GHCR, préproduction automatique, production sur étiquette `vX.Y.Z`) et `deploy.sh` : cette pile se construit sur le serveur ; un déploiement piloté par la CI suppose des images publiées et un accès SSH, qui n'existent pas encore.
-- Une préproduction sur le même serveur (`compose.app.yml` par environnement) : le staging tourne aujourd'hui sur Cloudflare Workers (`staging.yml`).
-- Le renommage du produit dans `CONTEXT.md` (« CodeSphere Platform »), à décider à part.
+- `compose.app.yml` : un environnement (migration, server, web, Postgres), images étiquetées par le SHA git.
+- `edge/compose.yml` + `edge/Caddyfile` : un Caddy unique devant les deux environnements, réseau Docker `edge`.
+- `deploy.sh <staging|production> <sha>` : pull, sauvegarde (`backup-env.sh`), migration, démarrage, contrôle de santé.
+- `backup-env.sh <env>` : sauvegarde d'un environnement dans `~/backups` (7 jours), copie hors serveur et heartbeat. `backup.sh` reste celui de la pile unique ci-dessus.
+- `.env.example` : modèle des fichiers `.env.staging` et `.env.production` (sur le serveur seulement, `chmod 600`).
+- `../.github/workflows/deploy.yml` : `main` → build des images + préproduction ; production en poussant une étiquette `vX.Y.Z` (crée la Release GitHub). **Éteint tant que la variable de dépôt `DEPLOY_ENABLED` n'est pas `true`**, puisque le serveur, `DEPLOY_HOST`, `DEPLOY_SSH_KEY` et les environnements GitHub n'existent pas encore.
+
+Les deux approches se recouvrent : il faudra en retenir une avant la mise en place réelle. La pile unique (`docker-compose.prod.yml`) porte la séparation public/admin ; l'approche par environnement apporte la préproduction et le déploiement piloté par la CI.
 
 ## Points non vérifiés
 
