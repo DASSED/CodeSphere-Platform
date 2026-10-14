@@ -119,6 +119,11 @@ export async function renameTag(
 			[
 				sql`UPDATE questions SET tags = array_replace(tags, ${before.name}, ${normalizeTagName(input.name)})
 					WHERE ${before.name} = ANY (tags) AND EXISTS (SELECT 1 FROM m)`,
+				// Followers follow the new name, unless they already followed it (primary key).
+				sql`UPDATE tag_follows SET tag = ${normalizeTagName(input.name)}
+					WHERE tag = ${before.name} AND EXISTS (SELECT 1 FROM m)
+					AND NOT EXISTS (SELECT 1 FROM tag_follows f2
+						WHERE f2.user_id = tag_follows.user_id AND f2.tag = ${normalizeTagName(input.name)})`,
 			],
 		);
 	} catch (error) {

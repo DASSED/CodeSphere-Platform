@@ -20,6 +20,7 @@ import {
 } from "../questions/handlers";
 import { createQuestionService, QuestionError } from "../questions/service";
 import { isSuspended } from "../suspension";
+import { followedTags, followTag, searchTags, unfollowTag } from "../tags";
 
 // The authorization guard behind every admin procedure (spec §2). Throws the typed
 // UNAUTHORIZED / FORBIDDEN error declared on the admin contract.
@@ -359,6 +360,43 @@ export const appRouter = impl
 						}
 					}),
 			},
+		},
+		tags: {
+			search: impl.tags.search.handler(async ({ context, input }) => ({
+				items: await searchTags(
+					context.db,
+					input,
+					context.session?.user.id ?? null,
+				),
+			})),
+			followed: impl.tags.followed.handler(async ({ context, errors }) => {
+				const userId = context.session?.user.id;
+				if (!userId) {
+					throw errors.UNAUTHORIZED();
+				}
+				return { items: await followedTags(context.db, userId) };
+			}),
+			follow: impl.tags.follow.handler(async ({ context, input, errors }) => {
+				const userId = context.session?.user.id;
+				if (!userId) {
+					throw errors.UNAUTHORIZED();
+				}
+				const tag = await followTag(context.db, userId, input.tag);
+				if (!tag) {
+					throw errors.NOT_FOUND();
+				}
+				return tag;
+			}),
+			unfollow: impl.tags.unfollow.handler(
+				async ({ context, input, errors }) => {
+					const userId = context.session?.user.id;
+					if (!userId) {
+						throw errors.UNAUTHORIZED();
+					}
+					await unfollowTag(context.db, userId, input.tag);
+					return { success: true };
+				},
+			),
 		},
 		questions: createQuestionsHandlers(),
 		feed: createFeedHandlers(),
