@@ -70,6 +70,20 @@ export const membersContract = {
 		)
 		.input(ProfileUpdate)
 		.output(OwnProfile),
+	delete: base
+		.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+		.meta(
+			openapi({
+				method: "DELETE",
+				path: "/me",
+				tags: ["members"],
+				summary: "Delete my account",
+				description:
+					"Anonymises the account (shown as a deleted member) and ends its sessions, linked accounts and Agents. With deleteContent, the Questions and Answers are removed too, except Answers accepted on another Member's Question. Humans only. Audited as member.delete.",
+			}),
+		)
+		.input(z.object({ deleteContent: z.boolean().default(false) }))
+		.output(z.object({ success: z.boolean() })),
 	get: base
 		.errors({ NOT_FOUND: {} })
 		.meta(
