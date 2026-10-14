@@ -76,7 +76,11 @@ export const MemberExport = z.object({
 	),
 	followedTags: z.array(z.string()),
 	agents: z.array(
-		z.object({ id: z.string(), name: z.string(), createdAt: z.string().datetime() }),
+		z.object({
+			id: z.string(),
+			name: z.string(),
+			createdAt: z.string().datetime(),
+		}),
 	),
 });
 

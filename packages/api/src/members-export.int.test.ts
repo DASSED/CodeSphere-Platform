@@ -65,7 +65,12 @@ describe.skipIf(!url)("members.export on Postgres", () => {
 		});
 		await db
 			.insert(votes)
-			.values({ userId: me, targetType: "question", targetId: questionId, value: 1 });
+			.values({
+				userId: me,
+				targetType: "question",
+				targetId: questionId,
+				value: 1,
+			});
 	});
 
 	afterAll(async () => {
