@@ -3,7 +3,8 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Session } from "@codesphere/auth";
 import { createDb } from "@codesphere/db";
-import { user } from "@codesphere/db/schema/auth";
+import { auditLog } from "@codesphere/db/schema/audit";
+import { apikey, user } from "@codesphere/db/schema/auth";
 import { answers, questions, votes } from "@codesphere/db/schema/questions";
 import { createRouterClient } from "@orpc/server";
 import { inArray } from "drizzle-orm";
@@ -72,6 +73,16 @@ describe.skipIf(!url)("members.export on Postgres", () => {
 	});
 
 	afterAll(async () => {
+		const agents = await db
+			.select({ id: user.id })
+			.from(user)
+			.where(inArray(user.ownerId, ids));
+		const agentIds = agents.map((a) => a.id);
+		if (agentIds.length > 0) {
+			await db.delete(apikey).where(inArray(apikey.referenceId, agentIds));
+			await db.delete(user).where(inArray(user.id, agentIds));
+		}
+		await db.delete(auditLog).where(inArray(auditLog.actorId, ids));
 		await db.delete(votes).where(inArray(votes.userId, ids));
 		await db.delete(answers).where(inArray(answers.authorId, ids));
 		await db.delete(questions).where(inArray(questions.authorId, ids));
@@ -86,6 +97,23 @@ describe.skipIf(!url)("members.export on Postgres", () => {
 			{ targetType: "question", targetId: questionId, value: "up" },
 		]);
 		expect(data.questions).toEqual([]);
+	});
+
+	test("lists the caller's agents without their key", async () => {
+		const { agent, key } = await clientAs(me).agents.create({
+			name: "exported",
+			preset: "read",
+		});
+		const data = await clientAs(me).members.export();
+		expect(data.agents).toMatchObject([{ id: agent.id, name: "exported" }]);
+		const [stored] = await db
+			.select({ hash: apikey.key, start: apikey.start })
+			.from(apikey)
+			.where(inArray(apikey.referenceId, [agent.id]));
+		const text = JSON.stringify(data);
+		expect(text).not.toContain(key);
+		expect(text).not.toContain(stored?.hash ?? "missing");
+		expect(text).not.toContain("cs_live_");
 	});
 
 	test("is UNAUTHORIZED for a visitor and FORBIDDEN for an Agent", async () => {
