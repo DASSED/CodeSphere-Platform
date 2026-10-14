@@ -2,7 +2,12 @@
 
 import { createContext, useContext } from "react";
 
-export type AdminIdentity = { id: string; name: string; email: string; role: string };
+export type AdminIdentity = {
+	id: string;
+	name: string;
+	email: string;
+	role: string;
+};
 
 const AdminIdentityContext = createContext<AdminIdentity | null>(null);
 

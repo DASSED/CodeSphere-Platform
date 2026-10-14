@@ -1,7 +1,10 @@
 /// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 
-import type { AdminMember as AdminMemberSchema, AuditEvent as AuditEventSchema } from "@codesphere/contract";
+import type {
+	AdminMember as AdminMemberSchema,
+	AuditEvent as AuditEventSchema,
+} from "@codesphere/contract";
 import type { z } from "zod";
 
 type AdminMember = z.infer<typeof AdminMemberSchema>;
@@ -29,9 +32,9 @@ const member = (over: Partial<AdminMember> = {}): AdminMember => ({
 
 describe("memberGroup", () => {
 	test("puts a suspended Member first, then agents, then actives", () => {
-		expect(memberGroup(member({ suspendedAt: "2026-10-02T00:00:00.000Z" }))).toBe(
-			"suspended",
-		);
+		expect(
+			memberGroup(member({ suspendedAt: "2026-10-02T00:00:00.000Z" })),
+		).toBe("suspended");
 		expect(memberGroup(member({ kind: "agent" }))).toBe("agents");
 		expect(memberGroup(member())).toBe("active");
 	});
@@ -89,7 +92,10 @@ describe("auditEntryOf", () => {
 	});
 
 	test("falls back to the raw id and a system actor", () => {
-		const entry = auditEntryOf({ ...event, actorId: null, details: null }, () => undefined);
+		const entry = auditEntryOf(
+			{ ...event, actorId: null, details: null },
+			() => undefined,
+		);
 		expect(entry.actor).toBe("Système");
 		expect(entry.target).toBe("member u1");
 		expect(entry.reason).toBeUndefined();

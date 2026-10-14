@@ -127,7 +127,8 @@ export default function ModerationPage() {
 			<AdminMasterDetail
 				list={
 					<>
-						<div className="mb-2 flex gap-1" role="group" aria-label="Statut">
+						<fieldset className="mb-2 flex gap-1 border-0 p-0">
+							<legend className="sr-only">Statut</legend>
 							{(
 								[
 									[undefined, "Tous"],
@@ -145,7 +146,7 @@ export default function ModerationPage() {
 									{label}
 								</Button>
 							))}
-						</div>
+						</fieldset>
 						<GroupedList
 							label="Members"
 							searchLabel="Rechercher un Member"

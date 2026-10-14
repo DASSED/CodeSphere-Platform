@@ -1094,8 +1094,9 @@ export default function DesignSystemPage() {
 					</Specimen>
 					<Specimen label="QuestionCard">
 						<div className="grid w-full gap-4 md:grid-cols-2">
-							<QuestionCard {...SAMPLE_QUESTIONS[0]!} />
-							<QuestionCard {...SAMPLE_QUESTIONS[1]!} />
+							{SAMPLE_QUESTIONS.slice(0, 2).map((question) => (
+								<QuestionCard key={question.id} {...question} />
+							))}
 						</div>
 					</Specimen>
 					<Specimen label="CadevBanner">
