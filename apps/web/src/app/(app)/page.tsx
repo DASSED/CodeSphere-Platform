@@ -22,9 +22,9 @@ import type * as z from "zod";
 import { FeedSkeleton, HomeFeed, useFeed } from "@/components/home-feed";
 import { AskButton } from "@/components/site-header";
 import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
-import { authClient } from "@/lib/auth-client";
 import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
 
@@ -34,7 +34,7 @@ type HackathonData = z.infer<typeof Hackathon>;
 // banner; desktop Member = feed and a sticky rail; phone = promise for a visitor, greeting and a
 // compact ribbon for a Member. The feed itself (tabs, cards) arrives with « Flux B » (#66).
 export default function Home() {
-	const { data: session, isPending } = authClient.useSession();
+	const { data: session, isPending } = useHydratedSession();
 	// Without a database (a preview without the preview-db label) the banner is simply absent.
 	const hackathon = useQuery({
 		...orpc.hackathons.get.queryOptions({ input: { slug: "cadev-2026" } }),

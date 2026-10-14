@@ -9,12 +9,12 @@ import { useTranslations } from "next-intl";
 import LocaleSwitcher from "@/components/locale-switcher";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import UserMenu from "@/components/user-menu";
-import { authClient } from "@/lib/auth-client";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 
 /** « Poser une question »: opens the sign-in for a visitor; the form itself is another ticket. */
 export function AskButton({ className }: { className?: string }) {
 	const t = useTranslations("header");
-	const { data: session } = authClient.useSession();
+	const { data: session } = useHydratedSession();
 	const content = (
 		<>
 			<PlusIcon />

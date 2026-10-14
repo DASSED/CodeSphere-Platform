@@ -18,6 +18,7 @@ import { useTranslations } from "next-intl";
 
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import { authClient } from "@/lib/auth-client";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 
 function initials(name: string) {
 	return name
@@ -32,7 +33,7 @@ function initials(name: string) {
 export default function UserMenu() {
 	const t = useTranslations("header");
 	const router = useRouter();
-	const { data: session, isPending } = authClient.useSession();
+	const { data: session, isPending } = useHydratedSession();
 
 	if (isPending) {
 		return <Skeleton className="size-9 rounded-full" />;
