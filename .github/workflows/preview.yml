@@ -52,21 +52,32 @@ jobs:
           event: pull_request
           workflows: ci.yml licenses.yml
 
-  deploy:
-    name: Deploy preview
+  # Stage 1, in parallel with the build: the disposable database of the pull request, migrated
+  # and seeded. Blocking: a failed migration stops the deploy.
+  database:
+    name: Preview database
     needs: gate
     if: >
       github.event.action != 'closed' &&
       vars.PREVIEW_ENABLED == 'true' &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: preview
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 1.4.0
-      - run: bun install --frozen-lockfile --ignore-scripts
+      # Retried: a cold cache re-downloads everything and can hit rate limits (infra, not code).
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
       - run: bun run env:generate
 
       # Neon Free allows 10 branches per project, parent branches included. Past that limit no
@@ -115,6 +126,33 @@ jobs:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: bun src/seed/index.ts
 
+  # Stage 2, in parallel with the database: the Worker, built once. It holds no secret (only
+  # NEXT_PUBLIC_* values are inlined), so the artifact can travel between jobs.
+  build:
+    name: Build the Worker
+    needs: gate
+    if: >
+      github.event.action != 'closed' &&
+      vars.PREVIEW_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      # Retried: a cold cache re-downloads everything and can hit rate limits (infra, not code).
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
+      - run: bun run env:generate
+
       - name: Build the Worker
         working-directory: apps/web
         env:
@@ -123,6 +161,60 @@ jobs:
           # Without the preview-db label there is no database: the home page does not ask for it.
           NEXT_PUBLIC_HAS_DATABASE: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
         run: bunx opennextjs-cloudflare build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preview-worker-${{ env.PREVIEW_NAME }}
+          path: apps/web/.open-next
+          retention-days: 1
+          if-no-files-found: error
+          # .open-next is a dot directory: upload-artifact skips hidden files by default.
+          include-hidden-files: true
+
+  # Stage 3: publishes the built Worker against the migrated database, then checks it answers.
+  # This is the check a pull request must pass before it can be merged.
+  deploy:
+    name: Deploy preview
+    needs: [database, build]
+    if: >
+      github.event.action != 'closed' &&
+      vars.PREVIEW_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      # Retried: a cold cache re-downloads everything and can hit rate limits (infra, not code).
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
+      - run: bun run env:generate
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: preview-worker-${{ env.PREVIEW_NAME }}
+          path: apps/web/.open-next
+
+      # A secret does not cross jobs (GitHub drops it from outputs): read the URL again.
+      - name: Preview database URL
+        id: neon
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          BRANCH: preview/${{ env.PREVIEW_NAME }}
+        run: |
+          url=$(bunx neonctl@2 connection-string "$BRANCH" --project-id "$PROJECT_ID" --api-key "$NEON_API_KEY")
+          echo "::add-mask::$url"
+          echo "db_url=$url" >> "$GITHUB_OUTPUT"
 
       - name: Deploy the Preview
         id: deploy
