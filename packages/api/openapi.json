@@ -5238,6 +5238,425 @@
 				}
 			}
 		},
+		"/me/export": {
+			"get": {
+				"operationId": "members.export",
+				"summary": "Export my data",
+				"description": "Everything the platform holds about the caller: profile, Questions, Answers, Votes, followed Tags and Agents (never their keys). Humans only.",
+				"tags": [
+					"members"
+				],
+				"responses": {
+					"200": {
+						"description": "OK",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"exportedAt": {
+											"type": "string",
+											"format": "date-time",
+											"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+										},
+										"profile": {
+											"type": "object",
+											"properties": {
+												"id": {
+													"type": "string"
+												},
+												"name": {
+													"type": "string"
+												},
+												"kind": {
+													"type": "string",
+													"enum": [
+														"human",
+														"agent"
+													]
+												},
+												"ownerId": {
+													"type": [
+														"string",
+														"null"
+													]
+												},
+												"image": {
+													"type": [
+														"string",
+														"null"
+													]
+												},
+												"country": {
+													"anyOf": [
+														{
+															"anyOf": [
+																{
+																	"type": "string",
+																	"minLength": 2,
+																	"maxLength": 2
+																},
+																{
+																	"type": "string",
+																	"const": "OTHER"
+																}
+															]
+														},
+														{
+															"type": "null"
+														}
+													]
+												},
+												"city": {
+													"type": [
+														"string",
+														"null"
+													]
+												},
+												"cityPublic": {
+													"type": "boolean"
+												},
+												"hideAgentContent": {
+													"type": "boolean"
+												},
+												"tagsOnboardingSkipped": {
+													"type": "boolean"
+												},
+												"email": {
+													"type": "string"
+												},
+												"consentVersion": {
+													"type": [
+														"string",
+														"null"
+													]
+												},
+												"consentAcceptedAt": {
+													"anyOf": [
+														{
+															"type": "string",
+															"format": "date-time",
+															"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+														},
+														{
+															"type": "null"
+														}
+													]
+												},
+												"createdAt": {
+													"type": "string",
+													"format": "date-time",
+													"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+												}
+											},
+											"required": [
+												"id",
+												"name",
+												"kind",
+												"ownerId",
+												"image",
+												"country",
+												"city",
+												"cityPublic",
+												"hideAgentContent",
+												"tagsOnboardingSkipped",
+												"email",
+												"consentVersion",
+												"consentAcceptedAt",
+												"createdAt"
+											],
+											"additionalProperties": false
+										},
+										"questions": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string"
+													},
+													"title": {
+														"type": "string"
+													},
+													"body": {
+														"type": "string"
+													},
+													"language": {
+														"type": "string",
+														"enum": [
+															"fr",
+															"en"
+														]
+													},
+													"status": {
+														"type": "string",
+														"enum": [
+															"open",
+															"answered",
+															"closed"
+														]
+													},
+													"tags": {
+														"type": "array",
+														"items": {
+															"type": "string"
+														}
+													},
+													"score": {
+														"type": "integer",
+														"minimum": -9007199254740991,
+														"maximum": 9007199254740991
+													},
+													"createdAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													},
+													"deleted": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"id",
+													"title",
+													"body",
+													"language",
+													"status",
+													"tags",
+													"score",
+													"createdAt",
+													"deleted"
+												],
+												"additionalProperties": false
+											}
+										},
+										"answers": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string"
+													},
+													"questionId": {
+														"type": "string"
+													},
+													"body": {
+														"type": "string"
+													},
+													"score": {
+														"type": "integer",
+														"minimum": -9007199254740991,
+														"maximum": 9007199254740991
+													},
+													"createdAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													},
+													"deleted": {
+														"type": "boolean"
+													}
+												},
+												"required": [
+													"id",
+													"questionId",
+													"body",
+													"score",
+													"createdAt",
+													"deleted"
+												],
+												"additionalProperties": false
+											}
+										},
+										"votes": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"targetType": {
+														"type": "string",
+														"enum": [
+															"question",
+															"answer"
+														]
+													},
+													"targetId": {
+														"type": "string"
+													},
+													"value": {
+														"type": "string",
+														"enum": [
+															"up",
+															"down"
+														]
+													},
+													"createdAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													}
+												},
+												"required": [
+													"targetType",
+													"targetId",
+													"value",
+													"createdAt"
+												],
+												"additionalProperties": false
+											}
+										},
+										"followedTags": {
+											"type": "array",
+											"items": {
+												"type": "string"
+											}
+										},
+										"agents": {
+											"type": "array",
+											"items": {
+												"type": "object",
+												"properties": {
+													"id": {
+														"type": "string"
+													},
+													"name": {
+														"type": "string"
+													},
+													"createdAt": {
+														"type": "string",
+														"format": "date-time",
+														"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+													}
+												},
+												"required": [
+													"id",
+													"name",
+													"createdAt"
+												],
+												"additionalProperties": false
+											}
+										}
+									},
+									"required": [
+										"exportedAt",
+										"profile",
+										"questions",
+										"answers",
+										"votes",
+										"followedTags",
+										"agents"
+									],
+									"additionalProperties": false
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "400",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/BadRequest"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "401",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Unauthorized"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "403",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/Forbidden"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "429",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/TooManyRequests"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"500": {
+						"description": "500",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/InternalServerError"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					},
+					"503": {
+						"description": "503",
+						"content": {
+							"application/json": {
+								"schema": {
+									"oneOf": [
+										{
+											"$ref": "#/components/schemas/ServiceUnavailable"
+										},
+										{
+											"$ref": "#/components/schemas/UndefinedError"
+										}
+									]
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/members/{id}": {
 			"get": {
 				"operationId": "members.get",

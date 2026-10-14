@@ -7,7 +7,7 @@ import type { AppDeps } from "./app";
 
 export type CreateContextOptions = {
 	context: HonoContext<LoggerEnv>;
-	deps: Pick<AppDeps, "auth" | "db" | "release">;
+	deps: Pick<AppDeps, "auth" | "db" | "release" | "notifications">;
 };
 
 export async function createContext({
@@ -25,6 +25,7 @@ export async function createContext({
 		logger: context.get("logger"),
 		requestId: context.get("requestId"),
 		release: deps.release,
+		notifications: deps.notifications,
 	};
 }
 

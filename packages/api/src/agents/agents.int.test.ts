@@ -91,6 +91,31 @@ describe.skipIf(!url)("agents and account deletion on Postgres", () => {
 		expect(row).toMatchObject({ kind: "agent", ownerId: owner });
 	});
 
+	test("the Owner is emailed when a key is created or rotated, never given the key", async () => {
+		const sent: { email: string; keyName: string }[] = [];
+		const notified = createRouterClient(appRouter, {
+			context: testContext({
+				db,
+				session: session(owner),
+				notifications: {
+					async apiKeyCreated(member, keyName) {
+						sent.push({ email: member.email, keyName });
+					},
+				},
+			}),
+		});
+		const { agent } = await notified.agents.create({
+			name: "Mailed",
+			preset: "read",
+		});
+		await notified.agents.rotateKey({ id: agent.id });
+		expect(sent).toEqual([
+			{ email: `${owner}@example.com`, keyName: "Mailed" },
+			{ email: `${owner}@example.com`, keyName: "Mailed" },
+		]);
+		await notified.agents.delete({ id: agent.id });
+	});
+
 	test("an Agent or a visitor cannot manage agents", async () => {
 		await expect(anonymous.agents.list()).rejects.toMatchObject({
 			code: "UNAUTHORIZED",

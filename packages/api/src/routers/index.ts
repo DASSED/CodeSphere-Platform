@@ -7,6 +7,7 @@ import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { createAgentsHandlers } from "../agents/handlers";
 import { agentPreset } from "../agents/service";
 import { deleteMember } from "../members-delete";
+import { exportMember } from "../members-export";
 import { updateHackathon } from "../admin-hackathons";
 import { listMembers, setSuspension } from "../admin-members";
 import { createTag, deleteTag, listTags, renameTag } from "../admin-tags";
@@ -153,6 +154,22 @@ export const appRouter = impl
 					return ownProfile(row);
 				},
 			),
+			export: impl.members.export.handler(async ({ context, errors }) => {
+				const me = context.session?.user as
+					| { id: string; kind?: string }
+					| undefined;
+				if (!me) {
+					throw errors.UNAUTHORIZED();
+				}
+				if (me.kind !== "human") {
+					throw errors.FORBIDDEN();
+				}
+				const data = await exportMember(context.db, me.id);
+				if (!data) {
+					throw errors.UNAUTHORIZED();
+				}
+				return data;
+			}),
 			delete: impl.members.delete.handler(async ({ context, input, errors }) => {
 				const me = context.session?.user as
 					| { id: string; kind?: string }

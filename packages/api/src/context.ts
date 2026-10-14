@@ -9,6 +9,16 @@ export type Context = {
 	logger: Logger;
 	/** Id of the HTTP request, returned in `x-request-id` and in INTERNAL_SERVER_ERROR. */
 	requestId: string;
+	/**
+	 * Messages the API sends on its own initiative (#52). Optional: a deployment or a test with no
+	 * mail provider leaves it out, and a failed send never fails the request.
+	 */
+	notifications?: {
+		apiKeyCreated(
+			member: { email: string; name: string },
+			keyName: string,
+		): Promise<void>;
+	};
 	/** Build identity injected at build time (APP_VERSION, GIT_SHA). */
 	release: { version: string; commit: string };
 };

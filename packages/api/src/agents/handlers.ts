@@ -1,7 +1,31 @@
+import { user } from "@codesphere/db/schema/auth";
+import { eq } from "drizzle-orm";
+
+import type { Context } from "../context";
 import { impl } from "../index";
 import { AgentError, createAgentService } from "./service";
 
 // Managing Agents is for human Owners: a visitor is UNAUTHORIZED and an Agent FORBIDDEN.
+// Tells the Owner a key now exists, never the key. A failed send is logged by the mailer and never
+// fails the request: the key was already issued.
+async function notifyKeyCreated(context: Context, ownerId: string, keyName: string) {
+	if (!context.notifications) {
+		return;
+	}
+	try {
+		const [owner] = await context.db
+			.select({ email: user.email, name: user.name })
+			.from(user)
+			.where(eq(user.id, ownerId))
+			.limit(1);
+		if (owner) {
+			await context.notifications.apiKeyCreated(owner, keyName);
+		}
+	} catch (error) {
+		context.logger.warn({ err: error }, "key notification failed");
+	}
+}
+
 export function createAgentsHandlers() {
 	const owner = (
 		context: { session: { user: { id: string } } | null },
@@ -36,7 +60,12 @@ export function createAgentsHandlers() {
 		create: impl.agents.create.handler(async ({ context, input, errors }) => {
 			const ownerId = owner(context, errors);
 			try {
-				return await createAgentService(context.db).create(ownerId, input);
+				const created = await createAgentService(context.db).create(
+					ownerId,
+					input,
+				);
+				await notifyKeyCreated(context, ownerId, created.agent.name);
+				return created;
 			} catch (err) {
 				throw refusal(err, errors);
 			}
@@ -45,10 +74,12 @@ export function createAgentsHandlers() {
 			async ({ context, input, errors }) => {
 				const ownerId = owner(context, errors);
 				try {
-					return await createAgentService(context.db).rotateKey(
+					const rotated = await createAgentService(context.db).rotateKey(
 						ownerId,
 						input.id,
 					);
+					await notifyKeyCreated(context, ownerId, rotated.agent.name);
+					return rotated;
 				} catch (err) {
 					throw refusal(err, errors);
 				}

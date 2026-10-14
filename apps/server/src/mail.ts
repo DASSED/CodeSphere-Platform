@@ -1,4 +1,5 @@
 import type { AuthHooks } from "@codesphere/auth";
+import type { Context } from "@codesphere/api/context";
 import {
 	composeEmail,
 	createEmailClient,
@@ -53,6 +54,28 @@ export function createMailHooks(
 			});
 			if (result.status === "failed") {
 				logger.warn({ message: result.message }, "welcome email not sent");
+			}
+		},
+	};
+}
+
+/** The API's own notifications (#52): the Owner is told a key was created, never given the key. */
+export function createNotifications(
+	env: EmailEnv,
+	logger: Pick<Logger, "warn">,
+): NonNullable<Context["notifications"]> {
+	const mail = createEmailClient(env);
+	return {
+		async apiKeyCreated(member, keyName) {
+			const result = await mail.send({
+				to: member.email,
+				...composeEmail({
+					kind: "api-key-created",
+					props: { name: member.name, keyName },
+				}),
+			});
+			if (result.status === "failed") {
+				logger.warn({ message: result.message }, "key email not sent");
 			}
 		},
 	};
