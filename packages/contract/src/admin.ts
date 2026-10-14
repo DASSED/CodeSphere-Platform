@@ -119,7 +119,48 @@ export const AdminMemberFilter = PageInput.extend({
 /** Why a Member is suspended: required, shown in the audit log (#116). */
 export const SuspensionReason = z.string().trim().min(3).max(280);
 
+/** An official Tag as the admin sees it (#125). */
+export const AdminTag = z.object({
+	id: Id,
+	name: z.string(),
+	version: z.number().int().min(1),
+	/** Questions that carry the Tag. */
+	questionCount: z.number().int().min(0),
+	/** Slug of the Hackathon that owns the Tag, which then cannot be renamed or deleted. */
+	ownerHackathon: z.string().nullable(),
+});
+
+/** Name of a Tag: normalized (trimmed, lowercase) like the Tags of a Question. */
+export const TagName = z.string().trim().toLowerCase().min(1).max(40);
+
+const tagErrors = {
+	UNAUTHORIZED: {},
+	FORBIDDEN: {},
+	NOT_FOUND: {},
+	CONFLICT: {},
+};
+
 export const adminContract = {
+	tags: {
+		list: base
+			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })
+			.input(z.object({}))
+			.output(z.object({ items: z.array(AdminTag) })),
+		create: base
+			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, CONFLICT: {} })
+			.input(z.object({ name: TagName }))
+			.output(AdminTag),
+		rename: base
+			.errors(tagErrors)
+			.input(
+				z.object({ id: Id, name: TagName, expectedVersion: ExpectedVersion }),
+			)
+			.output(AdminTag),
+		delete: base
+			.errors(tagErrors)
+			.input(z.object({ id: Id }))
+			.output(z.object({ success: z.boolean() })),
+	},
 	members: {
 		list: base
 			.errors({ UNAUTHORIZED: {}, FORBIDDEN: {} })

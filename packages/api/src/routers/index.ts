@@ -5,6 +5,7 @@ import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 
+import { createTag, deleteTag, listTags, renameTag } from "../admin-tags";
 import { updateHackathon } from "../admin-hackathons";
 import { listMembers, setSuspension } from "../admin-members";
 import { requireAdmin } from "../authorization";
@@ -212,6 +213,56 @@ export const appRouter = impl
 							throw refusal(outcome.code, errors);
 						}
 						return outcome.member;
+					}),
+			},
+			tags: {
+				list: impl.admin.tags.list
+					.use(isAdmin)
+					.handler(async ({ context }) => ({
+						items: await listTags(context.db),
+					})),
+				create: impl.admin.tags.create
+					.use(isAdmin)
+					.handler(async ({ context, input, errors }) => {
+						const outcome = await createTag(
+							context.db,
+							context.session?.user.id ?? "",
+							input.name,
+						);
+						if (!outcome.ok) {
+							throw errors.CONFLICT();
+						}
+						return outcome.tag;
+					}),
+				rename: impl.admin.tags.rename
+					.use(isAdmin)
+					.handler(async ({ context, input, errors }) => {
+						const outcome = await renameTag(
+							context.db,
+							context.session?.user.id ?? "",
+							input,
+						);
+						if (!outcome.ok) {
+							throw outcome.code === "NOT_FOUND"
+								? errors.NOT_FOUND()
+								: errors.CONFLICT();
+						}
+						return outcome.tag;
+					}),
+				delete: impl.admin.tags.delete
+					.use(isAdmin)
+					.handler(async ({ context, input, errors }) => {
+						const outcome = await deleteTag(
+							context.db,
+							context.session?.user.id ?? "",
+							input.id,
+						);
+						if (!outcome.ok) {
+							throw outcome.code === "NOT_FOUND"
+								? errors.NOT_FOUND()
+								: errors.CONFLICT();
+						}
+						return { success: true };
 					}),
 			},
 			auditLog: {
