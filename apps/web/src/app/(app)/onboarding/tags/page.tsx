@@ -7,6 +7,8 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { authClient } from "@/lib/auth-client";
+import { markOnboardingSkipped } from "@/lib/tags-onboarding";
 import { client, orpc } from "@/utils/orpc";
 
 // Onboarding (spec §3, #44): choose at least 3 Tags to follow, or skip the step.
@@ -14,6 +16,7 @@ export default function TagsOnboardingPage() {
 	const t = useTranslations("onboarding");
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const { data: session } = authClient.useSession();
 	const [value, setValue] = useState<string[]>([]);
 
 	const popular = useQuery(
@@ -68,7 +71,13 @@ export default function TagsOnboardingPage() {
 				value={value}
 				onValueChange={setValue}
 				onSubmit={() => save.mutate(value)}
-				onSkip={() => router.push("/")}
+				onSkip={() => {
+					// Passable (spec §3): remember it, so the Member is not sent back here.
+					if (session) {
+						markOnboardingSkipped(window.localStorage, session.user.id);
+					}
+					router.push("/");
+				}}
 			/>
 		</div>
 	);

@@ -21,6 +21,7 @@ import { useState } from "react";
 import type * as z from "zod";
 
 import { AskButton } from "@/components/site-header";
+import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
 import { authClient } from "@/lib/auth-client";
 import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
@@ -43,7 +44,11 @@ export default function Home() {
 		return <PageSkeleton />;
 	}
 	return session ? (
-		<MemberHome name={session.user.name} hackathon={hackathon.data} />
+		<MemberHome
+			userId={session.user.id}
+			name={session.user.name}
+			hackathon={hackathon.data}
+		/>
 	) : (
 		<VisitorHome hackathon={hackathon.data} />
 	);
@@ -196,9 +201,11 @@ function VisitorHome({ hackathon }: { hackathon: HackathonData | undefined }) {
 }
 
 function MemberHome({
+	userId,
 	name,
 	hackathon,
 }: {
+	userId: string;
 	name: string;
 	hackathon: HackathonData | undefined;
 }) {
@@ -212,6 +219,8 @@ function MemberHome({
 		: null;
 	return (
 		<main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 md:grid-cols-[minmax(0,1fr)_20rem] md:px-6 md:py-8">
+			{/* Tags are read from the database: without one there is nothing to onboard. */}
+			{HAS_DATABASE && <TagsOnboardingRedirect userId={userId} />}
 			<div className="grid min-w-0 content-start gap-5">
 				{/* Phone only: greeting and compact ribbon (variant 4). */}
 				<div className="grid gap-4 md:hidden">
