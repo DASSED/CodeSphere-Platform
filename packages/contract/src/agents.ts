@@ -85,7 +85,8 @@ export const agentsContract = {
 				path: "/agents/{id}/disable",
 				tags: ["agents"],
 				summary: "Disable an agent",
-				description: "Its key stops being accepted until it is rotated. Audited.",
+				description:
+					"Its key stops being accepted until it is rotated. Audited.",
 			}),
 		)
 		.input(z.object({ id: z.string().min(1) }))

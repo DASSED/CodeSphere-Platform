@@ -1406,9 +1406,7 @@
 				"operationId": "agents.list",
 				"summary": "List my agents",
 				"description": "The Agents owned by the caller, deleted ones excluded.",
-				"tags": [
-					"agents"
-				],
+				"tags": ["agents"],
 				"responses": {
 					"200": {
 						"description": "OK",
@@ -1430,19 +1428,13 @@
 													},
 													"preset": {
 														"type": "string",
-														"enum": [
-															"read",
-															"contribute"
-														]
+														"enum": ["read", "contribute"]
 													},
 													"enabled": {
 														"type": "boolean"
 													},
 													"keyStart": {
-														"type": [
-															"string",
-															"null"
-														]
+														"type": ["string", "null"]
 													},
 													"createdAt": {
 														"type": "string",
@@ -1462,9 +1454,7 @@
 											}
 										}
 									},
-									"required": [
-										"items"
-									],
+									"required": ["items"],
 									"additionalProperties": false
 								}
 							}
@@ -1595,9 +1585,7 @@
 				"operationId": "agents.create",
 				"summary": "Create an agent",
 				"description": "Creates an Agent and its key, shown once. At most 3 Agents per Owner (409 CONFLICT). Audited.",
-				"tags": [
-					"agents"
-				],
+				"tags": ["agents"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -1612,16 +1600,10 @@
 									},
 									"preset": {
 										"type": "string",
-										"enum": [
-											"read",
-											"contribute"
-										]
+										"enum": ["read", "contribute"]
 									}
 								},
-								"required": [
-									"name",
-									"preset"
-								]
+								"required": ["name", "preset"]
 							}
 						}
 					}
@@ -1645,19 +1627,13 @@
 												},
 												"preset": {
 													"type": "string",
-													"enum": [
-														"read",
-														"contribute"
-													]
+													"enum": ["read", "contribute"]
 												},
 												"enabled": {
 													"type": "boolean"
 												},
 												"keyStart": {
-													"type": [
-														"string",
-														"null"
-													]
+													"type": ["string", "null"]
 												},
 												"createdAt": {
 													"type": "string",
@@ -1679,10 +1655,7 @@
 											"type": "string"
 										}
 									},
-									"required": [
-										"agent",
-										"key"
-									],
+									"required": ["agent", "key"],
 									"additionalProperties": false
 								}
 							}
@@ -1832,9 +1805,7 @@
 				"operationId": "agents.rotateKey",
 				"summary": "Rotate an agent's key",
 				"description": "Replaces the key (the old one stops working) and enables the Agent. The new key is shown once. Audited.",
-				"tags": [
-					"agents"
-				],
+				"tags": ["agents"],
 				"parameters": [
 					{
 						"in": "path",
@@ -1875,19 +1846,13 @@
 												},
 												"preset": {
 													"type": "string",
-													"enum": [
-														"read",
-														"contribute"
-													]
+													"enum": ["read", "contribute"]
 												},
 												"enabled": {
 													"type": "boolean"
 												},
 												"keyStart": {
-													"type": [
-														"string",
-														"null"
-													]
+													"type": ["string", "null"]
 												},
 												"createdAt": {
 													"type": "string",
@@ -1909,10 +1874,7 @@
 											"type": "string"
 										}
 									},
-									"required": [
-										"agent",
-										"key"
-									],
+									"required": ["agent", "key"],
 									"additionalProperties": false
 								}
 							}
@@ -2045,9 +2007,7 @@
 				"operationId": "agents.disable",
 				"summary": "Disable an agent",
 				"description": "Its key stops being accepted until it is rotated. Audited.",
-				"tags": [
-					"agents"
-				],
+				"tags": ["agents"],
 				"parameters": [
 					{
 						"in": "path",
@@ -2085,19 +2045,13 @@
 										},
 										"preset": {
 											"type": "string",
-											"enum": [
-												"read",
-												"contribute"
-											]
+											"enum": ["read", "contribute"]
 										},
 										"enabled": {
 											"type": "boolean"
 										},
 										"keyStart": {
-											"type": [
-												"string",
-												"null"
-											]
+											"type": ["string", "null"]
 										},
 										"createdAt": {
 											"type": "string",
@@ -2245,9 +2199,7 @@
 				"operationId": "agents.delete",
 				"summary": "Delete an agent",
 				"description": "Revokes the key and retires the Agent; what it wrote stays, attributed to it. Audited.",
-				"tags": [
-					"agents"
-				],
+				"tags": ["agents"],
 				"parameters": [
 					{
 						"in": "path",
@@ -2281,9 +2233,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}
@@ -4815,9 +4765,7 @@
 				"operationId": "members.delete",
 				"summary": "Delete my account",
 				"description": "Anonymises the account (shown as a deleted member) and ends its sessions, linked accounts and Agents. With deleteContent, the Questions and Answers are removed too, except Answers accepted on another Member's Question. Humans only. Audited as member.delete.",
-				"tags": [
-					"members"
-				],
+				"tags": ["members"],
 				"requestBody": {
 					"required": true,
 					"content": {
@@ -4846,9 +4794,7 @@
 											"type": "boolean"
 										}
 									},
-									"required": [
-										"success"
-									],
+									"required": ["success"],
 									"additionalProperties": false
 								}
 							}

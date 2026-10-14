@@ -4,18 +4,18 @@ import { user } from "@codesphere/db/schema/auth";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
-import { createAgentsHandlers } from "../agents/handlers";
-import { agentPreset } from "../agents/service";
-import { deleteMember } from "../members-delete";
 import { updateHackathon } from "../admin-hackathons";
 import { listMembers, setSuspension } from "../admin-members";
 import { createTag, deleteTag, listTags, renameTag } from "../admin-tags";
+import { createAgentsHandlers } from "../agents/handlers";
+import { agentPreset } from "../agents/service";
 import { requireAdmin } from "../authorization";
 import { decodeCursor, encodeCursor } from "../cursor";
 import { unexpectedErrors } from "../errors";
 import { isRead } from "../exposure";
 import { loadHackathons } from "../hackathons";
 import { impl } from "../index";
+import { deleteMember } from "../members-delete";
 import { ownProfile, publicProfile } from "../profile";
 import {
 	createAnswersHandlers,
@@ -153,19 +153,21 @@ export const appRouter = impl
 					return ownProfile(row);
 				},
 			),
-			delete: impl.members.delete.handler(async ({ context, input, errors }) => {
-				const me = context.session?.user as
-					| { id: string; kind?: string }
-					| undefined;
-				if (!me) {
-					throw errors.UNAUTHORIZED();
-				}
-				if (me.kind !== "human") {
-					throw errors.FORBIDDEN();
-				}
-				await deleteMember(context.db, me.id, input.deleteContent);
-				return { success: true };
-			}),
+			delete: impl.members.delete.handler(
+				async ({ context, input, errors }) => {
+					const me = context.session?.user as
+						| { id: string; kind?: string }
+						| undefined;
+					if (!me) {
+						throw errors.UNAUTHORIZED();
+					}
+					if (me.kind !== "human") {
+						throw errors.FORBIDDEN();
+					}
+					await deleteMember(context.db, me.id, input.deleteContent);
+					return { success: true };
+				},
+			),
 			get: impl.members.get.handler(async ({ context, input, errors }) => {
 				const [row] = await context.db
 					.select()

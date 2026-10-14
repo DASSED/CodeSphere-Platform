@@ -149,13 +149,16 @@ describe.skipIf(!url)("agents and account deletion on Postgres", () => {
 			"agent.key.revoke",
 			"agent.key.revoke",
 		]);
-		await expect(
-			asOwner.agents.delete({ id: agent.id }),
-		).rejects.toMatchObject({ code: "NOT_FOUND" });
+		await expect(asOwner.agents.delete({ id: agent.id })).rejects.toMatchObject(
+			{ code: "NOT_FOUND" },
+		);
 	});
 
 	test("a read-only key refuses writes; a contribute key may ask", async () => {
-		const reader = await clientAs(session(scoper)).agents.create({ name: "r", preset: "read" });
+		const reader = await clientAs(session(scoper)).agents.create({
+			name: "r",
+			preset: "read",
+		});
 		const writer = await clientAs(session(scoper)).agents.create({
 			name: "w",
 			preset: "contribute",
