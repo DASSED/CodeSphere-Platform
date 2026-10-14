@@ -8,7 +8,11 @@ import { AgentError, createAgentService } from "./service";
 // Managing Agents is for human Owners: a visitor is UNAUTHORIZED and an Agent FORBIDDEN.
 // Tells the Owner a key now exists, never the key. A failed send is logged by the mailer and never
 // fails the request: the key was already issued.
-async function notifyKeyCreated(context: Context, ownerId: string, keyName: string) {
+async function notifyKeyCreated(
+	context: Context,
+	ownerId: string,
+	keyName: string,
+) {
 	if (!context.notifications) {
 		return;
 	}

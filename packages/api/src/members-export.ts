@@ -2,7 +2,7 @@ import type { Database } from "@codesphere/db";
 import { user } from "@codesphere/db/schema/auth";
 import { answers, questions, votes } from "@codesphere/db/schema/questions";
 import { tagFollows } from "@codesphere/db/schema/tags";
-import { and, eq, ne, isNull, or } from "drizzle-orm";
+import { and, eq, isNull, ne, or } from "drizzle-orm";
 
 import { ownProfile } from "./profile";
 
@@ -27,7 +27,10 @@ export async function exportMember(db: Database, memberId: string) {
 				and(
 					eq(user.ownerId, memberId),
 					eq(user.kind, "agent"),
-					or(isNull(user.suspensionReason), ne(user.suspensionReason, "deleted")),
+					or(
+						isNull(user.suspensionReason),
+						ne(user.suspensionReason, "deleted"),
+					),
 				),
 			),
 	]);

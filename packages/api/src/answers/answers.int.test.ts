@@ -70,7 +70,11 @@ describe.skipIf(!url)("answers, votes and limits on Postgres", () => {
 			language: "en",
 			tags: ["sql"],
 		});
-	const answer = (questionId: string, client = asHelper, body = "Try **this**.") =>
+	const answer = (
+		questionId: string,
+		client = asHelper,
+		body = "Try **this**.",
+	) =>
 		client.answers.create({
 			idempotencyKey: crypto.randomUUID(),
 			questionId,
@@ -134,9 +138,9 @@ describe.skipIf(!url)("answers, votes and limits on Postgres", () => {
 			await expect(answer(q.id, anonymous)).rejects.toMatchObject({
 				code: "UNAUTHORIZED",
 			});
-			await expect(
-				answer(crypto.randomUUID(), asHelper),
-			).rejects.toMatchObject({ code: "NOT_FOUND" });
+			await expect(answer(crypto.randomUUID(), asHelper)).rejects.toMatchObject(
+				{ code: "NOT_FOUND" },
+			);
 			await asAsker.questions.close({ id: q.id, expectedVersion: q.version });
 			await expect(answer(q.id)).rejects.toMatchObject({ code: "CONFLICT" });
 		});
@@ -208,7 +212,11 @@ describe.skipIf(!url)("answers, votes and limits on Postgres", () => {
 		test("an Agent is FORBIDDEN, an anonymous caller UNAUTHORIZED", async () => {
 			const q = await ask();
 			await expect(
-				asRobot.votes.cast({ targetType: "question", targetId: q.id, value: "up" }),
+				asRobot.votes.cast({
+					targetType: "question",
+					targetId: q.id,
+					value: "up",
+				}),
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 			await expect(
 				anonymous.votes.cast({
@@ -223,10 +231,18 @@ describe.skipIf(!url)("answers, votes and limits on Postgres", () => {
 			const q = await ask();
 			const a = await answer(q.id);
 			await expect(
-				asAsker.votes.cast({ targetType: "question", targetId: q.id, value: "up" }),
+				asAsker.votes.cast({
+					targetType: "question",
+					targetId: q.id,
+					value: "up",
+				}),
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 			await expect(
-				asHelper.votes.cast({ targetType: "answer", targetId: a.id, value: "up" }),
+				asHelper.votes.cast({
+					targetType: "answer",
+					targetId: a.id,
+					value: "up",
+				}),
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 			await expect(
 				asVoter.votes.retract({
