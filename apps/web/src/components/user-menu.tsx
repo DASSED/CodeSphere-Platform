@@ -12,7 +12,13 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@codesphere/ui/components/molecules/dropdown-menu";
-import { LogOutIcon, SettingsIcon, ShieldIcon, UserIcon } from "lucide-react";
+import {
+	LogInIcon,
+	LogOutIcon,
+	SettingsIcon,
+	ShieldIcon,
+	UserIcon,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
@@ -43,7 +49,13 @@ export default function UserMenu() {
 	if (!session) {
 		return (
 			<SsoLoginDialog
-				trigger={<Button variant="outline">{t("signIn")}</Button>}
+				trigger={
+					<Button variant="outline" aria-label={t("signIn")}>
+						<LogInIcon />
+						{/* Icon only on a phone, where the bar has no room for the label. */}
+						<span className="max-sm:sr-only">{t("signIn")}</span>
+					</Button>
+				}
 			/>
 		);
 	}
