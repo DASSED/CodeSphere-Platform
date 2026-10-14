@@ -41,7 +41,24 @@
 		"privacy": {
 			"title": "Confidentialité",
 			"cityPublic": "Rendre ma ville publique",
-			"cityPublicHint": "Sinon, seul le pays est visible par les autres membres."
+			"cityPublicHint": "Sinon, seul le pays est visible par les autres membres.",
+			"dataTitle": "Vos données",
+			"dataDescription": "Téléchargez tout ce que la plateforme garde sur vous, ou supprimez votre compte.",
+			"export": "Exporter mes données",
+			"exportHint": "Un fichier JSON immédiat : profil, questions, réponses, votes, Tags, agents (sans leurs clés) et consentement.",
+			"exportAction": "Télécharger",
+			"exporting": "Préparation…",
+			"deleteTitle": "Supprimer mon compte",
+			"deleteModes": {
+				"anonymise": "Anonymiser",
+				"erase": "Effacer mes contenus"
+			},
+			"deleteHints": {
+				"anonymise": "Vos questions et réponses restent, signées « Membre supprimé ». Email, sessions, comptes liés et clés sont effacés ; vos agents sont désactivés.",
+				"erase": "Vos questions et réponses sont supprimées, sauf les réponses acceptées sur les questions d'autres membres. Email, sessions, comptes liés et clés sont effacés."
+			},
+			"deleteAction": "Supprimer définitivement mon compte",
+			"deleted": "Compte supprimé. Les données de cet appareil ont été effacées."
 		},
 		"tags": {
 			"title": "Tags",
@@ -54,6 +71,34 @@
 			"follow": "Suivre {name}",
 			"noResult": "Aucun Tag trouvé.",
 			"failed": "La modification a échoué."
+		},
+		"agents": {
+			"title": "Mes agents",
+			"description": "Des agents IA qui posent et répondent en votre nom, toujours badgés « agent de vous ». Ils ne votent jamais.",
+			"none": "Aucun agent pour l'instant.",
+			"create": "Nouvel agent ({count}/{max})",
+			"name": "Nom de l'agent",
+			"namePlaceholder": "Assistant SQL",
+			"preset": "Droits",
+			"presets": {
+				"read": "Lecture seule",
+				"contribute": "Contribuer"
+			},
+			"presetHints": {
+				"read": "Lit les questions et réponses, sans rien écrire.",
+				"contribute": "Peut aussi poser des questions et répondre."
+			},
+			"full": "Vous avez atteint 3 agents : supprimez-en un pour en créer un autre.",
+			"keyOnce": "La clé cs_live_ s'affiche une seule fois.",
+			"submit": "Créer l'agent",
+			"usage": "Utilisation : en-tête Authorization: Bearer <clé> (ou x-api-key) sur /api/v1 et /mcp. 120 requêtes par minute et par clé.",
+			"enabled": "Actif",
+			"disabled": "Désactivé",
+			"createdAt": "Créé le {date}",
+			"rotate": "Régénérer la clé",
+			"enable": "Réactiver avec une nouvelle clé",
+			"disable": "Désactiver",
+			"delete": "Supprimer l'agent"
 		}
 	},
 	"signin": {
@@ -64,7 +109,6 @@
 	"header": {
 		"signIn": "Se connecter",
 		"ask": "Poser une question",
-		"askSoon": "Le formulaire de question arrive bientôt.",
 		"account": "Menu du compte",
 		"profile": "Profil public",
 		"settings": "Réglages",
@@ -103,7 +147,8 @@
 		},
 		"followed": {
 			"title": "Tags suivis",
-			"none": "Aucun Tag suivi. Ils personnalisent « Pour toi »."
+			"none": "Aucun Tag suivi. Ils personnalisent « Pour toi ».",
+			"manage": "Gérer mes Tags"
 		},
 		"banner": {
 			"eyebrow": "Hackathon en cours",
@@ -120,6 +165,11 @@
 			"answers": "{count, plural, =0 {Aucune réponse} one {# réponse} other {# réponses}}",
 			"more": "Voir plus",
 			"loading": "Chargement…"
+		},
+		"filters": {
+			"allLanguages": "Toutes les langues",
+			"allCountries": "Tous les pays",
+			"diaspora": "Diaspora / autre"
 		}
 	},
 	"admin": {
@@ -283,5 +333,129 @@
 	"onboarding": {
 		"loading": "Chargement des Tags…",
 		"failed": "Impossible d'enregistrer vos Tags. Réessayez."
+	},
+	"outbox": {
+		"failedTitle": "Envois refusés",
+		"rejected": "{action} : {reason}",
+		"abandoned": "{action} : abandonné après 30 jours sans réseau.",
+		"dismiss": "Masquer",
+		"actions": {
+			"question": {
+				"create": "Question"
+			},
+			"answer": {
+				"create": "Réponse",
+				"accept": "Acceptation"
+			},
+			"vote": {
+				"cast": "Vote",
+				"retract": "Retrait de vote"
+			},
+			"tag": {
+				"follow": "Suivi de Tag"
+			}
+		}
+	},
+	"question": {
+		"notFound": {
+			"title": "Question introuvable",
+			"description": "Elle a peut-être été supprimée, ou n'a pas encore été chargée sur cet appareil.",
+			"back": "Retour au fil"
+		},
+		"status": {
+			"open": "Ouverte",
+			"answered": "Résolue",
+			"closed": "Fermée"
+		},
+		"solution": "Réponse acceptée",
+		"showQuestion": "Voir la question",
+		"answers": "{count, plural, =0 {Réponses} one {# autre réponse} other {# autres réponses}}",
+		"noAnswer": "Pas encore de réponse. Soyez le premier à aider.",
+		"signInToAnswer": "Connectez-vous pour répondre et voter.",
+		"signIn": "Se connecter",
+		"closedNotice": "Cette question est fermée : elle ne reçoit plus de réponse.",
+		"voteQuestion": "Voter sur la question",
+		"deleteAnswer": "Supprimer ma réponse",
+		"preview": {
+			"unavailable": "Aperçu indisponible hors ligne : voici votre texte brut.",
+			"loading": "Préparation de l'aperçu…"
+		},
+		"answer": {
+			"title": "Votre réponse"
+		},
+		"edit": {
+			"title": "Titre",
+			"body": "Détails (Markdown)",
+			"tags": "Tags",
+			"tagsHint": "De 1 à 5 Tags.",
+			"cancel": "Annuler",
+			"save": "Enregistrer",
+			"saving": "Enregistrement…",
+			"saved": "Question modifiée."
+		},
+		"author": {
+			"edit": "Modifier",
+			"close": "Fermer",
+			"reopen": "Rouvrir",
+			"delete": "Supprimer la question",
+			"deleted": "Question supprimée.",
+			"onlineOnly": "Modifier, fermer et supprimer demandent une connexion."
+		},
+		"aside": {
+			"facts": "En bref",
+			"score": "Score",
+			"answers": "Réponses",
+			"language": "Langue",
+			"agentNoVote": "Un agent peut répondre, jamais voter.",
+			"related": "Sur les mêmes Tags",
+			"answerCount": "{count, plural, =0 {sans réponse} one {# réponse} other {# réponses}}"
+		}
+	},
+	"ask": {
+		"title": "Poser une question",
+		"lead": "Un bon titre, le contexte, puis les Tags : la communauté s'occupe du reste.",
+		"signInFirst": "Connectez-vous pour poser une question.",
+		"signIn": "Se connecter",
+		"steps": {
+			"title": "Titre",
+			"details": "Détails",
+			"tags": "Tags et langue",
+			"review": "Relecture"
+		},
+		"prompts": {
+			"title": "Quelle est votre question, en une phrase ?",
+			"details": "Donnez le contexte : ce que vous avez essayé, le code, l'erreur."
+		},
+		"fields": {
+			"title": "Titre",
+			"titleHint": "Une phrase précise, comme vous la poseriez à un collègue.",
+			"titlePlaceholder": "Comment recevoir le callback d'un paiement mobile money ?",
+			"body": "Détails",
+			"bodyHint": "Markdown et blocs de code acceptés, 20 000 caractères au plus.",
+			"tags": "Tags",
+			"tagsHint": "De 1 à 5 Tags, par exemple mobile-money, ussd.",
+			"language": "Langue de la question"
+		},
+		"languages": {
+			"fr": "Français",
+			"en": "English"
+		},
+		"write": "Écrire",
+		"preview": "Aperçu",
+		"nothingToPreview": "Rien à prévisualiser.",
+		"errors": {
+			"required": "Ce champ est obligatoire.",
+			"tooLong": "Ce texte est trop long.",
+			"tooManyTags": "5 Tags au plus.",
+			"invalid": "Valeur refusée par le serveur, vérifiez ce champ."
+		},
+		"rejected": "La question n'a pas été publiée : {reason} Votre texte est conservé.",
+		"queued": "Vous êtes hors ligne : la question est en attente et sera publiée au retour du réseau.",
+		"backHome": "Retour au fil",
+		"back": "Retour",
+		"next": "Continuer",
+		"publish": "Publier la question",
+		"publishing": "Publication…",
+		"draftNotice": "Brouillon enregistré sur cet appareil, même hors ligne."
 	}
 }

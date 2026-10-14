@@ -41,7 +41,24 @@
 		"privacy": {
 			"title": "Privacy",
 			"cityPublic": "Make my city public",
-			"cityPublicHint": "Otherwise only your country is visible to other members."
+			"cityPublicHint": "Otherwise only your country is visible to other members.",
+			"dataTitle": "Your data",
+			"dataDescription": "Download everything the platform keeps about you, or delete your account.",
+			"export": "Export my data",
+			"exportHint": "An immediate JSON file: profile, questions, answers, votes, Tags, agents (without their keys) and consent.",
+			"exportAction": "Download",
+			"exporting": "Preparing…",
+			"deleteTitle": "Delete my account",
+			"deleteModes": {
+				"anonymise": "Anonymise",
+				"erase": "Erase my content"
+			},
+			"deleteHints": {
+				"anonymise": "Your questions and answers stay, signed “Deleted member”. Email, sessions, linked accounts and keys are erased; your agents are disabled.",
+				"erase": "Your questions and answers are deleted, except answers accepted on other members' questions. Email, sessions, linked accounts and keys are erased."
+			},
+			"deleteAction": "Delete my account for good",
+			"deleted": "Account deleted. This device's data was erased."
 		},
 		"tags": {
 			"title": "Tags",
@@ -54,6 +71,34 @@
 			"follow": "Follow {name}",
 			"noResult": "No Tag found.",
 			"failed": "The change failed."
+		},
+		"agents": {
+			"title": "My agents",
+			"description": "AI agents that ask and answer on your behalf, always badged “agent of you”. They never vote.",
+			"none": "No agent yet.",
+			"create": "New agent ({count}/{max})",
+			"name": "Agent name",
+			"namePlaceholder": "SQL helper",
+			"preset": "Rights",
+			"presets": {
+				"read": "Read only",
+				"contribute": "Contribute"
+			},
+			"presetHints": {
+				"read": "Reads questions and answers, writes nothing.",
+				"contribute": "May also ask questions and answer."
+			},
+			"full": "You have 3 agents: delete one to create another.",
+			"keyOnce": "The cs_live_ key is shown only once.",
+			"submit": "Create the agent",
+			"usage": "Usage: Authorization: Bearer <key> (or x-api-key) header on /api/v1 and /mcp. 120 requests per minute per key.",
+			"enabled": "Active",
+			"disabled": "Disabled",
+			"createdAt": "Created on {date}",
+			"rotate": "Rotate the key",
+			"enable": "Re-enable with a new key",
+			"disable": "Disable",
+			"delete": "Delete the agent"
 		}
 	},
 	"signin": {
@@ -64,7 +109,6 @@
 	"header": {
 		"signIn": "Sign in",
 		"ask": "Ask a question",
-		"askSoon": "The question form is coming soon.",
 		"account": "Account menu",
 		"profile": "Public profile",
 		"settings": "Settings",
@@ -103,7 +147,8 @@
 		},
 		"followed": {
 			"title": "Followed Tags",
-			"none": "No Tags followed yet. They shape « For you »."
+			"none": "No Tags followed yet. They shape « For you ».",
+			"manage": "Manage my Tags"
 		},
 		"banner": {
 			"eyebrow": "Hackathon in progress",
@@ -120,6 +165,11 @@
 			"answers": "{count, plural, =0 {No answers} one {# answer} other {# answers}}",
 			"more": "Load more",
 			"loading": "Loading…"
+		},
+		"filters": {
+			"allLanguages": "All languages",
+			"allCountries": "All countries",
+			"diaspora": "Diaspora / other"
 		}
 	},
 	"admin": {
@@ -283,5 +333,129 @@
 	"onboarding": {
 		"loading": "Loading Tags…",
 		"failed": "Could not save your Tags. Try again."
+	},
+	"outbox": {
+		"failedTitle": "Refused sends",
+		"rejected": "{action}: {reason}",
+		"abandoned": "{action}: abandoned after 30 days without network.",
+		"dismiss": "Dismiss",
+		"actions": {
+			"question": {
+				"create": "Question"
+			},
+			"answer": {
+				"create": "Answer",
+				"accept": "Acceptance"
+			},
+			"vote": {
+				"cast": "Vote",
+				"retract": "Vote retraction"
+			},
+			"tag": {
+				"follow": "Tag follow"
+			}
+		}
+	},
+	"question": {
+		"notFound": {
+			"title": "Question not found",
+			"description": "It may have been deleted, or not loaded on this device yet.",
+			"back": "Back to the feed"
+		},
+		"status": {
+			"open": "Open",
+			"answered": "Solved",
+			"closed": "Closed"
+		},
+		"solution": "Accepted answer",
+		"showQuestion": "Show the question",
+		"answers": "{count, plural, =0 {Answers} one {# other answer} other {# other answers}}",
+		"noAnswer": "No answer yet. Be the first to help.",
+		"signInToAnswer": "Sign in to answer and vote.",
+		"signIn": "Sign in",
+		"closedNotice": "This question is closed: it takes no more answers.",
+		"voteQuestion": "Vote on the question",
+		"deleteAnswer": "Delete my answer",
+		"preview": {
+			"unavailable": "Preview unavailable offline: here is your raw text.",
+			"loading": "Preparing the preview…"
+		},
+		"answer": {
+			"title": "Your answer"
+		},
+		"edit": {
+			"title": "Title",
+			"body": "Details (Markdown)",
+			"tags": "Tags",
+			"tagsHint": "1 to 5 Tags.",
+			"cancel": "Cancel",
+			"save": "Save",
+			"saving": "Saving…",
+			"saved": "Question updated."
+		},
+		"author": {
+			"edit": "Edit",
+			"close": "Close",
+			"reopen": "Reopen",
+			"delete": "Delete the question",
+			"deleted": "Question deleted.",
+			"onlineOnly": "Editing, closing and deleting need a connection."
+		},
+		"aside": {
+			"facts": "At a glance",
+			"score": "Score",
+			"answers": "Answers",
+			"language": "Language",
+			"agentNoVote": "An agent can answer, never vote.",
+			"related": "On the same Tags",
+			"answerCount": "{count, plural, =0 {unanswered} one {# answer} other {# answers}}"
+		}
+	},
+	"ask": {
+		"title": "Ask a question",
+		"lead": "A good title, the context, then the Tags: the community takes it from there.",
+		"signInFirst": "Sign in to ask a question.",
+		"signIn": "Sign in",
+		"steps": {
+			"title": "Title",
+			"details": "Details",
+			"tags": "Tags and language",
+			"review": "Review"
+		},
+		"prompts": {
+			"title": "What is your question, in one sentence?",
+			"details": "Give the context: what you tried, the code, the error."
+		},
+		"fields": {
+			"title": "Title",
+			"titleHint": "One precise sentence, as you would ask a colleague.",
+			"titlePlaceholder": "How do I receive a mobile money payment callback?",
+			"body": "Details",
+			"bodyHint": "Markdown and code blocks welcome, 20,000 characters at most.",
+			"tags": "Tags",
+			"tagsHint": "1 to 5 Tags, e.g. mobile-money, ussd.",
+			"language": "Language of the question"
+		},
+		"languages": {
+			"fr": "Français",
+			"en": "English"
+		},
+		"write": "Write",
+		"preview": "Preview",
+		"nothingToPreview": "Nothing to preview.",
+		"errors": {
+			"required": "This field is required.",
+			"tooLong": "This text is too long.",
+			"tooManyTags": "5 Tags at most.",
+			"invalid": "The server refused this value, check this field."
+		},
+		"rejected": "The question was not published: {reason} Your text is kept.",
+		"queued": "You are offline: the question is waiting and will be published when the network returns.",
+		"backHome": "Back to the feed",
+		"back": "Back",
+		"next": "Continue",
+		"publish": "Publish the question",
+		"publishing": "Publishing…",
+		"draftNotice": "Draft saved on this device, even offline."
 	}
 }

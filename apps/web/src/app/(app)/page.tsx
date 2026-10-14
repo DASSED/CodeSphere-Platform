@@ -12,7 +12,9 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@codesphere/ui/components/molecules/empty";
+import { FollowedTags } from "@codesphere/ui/components/molecules/followed-tags";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
+import { FeedFilters } from "@codesphere/ui/components/organisms/feed-filters";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, MessageSquareIcon, TagIcon } from "lucide-react";
 import Link from "next/link";
@@ -32,7 +34,8 @@ type HackathonData = z.infer<typeof Hackathon>;
 
 // Home (#130, design from the home prototype): desktop visitor = one centred column with the
 // banner; desktop Member = feed and a sticky rail; phone = promise for a visitor, greeting and a
-// compact ribbon for a Member. The feed itself (tabs, cards) arrives with « Flux B » (#66).
+// compact ribbon for a Member. The feed (#66): three tabs, language and country filters, cards
+// leading to the Question page, Agents' Questions dashed and hidden on request.
 export default function Home() {
 	const { data: session, isPending } = authClient.useSession();
 	// Without a database (a preview without the preview-db label) the banner is simply absent.
@@ -124,14 +127,41 @@ function Banner({
 }
 
 const TABS = ["forYou", "recent", "unanswered"] as const;
+
+/** Countries offered by the filter: the most represented first, then the diaspora. */
+const FEED_COUNTRIES = [
+	"SN",
+	"CI",
+	"BF",
+	"ML",
+	"BJ",
+	"TG",
+	"CM",
+	"NG",
+	"GH",
+	"KE",
+	"MA",
+	"OTHER",
+] as const;
 type TabKey = (typeof TABS)[number];
 
 function FeedSection({ signedIn }: { signedIn: boolean }) {
 	const t = useTranslations("home.tabs");
+	const tFilters = useTranslations("home.filters");
 	// Keyed by id, not by label: switching language keeps the selected tab.
 	const [tab, setTab] = useState<TabKey>(signedIn ? "forYou" : "recent");
+	const [language, setLanguage] = useState("all");
+	const [country, setCountry] = useState("all");
+	const me = useQuery({
+		...orpc.members.me.queryOptions(),
+		enabled: HAS_DATABASE && signedIn,
+	});
 	const labels = TABS.map((key) => t(key));
-	const feed = useFeed(tab, signedIn);
+	const feed = useFeed(tab, signedIn, {
+		language,
+		country,
+		hideAgents: me.data?.hideAgentContent ?? false,
+	});
 	return (
 		<div className="grid gap-5">
 			<div className="flex flex-wrap items-center justify-between gap-3">
@@ -144,6 +174,24 @@ function FeedSection({ signedIn }: { signedIn: boolean }) {
 					<p className="text-muted-foreground text-sm">{t("signInForYou")}</p>
 				)}
 			</div>
+			<FeedFilters
+				language={language}
+				onLanguageChange={setLanguage}
+				country={country}
+				onCountryChange={setCountry}
+				languages={[
+					{ value: "all", label: tFilters("allLanguages") },
+					{ value: "fr", label: "Français" },
+					{ value: "en", label: "English" },
+				]}
+				countries={[
+					{ value: "all", label: tFilters("allCountries") },
+					...FEED_COUNTRIES.map((code) => ({
+						value: code,
+						label: code === "OTHER" ? tFilters("diaspora") : code,
+					})),
+				]}
+			/>
 			{feed.isPending ? (
 				<FeedSkeleton />
 			) : feed.items.length === 0 ? (
@@ -263,14 +311,41 @@ function MemberHome({
 						</li>
 					</ul>
 				</section>
-				<section className="grid gap-2 rounded-2xl border border-border bg-card p-5">
-					<p className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest">
-						{t("followed.title")}
-					</p>
-					<p className="text-muted-foreground text-sm">{t("followed.none")}</p>
-				</section>
+				<FollowedTagsCard />
 			</aside>
 		</main>
+	);
+}
+
+/** The Tags behind « Pour toi », with a way to change them (#66). */
+function FollowedTagsCard() {
+	const t = useTranslations("home.followed");
+	const followed = useQuery({
+		...orpc.tags.followed.queryOptions(),
+		enabled: HAS_DATABASE,
+	});
+	const tags = followed.data?.items.map((tag) => tag.name) ?? [];
+	return (
+		<section className="grid gap-3 rounded-2xl border border-border bg-card p-5">
+			<p className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest">
+				{t("title")}
+			</p>
+			{tags.length === 0 ? (
+				<p className="text-muted-foreground text-sm">{t("none")}</p>
+			) : (
+				<FollowedTags label="" tags={tags} className="flex-wrap" />
+			)}
+			<Button
+				variant="outline"
+				size="sm"
+				className="justify-self-start"
+				render={<Link href="/settings" />}
+				nativeButton={false}
+			>
+				<TagIcon />
+				{t("manage")}
+			</Button>
+		</section>
 	);
 }
 

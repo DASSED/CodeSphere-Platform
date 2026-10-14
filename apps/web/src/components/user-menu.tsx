@@ -16,6 +16,7 @@ import { LogOutIcon, SettingsIcon, ShieldIcon, UserIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { useSignOut } from "@/components/outbox-provider";
 import SsoLoginDialog from "@/components/sso-login-dialog";
 import { authClient } from "@/lib/auth-client";
 
@@ -33,6 +34,7 @@ export default function UserMenu() {
 	const t = useTranslations("header");
 	const router = useRouter();
 	const { data: session, isPending } = authClient.useSession();
+	const signOut = useSignOut();
 
 	if (isPending) {
 		return <Skeleton className="size-9 rounded-full" />;
@@ -85,11 +87,8 @@ export default function UserMenu() {
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
 						variant="destructive"
-						onClick={() =>
-							authClient.signOut({
-								fetchOptions: { onSuccess: () => router.push("/") },
-							})
-						}
+						// Signing out also empties the device: cache, outbox and Drafts (#73).
+						onClick={() => void signOut(() => router.push("/"))}
 					>
 						<LogOutIcon />
 						{t("signOut")}

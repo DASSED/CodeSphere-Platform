@@ -4,6 +4,7 @@ import { Button } from "@codesphere/ui/components/atoms/button";
 import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
 import { AppHeader } from "@codesphere/ui/components/organisms/app-header";
 import { PlusIcon } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 
 import LocaleSwitcher from "@/components/locale-switcher";
@@ -11,7 +12,7 @@ import SsoLoginDialog from "@/components/sso-login-dialog";
 import UserMenu from "@/components/user-menu";
 import { authClient } from "@/lib/auth-client";
 
-/** « Poser une question »: opens the sign-in for a visitor; the form itself is another ticket. */
+/** « Poser une question »: opens the sign-in for a visitor, the ask form (#68) for a Member. */
 export function AskButton({ className }: { className?: string }) {
 	const t = useTranslations("header");
 	const { data: session } = authClient.useSession();
@@ -29,7 +30,11 @@ export function AskButton({ className }: { className?: string }) {
 		);
 	}
 	return (
-		<Button className={className} disabled title={t("askSoon")}>
+		<Button
+			className={className}
+			render={<Link href="/ask" />}
+			nativeButton={false}
+		>
 			{content}
 		</Button>
 	);

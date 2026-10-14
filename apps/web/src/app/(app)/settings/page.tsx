@@ -13,6 +13,10 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { useOutbox } from "@/components/outbox-provider";
+import { AgentsSection } from "@/components/settings/agents-section";
+import { PrivacyActions } from "@/components/settings/privacy-section";
+import { waiting } from "@/lib/outbox";
 import { orpc } from "@/utils/orpc";
 
 type Draft = {
@@ -39,11 +43,12 @@ function TagsSection() {
 		void queryClient.invalidateQueries({ queryKey: orpc.tags.key() });
 		void queryClient.invalidateQueries({ queryKey: orpc.feed.key() });
 	};
-	const follow = useMutation(
-		orpc.tags.follow.mutationOptions({
-			onSuccess: refresh,
-			onError: () => toast.error(t("failed")),
-		}),
+	// Following goes through the outbox (#74): it works offline and is sent with the network.
+	const { enqueue, entries } = useOutbox();
+	const queued = new Set(
+		waiting(entries).flatMap((e) =>
+			e.action.kind === "tag.follow" ? [e.action.input.tag] : [],
+		),
 	);
 	const unfollow = useMutation(
 		orpc.tags.unfollow.mutationOptions({
@@ -98,8 +103,13 @@ function TagsSection() {
 									variant={tag.followed ? "secondary" : "default"}
 									size="sm"
 									aria-label={t("follow", { name: tag.name })}
-									disabled={tag.followed || follow.isPending}
-									onClick={() => follow.mutate({ tag: tag.name })}
+									disabled={tag.followed || queued.has(tag.name)}
+									onClick={() =>
+										void enqueue({
+											kind: "tag.follow",
+											input: { tag: tag.name },
+										})
+									}
 								>
 									# {tag.name}
 								</Button>
@@ -112,7 +122,7 @@ function TagsSection() {
 	);
 }
 
-export default function SettingsPage() {
+function ProfileForm() {
 	const t = useTranslations("settings");
 	const queryClient = useQueryClient();
 	const me = useQuery(orpc.members.me.queryOptions());
@@ -149,7 +159,7 @@ export default function SettingsPage() {
 
 	return (
 		<form
-			className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4 sm:p-6"
+			className="flex flex-col gap-6"
 			onSubmit={(event) => {
 				event.preventDefault();
 				save.mutate({
@@ -163,8 +173,6 @@ export default function SettingsPage() {
 				});
 			}}
 		>
-			<h1 className="font-semibold text-2xl">{t("title")}</h1>
-
 			<SettingsSection
 				title={t("profile.title")}
 				description={t("profile.description")}
@@ -208,8 +216,6 @@ export default function SettingsPage() {
 				</div>
 			</SettingsSection>
 
-			<TagsSection />
-
 			<SettingsSection title={t("preferences.title")}>
 				<SettingRow
 					title={t("preferences.hideAgentContent")}
@@ -242,5 +248,24 @@ export default function SettingsPage() {
 				</Button>
 			</div>
 		</form>
+	);
+}
+
+export default function SettingsPage() {
+	const t = useTranslations("settings");
+	return (
+		<main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4 sm:p-6">
+			<h1 className="font-semibold text-2xl">{t("title")}</h1>
+			<ProfileForm />
+			{/* Outside the profile form: each has its own actions, and forms do not nest. */}
+			<TagsSection />
+			<AgentsSection />
+			<SettingsSection
+				title={t("privacy.dataTitle")}
+				description={t("privacy.dataDescription")}
+			>
+				<PrivacyActions />
+			</SettingsSection>
+		</main>
 	);
 }

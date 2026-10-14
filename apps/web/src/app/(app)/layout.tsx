@@ -1,3 +1,4 @@
+import { NetworkBanner } from "@/components/network-banner";
 import SiteHeader from "@/components/site-header";
 
 // Pages of the application share the site's bar (#129). Standalone pages such as
@@ -8,6 +9,7 @@ export default function AppLayout({
 	return (
 		<div className="min-h-svh">
 			<SiteHeader />
+			<NetworkBanner />
 			{children}
 		</div>
 	);
