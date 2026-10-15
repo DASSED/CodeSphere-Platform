@@ -8,16 +8,37 @@ type CountdownProps = Omit<React.ComponentProps<"div">, "children"> & {
 	target: string;
 	/** Freeze the clock at this instant (tests, previews). Without it the clock ticks every second. */
 	now?: Date;
+	/** Words in the reader's language; French by default. */
+	labels?: CountdownLabels;
 };
 
-const UNITS = [
-	{ key: "days", label: "jours" },
-	{ key: "hours", label: "heures" },
-	{ key: "minutes", label: "minutes" },
-	{ key: "seconds", label: "secondes" },
-] as const;
+type Parts = { days: number; hours: number; minutes: number; seconds: number };
 
-function split(ms: number) {
+type CountdownLabels = {
+	days: string;
+	hours: string;
+	minutes: string;
+	seconds: string;
+	/** Accessible name before the clock starts. */
+	idle: string;
+	finished: string;
+	remaining: (parts: Parts) => string;
+};
+
+const FRENCH: CountdownLabels = {
+	days: "jours",
+	hours: "heures",
+	minutes: "minutes",
+	seconds: "secondes",
+	idle: "Compte à rebours",
+	finished: "Le compte à rebours est terminé",
+	remaining: (p) =>
+		`Il reste ${p.days} jours, ${p.hours} heures, ${p.minutes} minutes et ${p.seconds} secondes`,
+};
+
+const UNITS = ["days", "hours", "minutes", "seconds"] as const;
+
+function split(ms: number): Parts {
 	const total = Math.floor(ms / 1000);
 	return {
 		days: Math.floor(total / 86_400),
@@ -28,7 +49,13 @@ function split(ms: number) {
 }
 
 /** Countdown to a deadline. Nothing is computed on the server, so the markup never mismatches on hydration. */
-function Countdown({ target, now, className, ...props }: CountdownProps) {
+function Countdown({
+	target,
+	now,
+	labels = FRENCH,
+	className,
+	...props
+}: CountdownProps) {
 	const [current, setCurrent] = useState<number | null>(
 		now ? now.getTime() : null,
 	);
@@ -48,10 +75,10 @@ function Countdown({ target, now, className, ...props }: CountdownProps) {
 	const parts = remaining === null ? null : split(remaining);
 	const label =
 		parts === null
-			? "Compte à rebours"
+			? labels.idle
 			: remaining === 0
-				? "Le compte à rebours est terminé"
-				: `Il reste ${parts.days} jours, ${parts.hours} heures, ${parts.minutes} minutes et ${parts.seconds} secondes`;
+				? labels.finished
+				: labels.remaining(parts);
 
 	return (
 		<div
@@ -62,7 +89,7 @@ function Countdown({ target, now, className, ...props }: CountdownProps) {
 			className={cn("flex items-end gap-3", className)}
 			{...props}
 		>
-			{UNITS.map(({ key, label: unit }) => (
+			{UNITS.map((key) => (
 				<div key={key} className="flex min-w-14 flex-col items-center gap-0.5">
 					<span aria-hidden="true" className="font-bold text-3xl tabular-nums">
 						{parts ? String(parts[key]).padStart(2, "0") : "--"}
@@ -71,7 +98,7 @@ function Countdown({ target, now, className, ...props }: CountdownProps) {
 						aria-hidden="true"
 						className="text-[11px] text-muted-foreground"
 					>
-						{unit}
+						{labels[key]}
 					</span>
 				</div>
 			))}
@@ -79,4 +106,4 @@ function Countdown({ target, now, className, ...props }: CountdownProps) {
 	);
 }
 
-export { Countdown, type CountdownProps };
+export { Countdown, type CountdownLabels, type CountdownProps };

@@ -17,6 +17,7 @@ import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-
 import { FeedFilters } from "@codesphere/ui/components/organisms/feed-filters";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, MessageSquareIcon, TagIcon } from "lucide-react";
+import type { Route } from "next";
 import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
@@ -105,8 +106,8 @@ function Banner({
 		<Button
 			variant={variant === "rail" ? "outline" : "secondary"}
 			size="sm"
-			disabled
-			title={t("soon")}
+			render={<Link href={`/hackathons/${hackathon.slug}` as Route} />}
+			nativeButton={false}
 		>
 			{t("see")}
 		</Button>
