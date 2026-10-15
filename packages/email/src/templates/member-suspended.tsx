@@ -12,8 +12,8 @@ export type MemberSuspendedProps = {
 };
 
 export const MEMBER_SUSPENDED_SUBJECTS: Record<Locale, string> = {
-	fr: "Votre compte CodeSphere est suspendu",
-	en: "Your CodeSphere account is suspended",
+	fr: "Votre compte CodeSphere Platform est suspendu",
+	en: "Your CodeSphere Platform account is suspended",
 };
 
 const COPY: Record<
@@ -30,19 +30,19 @@ const COPY: Record<
 		preview: "Votre compte a été suspendu par un administrateur",
 		title: "Compte suspendu",
 		body: (name) =>
-			`Bonjour ${name}, un administrateur a suspendu votre compte CodeSphere. Vous ne pouvez plus publier tant que la suspension dure.`,
+			`Bonjour ${name}, un administrateur a suspendu votre compte CodeSphere Platform. Vous ne pouvez plus publier tant que la suspension dure.`,
 		reason: "Motif indiqué :",
 		contest:
-			"Si vous pensez qu'il s'agit d'une erreur, écrivez-nous depuis la page de contact de CodeSphere.",
+			"Si vous pensez qu'il s'agit d'une erreur, écrivez-nous depuis la page de contact de CodeSphere Platform.",
 	},
 	en: {
 		preview: "An administrator has suspended your account",
 		title: "Account suspended",
 		body: (name) =>
-			`Hello ${name}, an administrator has suspended your CodeSphere account. You cannot post while the suspension lasts.`,
+			`Hello ${name}, an administrator has suspended your CodeSphere Platform account. You cannot post while the suspension lasts.`,
 		reason: "Reason given:",
 		contest:
-			"If you believe this is a mistake, write to us from the CodeSphere contact page.",
+			"If you believe this is a mistake, write to us from the CodeSphere Platform contact page.",
 	},
 };
 
