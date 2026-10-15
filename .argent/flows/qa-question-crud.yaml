@@ -1,0 +1,92 @@
+steps:
+  - echo: "Baseline: signed-in Home in English, no [QA argent] question in For you"
+  - await: { visible: { text: Getting started } }
+  - await: { idle: true }
+  - assert: { hidden: { text: "[QA argent] How do I paginate a Drizzle query with a cursor?" } }
+
+  - echo: Signed-in Home. Open Ask a question; expect the Title step of /ask
+  - tap: { text: Ask a question }
+  - await: { visible: { text: "One precise sentence, as you would ask a colleague." }, timeout: 60000 }
+  - await: { idle: true }
+
+  - echo: Title step. Type the test title, then Continue; expect the Details step
+  - type: { into: { id: ask-title }, text: "[QA argent] How do I paginate a Drizzle query with a cursor?", submit: false }
+  # The debounced « similar questions » panel appears under the title and moves Continue.
+  - await: { idle: true, stableFor: 800, timeout: 9000 }
+  - tap: { text: Continue }
+  - await: { visible: { text: "Markdown and code blocks welcome, 20,000 characters at most." }, timeout: 15000 }
+  - await: { idle: true }
+
+  - echo: Details step. Type the body, then Continue; expect the Tags step
+  - type: { into: { id: ask-body }, text: "Created by the argent QA flow. I list questions with Drizzle and want stable pages ordered by date, without offset.", submit: false }
+  - tap: { text: Continue }
+  - await: { visible: { text: "1 to 5 Tags, e.g. mobile-money, ussd." }, timeout: 15000 }
+  - await: { idle: true }
+
+  - echo: Tags step. Add the drizzle Tag; expect it as a removable chip
+  - type: { into: { id: ask-tags }, text: drizzle }
+  - await: { visible: { text: Remove drizzle } }
+  - tap: { text: Continue }
+  - await: { visible: { text: Publish the question } }
+  - await: { idle: true }
+
+  - echo: Review step. Publish; expect the question page with its title and the drizzle Tag
+  - tap: { text: Publish the question }
+  - await: { visible: { text: At a glance }, timeout: 60000 }
+  - await: { idle: true }
+  - assert: { visible: { text: "[QA argent] How do I paginate a Drizzle query with a cursor?" } }
+  - assert: { visible: { text: "#drizzle" } }
+
+  - echo: Question page. Open Edit; expect the editor
+  - tap: { text: Edit }
+  - await: { visible: { text: Details (Markdown) } }
+  - await: { idle: true }
+
+  - echo: Editor. Append [edited] to the title and add the postgres Tag; expect a postgres chip next to drizzle
+  - type: { into: { id: edit-title }, text: " [edited]", submit: false }
+  - type: { into: { id: edit-tags }, text: postgres }
+  - await: { visible: { text: Remove postgres } }
+  - assert: { visible: { text: Remove drizzle } }
+  - tap: { text: Save }
+  - await: { visible: { text: Question updated. }, timeout: 15000 }
+  - assert: { visible: { text: "#postgres" } }
+
+  - echo: Saved. Leave through the logo; expect Home with the edited question in For you
+  - tap: { text: CodeSphere Platform }
+  - await: { visible: { text: Getting started }, timeout: 30000 }
+  - await: { idle: true }
+  - await: { visible: { text: "[QA argent] How do I paginate a Drizzle query with a cursor? [edited]" }, timeout: 15000 }
+
+  - echo: Home shows the edited question. Re-open it; expect the stored edit
+  - tap: { text: "[QA argent] How do I paginate a Drizzle query with a cursor? [edited]" }
+  - await: { visible: { text: At a glance }, timeout: 30000 }
+  - await: { idle: true }
+  - assert: { visible: { text: "#postgres" } }
+
+  - echo: Persisted edit proven. Write and publish an answer; expect it listed and the empty state gone
+  - assert: { visible: { text: No answer yet. Be the first to help. } }
+  - scroll-to: { target: { text: Votre réponse en Markdown } }
+  - type: { into: { text: Votre réponse en Markdown }, text: "QA argent answer: order by created_at and id, then filter with a tuple comparison on the last row.", submit: false }
+  - scroll-to: { target: { text: Publier la réponse } }
+  - tap: { text: Publier la réponse }
+  - await: { visible: { text: Delete my answer }, timeout: 15000 }
+  - assert: { visible: { text: "QA argent answer: order by created_at and id, then filter with a tuple comparison on the last row." } }
+  - assert: { hidden: { text: No answer yet. Be the first to help. } }
+
+  - echo: Answer listed. Delete my answer (arm, then Enter on the focused confirm); expect the empty state back
+  - tap: { text: Delete my answer… }
+  - tool: keyboard
+    args:
+      key: enter
+  - await: { hidden: { text: "QA argent answer: order by created_at and id, then filter with a tuple comparison on the last row." }, timeout: 15000 }
+  - await: { visible: { text: No answer yet. Be the first to help. } }
+
+  - echo: Answer deleted. Delete the question (arm, then Enter on the focused confirm); expect Home without it
+  - tap: { text: Delete the question… }
+  - tool: keyboard
+    args:
+      key: enter
+  - await: { visible: { text: Getting started }, timeout: 30000 }
+  - await: { idle: true }
+  - await: { hidden: { text: "[QA argent] How do I paginate a Drizzle query with a cursor? [edited]" }, timeout: 15000 }
+executionPrerequisite: Chrome with CDP on port 9222 showing the CodeSphere home page (http://localhost:3001/) in English, signed in as a human Member; local API and web dev servers running.
