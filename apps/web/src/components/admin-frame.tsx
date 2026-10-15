@@ -22,7 +22,7 @@ const NAV = [
 	{ key: "moderation", href: "/admin", icon: ShieldIcon },
 	{ key: "hackathons", href: "/admin/hackathons", icon: TrophyIcon },
 	{ key: "tags", href: "/admin/tags", icon: TagIcon },
-	{ key: "kpi", href: "/admin/kpi", icon: BarChart3Icon },
+	{ key: "kpi", href: "/dashboard", icon: BarChart3Icon },
 	{ key: "audit", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;
 

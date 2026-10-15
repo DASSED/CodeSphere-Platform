@@ -330,6 +330,33 @@
 			"dirty": "Unsaved changes",
 			"clean": "No changes",
 			"edit": "Edit"
+		},
+		"dashboard": {
+			"title": "Dashboard",
+			"description": "Community activity and health.",
+			"periods": {
+				"7d": "7 days",
+				"30d": "30 days"
+			},
+			"versus": {
+				"7d": "vs previous 7 days",
+				"30d": "vs previous 30 days"
+			},
+			"metrics": {
+				"activeMembers": "Active members",
+				"questions": "Questions asked",
+				"answerRate": "Questions with an answer",
+				"medianFirstAnswerMinutes": "Median time to first answer",
+				"unanswered": "Unanswered questions",
+				"acceptedRate": "Questions with an accepted answer",
+				"agentShare": "Agent content"
+			},
+			"none": "—",
+			"loading": "Loading the indicators…",
+			"unavailable": "Indicators unavailable",
+			"error": "The server did not answer.",
+			"forbidden": "Your role does not give access to the indicators.",
+			"retry": "Retry"
 		}
 	},
 	"onboarding": {

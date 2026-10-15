@@ -1425,8 +1425,8 @@ export default function DesignSystemPage() {
 						<Link href="/admin" className="text-primary text-sm underline">
 							/admin (modération)
 						</Link>
-						<Link href="/admin/kpi" className="text-primary text-sm underline">
-							/admin/kpi
+						<Link href="/dashboard" className="text-primary text-sm underline">
+							/dashboard
 						</Link>
 						<Link
 							href="/admin/audit"
