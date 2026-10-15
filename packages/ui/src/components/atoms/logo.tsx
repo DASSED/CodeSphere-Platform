@@ -1,6 +1,10 @@
 import { cn } from "@codesphere/ui/lib/utils";
 
-function Logo({ className, ...props }: React.ComponentProps<"span">) {
+function Logo({
+	className,
+	compact,
+	...props
+}: React.ComponentProps<"span"> & { compact?: boolean }) {
 	return (
 		<span
 			data-slot="logo"
@@ -13,7 +17,10 @@ function Logo({ className, ...props }: React.ComponentProps<"span">) {
 			<span className="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground text-sm">
 				◍
 			</span>
-			<span data-slot="logo-text" className="whitespace-nowrap">
+			<span
+				data-slot="logo-text"
+				className={compact ? "sr-only" : "whitespace-nowrap"}
+			>
 				CodeSphere Platform
 			</span>
 		</span>
