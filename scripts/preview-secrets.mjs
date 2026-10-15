@@ -14,6 +14,7 @@ const KEYS = [
 	"GOOGLE_CLIENT_SECRET",
 	// Only the staging workflow exports them: previews send no email.
 	"RESEND_API_KEY",
+	"RESEND_WEBHOOK_SECRET",
 	// Not a secret, but "Name <address>" cannot go on the command line: opennextjs-cloudflare
 	// re-runs wrangler through /bin/sh, which reads the "<" as a redirection.
 	"EMAIL_FROM",

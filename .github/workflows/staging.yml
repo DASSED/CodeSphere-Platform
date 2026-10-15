@@ -215,6 +215,8 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.PREVIEW_GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.PREVIEW_GOOGLE_CLIENT_SECRET }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Signing secret of the Resend webhook (#200); unset = /webhooks/resend not mounted.
+          RESEND_WEBHOOK_SECRET: ${{ secrets.RESEND_WEBHOOK_SECRET }}
           # Sender on the domain verified in Resend; unset = email stays disabled. Written to the
           # secrets file, not --var: its "<address>" breaks when wrangler is re-run by a shell.
           EMAIL_FROM: ${{ vars.EMAIL_FROM }}
