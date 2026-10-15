@@ -253,7 +253,8 @@ function ProfileForm() {
 				</SettingRow>
 			</SettingsSection>
 
-			<div className="flex justify-end">
+			{/* Phone: stays in reach at the bottom of the screen, under three sections of fields. */}
+			<div className="sticky bottom-0 z-10 -mx-4 flex justify-end border-border border-t bg-background/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
 				<Button type="submit" disabled={save.isPending}>
 					{save.isPending ? t("saving") : t("save")}
 				</Button>
@@ -295,15 +296,15 @@ export default function SettingsPage() {
 				className="gap-6 md:flex-row md:items-start"
 			>
 				{/* A row that scrolls on a phone, a sticky column beside the panel from md up. */}
-				<TabsList className="w-full max-w-full overflow-x-auto rounded-2xl md:sticky md:top-24 md:w-52 md:shrink-0 md:flex-col md:items-stretch">
+				<TabsList className="grid w-full grid-cols-4 rounded-2xl md:sticky md:top-24 md:flex md:w-52 md:shrink-0 md:flex-col md:items-stretch">
 					{TABS.map(({ key, icon: Icon }) => (
 						<TabsTrigger
 							key={key}
 							value={key}
-							className="flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 md:justify-start"
+							className="flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-xs md:flex-row md:justify-start md:gap-2 md:px-3 md:text-sm"
 						>
 							<Icon className="size-4" />
-							{t(`tabs.${key}`)}
+							<span className="max-w-full truncate">{t(`tabs.${key}`)}</span>
 						</TabsTrigger>
 					))}
 				</TabsList>
