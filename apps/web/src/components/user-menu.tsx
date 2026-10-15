@@ -82,7 +82,9 @@ export default function UserMenu() {
 						</span>
 					</DropdownMenuLabel>
 					<DropdownMenuSeparator />
-					<DropdownMenuItem onClick={() => router.push("/settings")}>
+					<DropdownMenuItem
+						onClick={() => router.push("/settings?tab=profile")}
+					>
 						<UserIcon />
 						{t("profile")}
 					</DropdownMenuItem>
