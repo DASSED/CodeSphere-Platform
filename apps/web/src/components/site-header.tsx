@@ -49,6 +49,8 @@ export default function SiteHeader() {
 	const t = useTranslations("header");
 	return (
 		<AppHeader
+			LinkComponent={Link}
+			homeLabel={t("home")}
 			actions={
 				<>
 					<ThemeToggle aria-label={t("toggleTheme")} />

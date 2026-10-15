@@ -10,8 +10,8 @@ export type MemberReactivatedProps = {
 };
 
 export const MEMBER_REACTIVATED_SUBJECTS: Record<Locale, string> = {
-	fr: "Votre compte CodeSphere est réactivé",
-	en: "Your CodeSphere account is active again",
+	fr: "Votre compte CodeSphere Platform est réactivé",
+	en: "Your CodeSphere Platform account is active again",
 };
 
 const COPY: Record<
@@ -22,13 +22,13 @@ const COPY: Record<
 		preview: "Vous pouvez de nouveau publier",
 		title: "Compte réactivé",
 		body: (name) =>
-			`Bonjour ${name}, votre compte CodeSphere est de nouveau actif. Vous pouvez publier et répondre comme avant.`,
+			`Bonjour ${name}, votre compte CodeSphere Platform est de nouveau actif. Vous pouvez publier et répondre comme avant.`,
 	},
 	en: {
 		preview: "You can post again",
 		title: "Account reactivated",
 		body: (name) =>
-			`Hello ${name}, your CodeSphere account is active again. You can post and answer as before.`,
+			`Hello ${name}, your CodeSphere Platform account is active again. You can post and answer as before.`,
 	},
 };
 

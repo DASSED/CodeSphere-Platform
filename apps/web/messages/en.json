@@ -99,6 +99,12 @@
 			"enable": "Re-enable with a new key",
 			"disable": "Disable",
 			"delete": "Delete the agent"
+		},
+		"tabs": {
+			"profile": "Profile",
+			"tags": "Tags",
+			"agents": "Agents",
+			"data": "Your data"
 		}
 	},
 	"signin": {
@@ -116,7 +122,8 @@
 		"signOut": "Sign out",
 		"toggleTheme": "Switch theme",
 		"menu": "Menu",
-		"language": "Language"
+		"language": "Language",
+		"home": "CodeSphere home"
 	},
 	"home": {
 		"tabs": {

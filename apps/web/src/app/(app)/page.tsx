@@ -394,7 +394,7 @@ function FollowedTagsCard() {
 				variant="outline"
 				size="sm"
 				className="justify-self-start"
-				render={<Link href="/settings" />}
+				render={<Link href="/settings?tab=tags" />}
 				nativeButton={false}
 			>
 				<TagIcon />

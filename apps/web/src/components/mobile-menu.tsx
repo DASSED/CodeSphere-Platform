@@ -96,7 +96,9 @@ export function MobileMenu() {
 					<DropdownMenuSeparator />
 					{session ? (
 						<DropdownMenuGroup>
-							<DropdownMenuItem onClick={() => router.push("/settings")}>
+							<DropdownMenuItem
+								onClick={() => router.push("/settings?tab=profile")}
+							>
 								<UserIcon />
 								{t("profile")}
 							</DropdownMenuItem>

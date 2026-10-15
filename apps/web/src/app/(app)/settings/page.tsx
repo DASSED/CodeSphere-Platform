@@ -8,7 +8,15 @@ import {
 	SettingRow,
 	SettingsSection,
 } from "@codesphere/ui/components/molecules/setting-row";
+import {
+	Tabs,
+	TabsContent,
+	TabsList,
+	TabsTrigger,
+} from "@codesphere/ui/components/molecules/tabs";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { BotIcon, DatabaseIcon, TagIcon, UserIcon } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -245,7 +253,8 @@ function ProfileForm() {
 				</SettingRow>
 			</SettingsSection>
 
-			<div className="flex justify-end">
+			{/* Phone: stays in reach at the bottom of the screen, under three sections of fields. */}
+			<div className="sticky bottom-0 z-10 -mx-4 flex justify-end border-border border-t bg-background/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
 				<Button type="submit" disabled={save.isPending}>
 					{save.isPending ? t("saving") : t("save")}
 				</Button>
@@ -254,21 +263,72 @@ function ProfileForm() {
 	);
 }
 
+const TABS = [
+	{ key: "profile", icon: UserIcon },
+	{ key: "tags", icon: TagIcon },
+	{ key: "agents", icon: BotIcon },
+	{ key: "data", icon: DatabaseIcon },
+] as const;
+type SettingsTab = (typeof TABS)[number]["key"];
+
+const isTab = (value: string | null): value is SettingsTab =>
+	TABS.some((tab) => tab.key === value);
+
 export default function SettingsPage() {
 	const t = useTranslations("settings");
+	const router = useRouter();
+	const params = useSearchParams();
+	const requested = params.get("tab");
+	// In the address (?tab=tags): a link opens the right tab, and reloading keeps it.
+	const tab: SettingsTab = isTab(requested) ? requested : "profile";
+	const select = (next: unknown) => {
+		if (isTab(next as string)) {
+			router.replace(`/settings?tab=${next as string}`, { scroll: false });
+		}
+	};
+
 	return (
-		<main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-4 sm:p-6">
+		<main className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 sm:p-6">
 			<h1 className="font-semibold text-2xl">{t("title")}</h1>
-			<ProfileForm />
-			{/* Outside the profile form: each has its own actions, and forms do not nest. */}
-			<TagsSection />
-			<AgentsSection />
-			<SettingsSection
-				title={t("privacy.dataTitle")}
-				description={t("privacy.dataDescription")}
+			<Tabs
+				value={tab}
+				onValueChange={select}
+				className="gap-6 md:flex-row md:items-start"
 			>
-				<PrivacyActions />
-			</SettingsSection>
+				{/* A row that scrolls on a phone, a sticky column beside the panel from md up. */}
+				<TabsList className="grid w-full grid-cols-4 rounded-2xl md:sticky md:top-24 md:flex md:w-52 md:shrink-0 md:flex-col md:items-stretch">
+					{TABS.map(({ key, icon: Icon }) => (
+						<TabsTrigger
+							key={key}
+							value={key}
+							className="flex min-w-0 flex-col items-center gap-1 rounded-xl px-1 py-2 text-xs md:flex-row md:justify-start md:gap-2 md:px-3 md:text-sm"
+						>
+							<Icon className="size-4" />
+							<span className="max-w-full truncate">{t(`tabs.${key}`)}</span>
+						</TabsTrigger>
+					))}
+				</TabsList>
+				<div className="min-w-0 flex-1">
+					<TabsContent value="profile">
+						<ProfileForm />
+					</TabsContent>
+					{/* Outside the profile form: each has its own actions, and forms do not nest. */}
+					<TabsContent value="tags">
+						<TagsSection />
+					</TabsContent>
+					<TabsContent value="agents">
+						<AgentsSection />
+					</TabsContent>
+					<TabsContent value="data">
+						<SettingsSection
+							title={t("privacy.dataTitle")}
+							description={t("privacy.dataDescription")}
+						>
+							<PrivacyActions />
+						</SettingsSection>
+					</TabsContent>
+				</div>
+			</Tabs>
 		</main>
 	);
 }
