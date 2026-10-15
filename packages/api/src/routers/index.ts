@@ -1,9 +1,10 @@
 import { type contract, MEMBER_SUSPENDED_MESSAGE } from "@codesphere/contract";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
+import { questions } from "@codesphere/db/schema/questions";
 import type { RouterContractClient } from "@orpc/contract";
 import { ORPCError } from "@orpc/server";
-import { and, desc, eq, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, lt, or, sql } from "drizzle-orm";
 import { updateHackathon } from "../admin-hackathons";
 import { kpiReport } from "../admin-kpi";
 import { listMembers, setSuspension } from "../admin-members";
@@ -149,7 +150,14 @@ export const appRouter = impl
 				if (!row) {
 					throw errors.UNAUTHORIZED();
 				}
-				return ownProfile(row);
+				const [asked] = await context.db
+					.select({ id: questions.id })
+					.from(questions)
+					.where(
+						and(eq(questions.authorId, userId), isNull(questions.deletedAt)),
+					)
+					.limit(1);
+				return { ...ownProfile(row), hasAskedQuestion: asked !== undefined };
 			}),
 			update: impl.members.update.handler(
 				async ({ context, input, errors }) => {

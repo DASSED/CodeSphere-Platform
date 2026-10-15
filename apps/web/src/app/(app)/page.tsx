@@ -27,6 +27,7 @@ import { AskButton } from "@/components/site-header";
 import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
 import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
+import { gettingStarted } from "@/lib/tags-onboarding";
 import { useHydratedSession } from "@/lib/use-hydrated-session";
 import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
@@ -59,6 +60,7 @@ function useBannerLabels() {
 	return {
 		eyebrow: t("eyebrow"),
 		days: t("days"),
+		daysShort: t("daysShort"),
 		hours: t("hours"),
 		remaining: (days: number) => t("remaining", { days }),
 		timeline: t("timeline"),
@@ -291,30 +293,82 @@ function MemberHome({
 			{/* Desktop only: sticky rail (variant 3). */}
 			<aside className="sticky top-24 hidden content-start gap-4 self-start md:grid">
 				<Banner hackathon={hackathon} variant="rail" />
-				<section className="grid gap-3 rounded-2xl border border-border bg-card p-5">
-					<p className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest">
-						{t("start.title")}
-					</p>
-					<ul className="grid gap-2 text-sm">
-						<li className="flex items-center gap-2">
-							<span className="grid size-5 place-items-center rounded-full bg-emerald-600 text-white">
-								<CheckIcon className="size-3" />
-							</span>
-							{t("start.account")}
-						</li>
-						<li className="flex items-center gap-2 text-muted-foreground">
-							<span className="size-5 rounded-full border border-border" />
-							{t("start.tags")}
-						</li>
-						<li className="flex items-center gap-2 text-muted-foreground">
-							<span className="size-5 rounded-full border border-border" />
-							{t("start.question")}
-						</li>
-					</ul>
-				</section>
+				<GettingStartedCard />
 				<FollowedTagsCard />
 			</aside>
 		</main>
+	);
+}
+
+/**
+ * The first steps of a new Member, read from their account: a done step is ticked, an open one
+ * links to where it is done. Gone once every step is done.
+ */
+function GettingStartedCard() {
+	const t = useTranslations("home.start");
+	const followed = useQuery({
+		...orpc.tags.followed.queryOptions(),
+		enabled: HAS_DATABASE,
+	});
+	const me = useQuery({
+		...orpc.members.me.queryOptions(),
+		enabled: HAS_DATABASE,
+	});
+	const progress = gettingStarted({
+		followedCount: followed.data?.items.length,
+		hasAskedQuestion: me.data?.hasAskedQuestion,
+	});
+	if (!progress || progress.complete) {
+		return null;
+	}
+	const steps = [
+		{ key: "account", done: true, href: null },
+		{ key: "tags", done: progress.tags, href: "/onboarding/tags" },
+		{ key: "question", done: progress.question, href: "/ask" },
+	] as const;
+	return (
+		<section
+			aria-labelledby="getting-started"
+			className="grid gap-3 rounded-2xl border border-border bg-card p-5"
+		>
+			<div className="flex items-baseline justify-between gap-2">
+				<p
+					id="getting-started"
+					className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest"
+				>
+					{t("title")}
+				</p>
+				<p className="font-mono text-muted-foreground text-xs">
+					{t("progress", { done: progress.done, total: steps.length })}
+				</p>
+			</div>
+			<ul className="grid gap-2 text-sm">
+				{steps.map(({ key, done, href }) => (
+					<li key={key} className="flex items-center gap-2">
+						{done ? (
+							<span className="grid size-5 place-items-center rounded-full bg-emerald-600 text-white">
+								<CheckIcon className="size-3" />
+								<span className="sr-only">{t("done")}</span>
+							</span>
+						) : (
+							<span className="size-5 rounded-full border border-border" />
+						)}
+						{done || !href ? (
+							<span className={done ? undefined : "text-muted-foreground"}>
+								{t(key)}
+							</span>
+						) : (
+							<Link
+								href={href}
+								className="text-foreground underline-offset-4 hover:underline"
+							>
+								{t(key)}
+							</Link>
+						)}
+					</li>
+				))}
+			</ul>
+		</section>
 	);
 }
 

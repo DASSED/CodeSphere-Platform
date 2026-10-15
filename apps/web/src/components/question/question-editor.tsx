@@ -12,6 +12,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { errorCodeOf } from "@/i18n/errors";
+import { useTagInputLabels } from "@/lib/use-tag-input-labels";
 import { orpc } from "@/utils/orpc";
 
 /**
@@ -28,6 +29,7 @@ export function QuestionEditor({
 }) {
 	const t = useTranslations("question.edit");
 	const tErrors = useTranslations("errors");
+	const tagInputLabels = useTagInputLabels();
 	const queryClient = useQueryClient();
 	const [title, setTitle] = useState(question.title);
 	const [body, setBody] = useState(question.body);
@@ -86,6 +88,7 @@ export function QuestionEditor({
 			</Field>
 			<Field id="edit-tags" label={t("tags")} description={t("tagsHint")}>
 				<TagInput
+					{...tagInputLabels}
 					inputId="edit-tags"
 					value={tags}
 					onValueChange={setTags}

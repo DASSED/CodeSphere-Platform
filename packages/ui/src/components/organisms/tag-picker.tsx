@@ -14,6 +14,31 @@ type TagPickerProps = Omit<
 	min?: number;
 	onSubmit: () => void;
 	onSkip: () => void;
+	/** The choice is being saved: both actions wait, so a double click saves once. */
+	pending?: boolean;
+	/** Texts in the interface language; French by default. */
+	labels?: Partial<TagPickerLabels>;
+};
+
+type TagPickerLabels = {
+	title: string;
+	lead: (min: number) => string;
+	missing: (count: number) => string;
+	ready: (count: number) => string;
+	skip: string;
+	submit: string;
+	saving: string;
+};
+
+const FRENCH: TagPickerLabels = {
+	title: "Que voulez-vous suivre ?",
+	lead: (min) =>
+		`Choisissez au moins ${min} tags : votre fil « Pour toi » s'appuie dessus.`,
+	missing: (count) => `Encore ${count} tag${count > 1 ? "s" : ""} à choisir`,
+	ready: (count) => `${count} tags sélectionnés`,
+	skip: "Passer",
+	submit: "Continuer",
+	saving: "Enregistrement…",
 };
 
 /** Onboarding step: pick at least `min` Tags to follow, or skip the step. */
@@ -24,9 +49,12 @@ function TagPicker({
 	min = 3,
 	onSubmit,
 	onSkip,
+	pending = false,
+	labels,
 	className,
 	...props
 }: TagPickerProps) {
+	const l = { ...FRENCH, ...labels };
 	const toggle = (tag: string) =>
 		onValueChange(
 			value.includes(tag) ? value.filter((t) => t !== tag) : [...value, tag],
@@ -43,13 +71,8 @@ function TagPicker({
 			{...props}
 		>
 			<header className="flex flex-col gap-1">
-				<h2 className="font-semibold text-xl tracking-tight">
-					Que voulez-vous suivre ?
-				</h2>
-				<p className="text-muted-foreground text-sm">
-					Choisissez au moins {min} tags : votre fil « Pour toi » s'appuie
-					dessus.
-				</p>
+				<h2 className="font-semibold text-xl tracking-tight">{l.title}</h2>
+				<p className="text-muted-foreground text-sm">{l.lead(min)}</p>
 			</header>
 			<ul className="flex flex-wrap gap-2">
 				{tags.map((tag) => {
@@ -75,16 +98,24 @@ function TagPicker({
 			</ul>
 			<footer className="flex flex-wrap items-center justify-between gap-3">
 				<p aria-live="polite" className="text-muted-foreground text-xs">
-					{missing > 0
-						? `Encore ${missing} tag${missing > 1 ? "s" : ""} à choisir`
-						: `${value.length} tags suivis`}
+					{missing > 0 ? l.missing(missing) : l.ready(value.length)}
 				</p>
 				<div className="flex gap-2">
-					<Button type="button" variant="ghost" onClick={onSkip}>
-						Passer
+					<Button
+						type="button"
+						variant="ghost"
+						onClick={onSkip}
+						disabled={pending}
+					>
+						{l.skip}
 					</Button>
-					<Button type="button" disabled={missing > 0} onClick={onSubmit}>
-						Continuer
+					<Button
+						type="button"
+						disabled={missing > 0 || pending}
+						aria-busy={pending}
+						onClick={onSubmit}
+					>
+						{pending ? l.saving : l.submit}
 					</Button>
 				</div>
 			</footer>
@@ -92,4 +123,4 @@ function TagPicker({
 	);
 }
 
-export { TagPicker, type TagPickerProps };
+export { TagPicker, type TagPickerLabels, type TagPickerProps };

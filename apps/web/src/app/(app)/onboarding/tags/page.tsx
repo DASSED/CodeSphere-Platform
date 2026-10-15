@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { MIN_FOLLOWED_TAGS } from "@/lib/tags-onboarding";
 import { client, orpc } from "@/utils/orpc";
 
 // Onboarding (spec §3, #44): choose at least 3 Tags to follow, or skip the step.
@@ -79,8 +80,19 @@ export default function TagsOnboardingPage() {
 				tags={names}
 				value={value}
 				onValueChange={setValue}
+				min={MIN_FOLLOWED_TAGS}
 				onSubmit={() => save.mutate(value)}
 				onSkip={() => skip.mutate()}
+				pending={save.isPending || skip.isPending}
+				labels={{
+					title: t("title"),
+					lead: (min) => t("lead", { min }),
+					missing: (count) => t("missing", { count }),
+					ready: (count) => t("ready", { count }),
+					skip: t("skip"),
+					submit: t("submit"),
+					saving: t("saving"),
+				}}
 			/>
 		</div>
 	);

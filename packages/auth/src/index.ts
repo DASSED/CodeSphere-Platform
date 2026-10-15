@@ -9,6 +9,7 @@ import { emailOTP, oAuthProxy } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
 import { parseAdminEmails, roleFor } from "./admin";
+import { displayNameFor } from "./display-name";
 import { readConsent } from "./consent";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
@@ -165,6 +166,7 @@ export function createAuth(
 						return {
 							data: {
 								...user,
+								name: displayNameFor(user.name, user.email),
 								role: roleFor(user, staff),
 								consentVersion: consent.consentVersion,
 								consentAcceptedAt: consent.consentAcceptedAt,

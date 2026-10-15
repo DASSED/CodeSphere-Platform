@@ -145,7 +145,9 @@
 			"title": "Pour commencer",
 			"account": "Compte créé",
 			"tags": "Suivre au moins 3 Tags",
-			"question": "Poser votre première question"
+			"question": "Poser votre première question",
+			"progress": "{done}/{total}",
+			"done": "Fait"
 		},
 		"followed": {
 			"title": "Tags suivis",
@@ -159,7 +161,8 @@
 			"remaining": "{days} jours avant la clôture · affiché dans votre fuseau horaire",
 			"closes": "Clôture des soumissions le {date}",
 			"timeline": "Calendrier du hackathon",
-			"see": "Voir le Hackathon"
+			"see": "Voir le Hackathon",
+			"daysShort": "j"
 		},
 		"loadError": "Impossible de charger le Hackathon.",
 		"feed": {
@@ -360,7 +363,14 @@
 	},
 	"onboarding": {
 		"loading": "Chargement des Tags…",
-		"failed": "Impossible d'enregistrer vos Tags. Réessayez."
+		"failed": "Impossible d'enregistrer vos Tags. Réessayez.",
+		"title": "Que voulez-vous suivre ?",
+		"lead": "Choisissez au moins {min} tags : votre fil « Pour toi » s’appuie dessus.",
+		"missing": "{count, plural, one {Encore # tag à choisir} other {Encore # tags à choisir}}",
+		"ready": "{count} tags sélectionnés",
+		"skip": "Passer",
+		"submit": "Continuer",
+		"saving": "Enregistrement…"
 	},
 	"outbox": {
 		"failedTitle": "Envois refusés",
@@ -484,7 +494,8 @@
 		"next": "Continuer",
 		"publish": "Publier la question",
 		"publishing": "Publication…",
-		"draftNotice": "Brouillon enregistré sur cet appareil, même hors ligne."
+		"draftNotice": "Brouillon enregistré sur cet appareil, même hors ligne.",
+		"published": "Question publiée, ouverture…"
 	},
 	"member": {
 		"unnamed": "Membre"
@@ -667,5 +678,10 @@
 		"error": "Le hackathon n'a pas pu être chargé.",
 		"retry": "Réessayer",
 		"unavailable": "Les hackathons ne sont pas disponibles sur ce déploiement."
+	},
+	"tagInput": {
+		"placeholder": "Ajouter un tag",
+		"remove": "Retirer {tag}",
+		"full": "{max} tags au maximum"
 	}
 }

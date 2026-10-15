@@ -143,7 +143,10 @@ function ProfileForm() {
 	const save = useMutation(
 		orpc.members.update.mutationOptions({
 			onSuccess: (profile) => {
-				queryClient.setQueryData(orpc.members.me.queryKey(), profile);
+				// The update returns the profile only: keep what `me` adds (the first Question).
+				queryClient.setQueryData(orpc.members.me.queryKey(), (current) =>
+					current ? { ...current, ...profile } : undefined,
+				);
 				toast.success(t("saved"));
 			},
 			onError: () => toast.error(t("saveFailed")),
