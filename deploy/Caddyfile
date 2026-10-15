@@ -22,10 +22,14 @@
 (api_paths) {
 	@api path /api/* /rpc /rpc/* /mcp /mcp/*
 	handle @api {
+		# The API returns data, never a page to render (#54).
+		header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
 		reverse_proxy server:3000
 	}
 }
 
+# Every response (#54, spec §4). The pages' Content-Security-Policy, with its per-request nonce,
+# comes from the Next.js proxy (apps/web/src/proxy.ts): Caddy cannot draw a nonce.
 (security_headers) {
 	header {
 		Strict-Transport-Security "max-age=31536000"
@@ -33,6 +37,7 @@
 		Referrer-Policy "strict-origin-when-cross-origin"
 		Permissions-Policy "camera=(), microphone=(), geolocation=()"
 		X-Frame-Options "DENY"
+		Cross-Origin-Opener-Policy "same-origin"
 		-Server
 	}
 }

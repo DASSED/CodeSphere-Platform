@@ -12,7 +12,14 @@ import { createQueryClient } from "@/utils/orpc";
 import { OutboxProvider } from "./outbox-provider";
 import { ThemeProvider } from "./theme-provider";
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+export default function Providers({
+	children,
+	nonce,
+}: {
+	children: React.ReactNode;
+	/** CSP nonce of the request, for the theme script next-themes inlines. */
+	nonce?: string;
+}) {
 	const t = useTranslations("errors");
 	// One QueryClient per mount, never shared between server requests.
 	const [queryClient] = useState(() => {
@@ -27,6 +34,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 			defaultTheme="system"
 			enableSystem
 			disableTransitionOnChange
+			nonce={nonce}
 		>
 			<QueryClientProvider client={queryClient}>
 				<OutboxProvider>{children}</OutboxProvider>
