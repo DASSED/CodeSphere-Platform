@@ -5,9 +5,9 @@ import { isStaffRole } from "@codesphere/contract/roles";
 // in advance, so it always comes through /post-signin, which applies this rule.
 export function postSignInPath(
 	user: { role?: string | null } | null | undefined,
-): "/admin" | "/" | "/signin" {
+): "/dashboard" | "/" | "/signin" {
 	if (!user) {
 		return "/signin";
 	}
-	return isStaffRole(user.role) ? "/admin" : "/";
+	return isStaffRole(user.role) ? "/dashboard" : "/";
 }

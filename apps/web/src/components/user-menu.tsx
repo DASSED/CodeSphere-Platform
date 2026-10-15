@@ -91,7 +91,7 @@ export default function UserMenu() {
 						{t("settings")}
 					</DropdownMenuItem>
 					{isStaffRole(user.role) && (
-						<DropdownMenuItem onClick={() => router.push("/admin")}>
+						<DropdownMenuItem onClick={() => router.push("/dashboard")}>
 							<ShieldIcon />
 							{t("admin")}
 						</DropdownMenuItem>

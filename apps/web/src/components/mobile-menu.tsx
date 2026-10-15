@@ -105,7 +105,7 @@ export function MobileMenu() {
 								{t("settings")}
 							</DropdownMenuItem>
 							{isStaffRole(session.user.role) && (
-								<DropdownMenuItem onClick={() => router.push("/admin")}>
+								<DropdownMenuItem onClick={() => router.push("/dashboard")}>
 									<ShieldIcon />
 									{t("admin")}
 								</DropdownMenuItem>
