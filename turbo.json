@@ -43,6 +43,11 @@
 			"persistent": true,
 			"env": ["POSTGRES_PASSWORD"]
 		},
+		"db:preview:studio": {
+			"cache": false,
+			"persistent": true,
+			"passThroughEnv": ["NEON_API_KEY", "NEON_PROJECT_ID"]
+		},
 		"db:start": {
 			"cache": false
 		},

@@ -1,7 +1,9 @@
 name: Preview
 
 # One preview per pull request to develop (map #86): a Cloudflare Workers Preview for the code,
-# and a disposable Neon branch for the data. Both are removed when the pull request closes.
+# and a disposable Neon branch for the data (`preview/pr-<n>`, migrated and seeded, with a
+# schema diff commented on the pull request). Both are removed when the pull request closes.
+# `bun run db:preview:studio -- <n>` opens Drizzle Studio on that database.
 #
 # Off until the repository variable PREVIEW_ENABLED is "true" (secrets and the Worker entry
 # must exist first). Pull requests from forks never get a preview or any secret (#89).
@@ -126,6 +128,17 @@ jobs:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: bun src/seed/index.ts
 
+      # One comment per pull request, updated on each push: the schema this pull request's
+      # migrations add to the parent branch. Informational, so it never blocks the deploy.
+      - name: Comment the schema diff
+        continue-on-error: true
+        uses: neondatabase/schema-diff-action@v1
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          compare_branch: preview/${{ env.PREVIEW_NAME }}
+          base_branch: ${{ vars.NEON_PARENT_BRANCH || 'staging' }}
+
   # Stage 2, in parallel with the database: the Worker, built once. It holds no secret (only
   # NEXT_PUBLIC_* values are inlined), so the artifact can travel between jobs.
   build:
@@ -158,8 +171,8 @@ jobs:
         env:
           # Inlined at build time, hence one build per pull request.
           NEXT_PUBLIC_SERVER_URL: https://${{ env.PREVIEW_NAME }}.${{ env.PREVIEW_DOMAIN }}
-          # Without the preview-db label there is no database: the home page does not ask for it.
-          NEXT_PUBLIC_HAS_DATABASE: ${{ contains(github.event.pull_request.labels.*.name, 'preview-db') }}
+          # Every preview has its own Neon database (the database job): the app uses it.
+          NEXT_PUBLIC_HAS_DATABASE: "true"
         run: bunx opennextjs-cloudflare build
 
       - uses: actions/upload-artifact@v4
