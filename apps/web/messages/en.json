@@ -122,7 +122,8 @@
 		"signOut": "Sign out",
 		"toggleTheme": "Switch theme",
 		"menu": "Menu",
-		"language": "Language"
+		"language": "Language",
+		"home": "CodeSphere home"
 	},
 	"home": {
 		"tabs": {

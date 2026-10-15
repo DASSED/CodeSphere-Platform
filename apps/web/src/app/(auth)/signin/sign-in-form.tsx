@@ -2,6 +2,7 @@
 
 import { CONSENT_VERSION } from "@codesphere/contract/consent";
 import { LoginPage } from "@codesphere/ui/components/organisms/login-page";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
@@ -11,6 +12,7 @@ import { useSsoSignIn } from "@/lib/use-sso-sign-in";
 // SSO sign-in form (spec §3: GitHub, GitLab, Google; consent unchecked at first sign-in).
 export default function SignInForm() {
 	const t = useTranslations("signin");
+	const tHeader = useTranslations("header");
 	const { pending, error, setError, onProviderSelect, emailSignIn } =
 		useSsoSignIn();
 
@@ -26,6 +28,8 @@ export default function SignInForm() {
 
 	return (
 		<LoginPage
+			LinkComponent={Link}
+			homeLabel={tHeader("home")}
 			card={{
 				consentVersion: CONSENT_VERSION,
 				pendingProvider: pending,
