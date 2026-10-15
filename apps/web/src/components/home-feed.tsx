@@ -7,7 +7,7 @@ import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed"
 import { useInfiniteQuery } from "@tanstack/react-query";
 import type { Route } from "next";
 import Link from "next/link";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 import { HAS_DATABASE } from "@/lib/deployment";
@@ -99,6 +99,8 @@ export function HomeFeed({
 	const t = useTranslations("home.feed");
 	const tMember = useTranslations("member");
 	const format = useFormatter();
+	// The reference for « il y a 5 min », refreshed every minute.
+	const now = useNow({ updateInterval: 60_000 });
 	const mounted = useMounted();
 	const sentinel = useRef<HTMLDivElement>(null);
 
@@ -140,7 +142,7 @@ export function HomeFeed({
 					href: `/questions/${q.id}`,
 					linkAs: CardLink,
 					// Relative to the viewer's clock, so only once mounted (no hydration mismatch).
-					ago: mounted ? format.relativeTime(new Date(q.createdAt)) : "…",
+					ago: mounted ? format.relativeTime(new Date(q.createdAt), now) : "…",
 				}))}
 			/>
 			<div ref={sentinel} aria-hidden className="h-px" />

@@ -160,6 +160,8 @@ function FeedSection({ signedIn }: { signedIn: boolean }) {
 		enabled: HAS_DATABASE && signedIn,
 	});
 	const labels = TABS.map((key) => t(key));
+	// The server never has the persisted cache: the skeleton until mounted (no hydration mismatch).
+	const mounted = useMounted();
 	const feed = useFeed(tab, signedIn, {
 		language,
 		country,
@@ -195,7 +197,7 @@ function FeedSection({ signedIn }: { signedIn: boolean }) {
 					})),
 				]}
 			/>
-			{feed.isPending ? (
+			{!mounted || feed.isPending ? (
 				<FeedSkeleton />
 			) : feed.items.length === 0 ? (
 				<EmptyFeed signedIn={signedIn} />

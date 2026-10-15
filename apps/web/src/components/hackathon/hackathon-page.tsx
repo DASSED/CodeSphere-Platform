@@ -67,9 +67,19 @@ export function HackathonPage({ slug }: { slug: string }) {
 		// The page renders its own error state: no toast on top of it.
 		meta: { silent: true },
 	});
+	// The server never has the persisted cache: render as it did until mounted (no hydration mismatch).
+	const mounted = useMounted();
 
 	if (!HAS_DATABASE) {
 		return <Shell>{t("unavailable")}</Shell>;
+	}
+	if (!mounted || hackathon.isPending) {
+		return (
+			<Shell>
+				<Skeleton className="h-48 rounded-3xl" />
+				<Skeleton className="h-96 rounded-3xl" />
+			</Shell>
+		);
 	}
 	if (hackathon.isError) {
 		const missing = errorCodeOf(hackathon.error) === "NOT_FOUND";
@@ -90,14 +100,6 @@ export function HackathonPage({ slug }: { slug: string }) {
 						</AlertDescription>
 					)}
 				</Alert>
-			</Shell>
-		);
-	}
-	if (hackathon.isPending) {
-		return (
-			<Shell>
-				<Skeleton className="h-48 rounded-3xl" />
-				<Skeleton className="h-96 rounded-3xl" />
 			</Shell>
 		);
 	}
@@ -383,6 +385,7 @@ function Judging({ hackathon }: { hackathon: HackathonData }) {
 
 function Discussion({ slug }: { slug: string }) {
 	const t = useTranslations("hackathon.discussion");
+	const mounted = useMounted();
 	const questions = useInfiniteQuery(
 		orpc.questions.list.infiniteOptions({
 			input: (cursor: string | undefined) => ({
@@ -404,7 +407,7 @@ function Discussion({ slug }: { slug: string }) {
 					{t("lead", { tag: slug })}
 				</p>
 			</div>
-			{questions.isPending ? (
+			{!mounted || questions.isPending ? (
 				<FeedSkeleton />
 			) : items.length === 0 ? (
 				<p className="text-muted-foreground">{t("empty")}</p>
