@@ -17,10 +17,10 @@ export async function setFollowedTags(
 		if (!userId) {
 			throw new Error(`no Member with email ${email}`);
 		}
-		await client.query(`delete from tag_follows where user_id = $1`, [userId]);
+		await client.query("delete from tag_follows where user_id = $1", [userId]);
 		for (const tag of tags) {
 			await client.query(
-				`insert into tag_follows (user_id, tag) values ($1, $2)`,
+				"insert into tag_follows (user_id, tag) values ($1, $2)",
 				[userId, tag],
 			);
 		}
