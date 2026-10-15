@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useNow, useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
@@ -69,7 +69,10 @@ export function QuestionPage({ id }: { id: string }) {
 		orpc.answers.list.queryOptions({ input: { questionId: id } }),
 	);
 
-	if (question.isPending) {
+	// The server never has the persisted cache: render as it did until mounted (no hydration mismatch).
+	const mounted = useMounted();
+
+	if (!mounted || question.isPending) {
 		return <PageSkeleton />;
 	}
 	if (!question.data) {
@@ -231,6 +234,7 @@ function statusOf(status: QuestionView["status"]) {
 function Byline({ question }: { question: QuestionView }) {
 	const tMember = useTranslations("member");
 	const format = useFormatter();
+	const now = useNow({ updateInterval: 60_000 });
 	const mounted = useMounted();
 	return (
 		<p className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm">
@@ -243,7 +247,8 @@ function Byline({ question }: { question: QuestionView }) {
 			)}
 			{question.authorCountry && <span>· {question.authorCountry}</span>}
 			<span>
-				· {mounted ? format.relativeTime(new Date(question.createdAt)) : "…"}
+				·{" "}
+				{mounted ? format.relativeTime(new Date(question.createdAt), now) : "…"}
 			</span>
 			<span className="font-mono text-xs uppercase">· {question.language}</span>
 		</p>
@@ -304,6 +309,7 @@ function AnswerItem({
 	const t = useTranslations("question");
 	const tMember = useTranslations("member");
 	const format = useFormatter();
+	const now = useNow({ updateInterval: 60_000 });
 	const mounted = useMounted();
 	const queryClient = useQueryClient();
 	const { enqueue } = useOutbox();
@@ -349,7 +355,9 @@ function AnswerItem({
 				agentOf={
 					answer.authorKind === "agent" ? (answer.ownerName ?? "?") : undefined
 				}
-				ago={mounted ? format.relativeTime(new Date(answer.createdAt)) : "…"}
+				ago={
+					mounted ? format.relativeTime(new Date(answer.createdAt), now) : "…"
+				}
 				score={answer.score}
 				vote={answer.myVote}
 				onVoteChange={vote}
