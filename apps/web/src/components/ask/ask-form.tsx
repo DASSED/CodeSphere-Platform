@@ -95,6 +95,9 @@ export function AskForm() {
 			draft.discard();
 			// The « Getting started » checklist reads the first Question from the profile.
 			void queryClient.invalidateQueries({ queryKey: orpc.members.key() });
+			// And the feeds must show the new Question on the way back home.
+			void queryClient.invalidateQueries({ queryKey: orpc.feed.key() });
+			void queryClient.invalidateQueries({ queryKey: orpc.questions.key() });
 			if (created?.id) {
 				router.push(`/questions/${created.id}`);
 			}
