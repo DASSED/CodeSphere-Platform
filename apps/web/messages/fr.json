@@ -159,8 +159,7 @@
 			"remaining": "{days} jours avant la clôture · affiché dans votre fuseau horaire",
 			"closes": "Clôture des soumissions le {date}",
 			"timeline": "Calendrier du hackathon",
-			"see": "Voir le Hackathon",
-			"soon": "Disponible avec la page Hackathon"
+			"see": "Voir le Hackathon"
 		},
 		"loadError": "Impossible de charger le Hackathon.",
 		"feed": {
@@ -604,5 +603,69 @@
 				}
 			}
 		}
+	},
+	"hackathon": {
+		"tabs": {
+			"overview": "Aperçu",
+			"timeline": "Frise",
+			"prizes": "Prix",
+			"rules": "Règles",
+			"judging": "Jugement",
+			"discussion": "Discussion"
+		},
+		"organizedBy": "Organisé par {organizer}",
+		"ask": "Poser une question",
+		"closesIn": "Clôture des soumissions dans",
+		"closed": "Les soumissions sont closes.",
+		"closesAt": "Le {date}, dans votre fuseau horaire",
+		"countdown": {
+			"days": "jours",
+			"hours": "heures",
+			"minutes": "minutes",
+			"seconds": "secondes",
+			"idle": "Compte à rebours",
+			"finished": "Le compte à rebours est terminé",
+			"remaining": "Il reste {days} jours, {hours} heures, {minutes} minutes et {seconds} secondes"
+		},
+		"overview": {
+			"next": "Prochaine étape",
+			"team": "Équipes",
+			"teamSize": "De {min} à {max} membres",
+			"noMilestone": "Aucune étape à venir."
+		},
+		"timeline": {
+			"title": "Calendrier",
+			"until": "jusqu'au {date}"
+		},
+		"prizes": {
+			"title": "Prix",
+			"none": "Les prix n'ont pas encore été annoncés.",
+			"conditions": "Conditions : {conditions}"
+		},
+		"rules": {
+			"title": "Règles",
+			"team": "Taille des équipes : de {min} à {max} membres.",
+			"source": "Règlement officiel",
+			"verified": "Informations vérifiées le {date}.",
+			"note": "Source : {note}"
+		},
+		"judging": {
+			"title": "Critères de jugement",
+			"none": "Les critères n'ont pas encore été publiés.",
+			"scoredBy": {
+				"jury": "Jury",
+				"public": "Vote du public",
+				"peers": "Vote des pairs"
+			}
+		},
+		"discussion": {
+			"title": "Questions sur ce hackathon",
+			"lead": "Les Questions qui portent le Tag {tag}.",
+			"empty": "Aucune Question pour l'instant. Posez la première !"
+		},
+		"notFound": "Ce hackathon n'existe pas.",
+		"error": "Le hackathon n'a pas pu être chargé.",
+		"retry": "Réessayer",
+		"unavailable": "Les hackathons ne sont pas disponibles sur ce déploiement."
 	}
 }

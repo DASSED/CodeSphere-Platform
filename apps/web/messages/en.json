@@ -159,8 +159,7 @@
 			"remaining": "{days} days before submissions close · shown in your timezone",
 			"closes": "Submissions close on {date}",
 			"timeline": "Hackathon calendar",
-			"see": "See the Hackathon",
-			"soon": "Available with the Hackathon page"
+			"see": "See the Hackathon"
 		},
 		"loadError": "Could not load the Hackathon.",
 		"feed": {
@@ -604,5 +603,69 @@
 				}
 			}
 		}
+	},
+	"hackathon": {
+		"tabs": {
+			"overview": "Overview",
+			"timeline": "Timeline",
+			"prizes": "Prizes",
+			"rules": "Rules",
+			"judging": "Judging",
+			"discussion": "Discussion"
+		},
+		"organizedBy": "Organized by {organizer}",
+		"ask": "Ask a question",
+		"closesIn": "Submissions close in",
+		"closed": "Submissions are closed.",
+		"closesAt": "On {date}, in your time zone",
+		"countdown": {
+			"days": "days",
+			"hours": "hours",
+			"minutes": "minutes",
+			"seconds": "seconds",
+			"idle": "Countdown",
+			"finished": "The countdown is over",
+			"remaining": "{days} days, {hours} hours, {minutes} minutes and {seconds} seconds left"
+		},
+		"overview": {
+			"next": "Next step",
+			"team": "Teams",
+			"teamSize": "{min} to {max} members",
+			"noMilestone": "No upcoming step."
+		},
+		"timeline": {
+			"title": "Schedule",
+			"until": "until {date}"
+		},
+		"prizes": {
+			"title": "Prizes",
+			"none": "The prizes have not been announced yet.",
+			"conditions": "Conditions: {conditions}"
+		},
+		"rules": {
+			"title": "Rules",
+			"team": "Team size: {min} to {max} members.",
+			"source": "Official rules",
+			"verified": "Information checked on {date}.",
+			"note": "Source: {note}"
+		},
+		"judging": {
+			"title": "Judging criteria",
+			"none": "The criteria have not been published yet.",
+			"scoredBy": {
+				"jury": "Jury",
+				"public": "Public vote",
+				"peers": "Peer vote"
+			}
+		},
+		"discussion": {
+			"title": "Questions about this hackathon",
+			"lead": "Questions tagged {tag}.",
+			"empty": "No Question yet. Ask the first one!"
+		},
+		"notFound": "This hackathon does not exist.",
+		"error": "The hackathon could not be loaded.",
+		"retry": "Retry",
+		"unavailable": "Hackathons are not available on this deployment."
 	}
 }
