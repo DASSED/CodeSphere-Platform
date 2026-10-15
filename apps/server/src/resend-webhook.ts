@@ -1,6 +1,7 @@
 // Resend delivers its webhooks through Svix (#200): each request is signed with HMAC-SHA256 over
 // `${svix-id}.${svix-timestamp}.${body}`, keyed by the base64 part of the `whsec_` secret.
 // WebCrypto only, so the check runs the same on Bun and on the Cloudflare Worker.
+import type { Logger } from "@codesphere/logger";
 
 /** Older deliveries are refused, so a captured request cannot be replayed later. */
 const TOLERANCE_SECONDS = 5 * 60;
@@ -12,15 +13,18 @@ const toBase64 = (bytes: ArrayBuffer) =>
 	btoa(String.fromCharCode(...new Uint8Array(bytes)));
 
 // Compares without stopping at the first difference, so timing reveals nothing.
-const sameText = (a: string, b: string) => {
+const constantTimeEqual = (a: string, b: string) => {
 	if (a.length !== b.length) return false;
 	let diff = 0;
 	for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
 	return diff === 0;
 };
 
-/** The delivery failures worth a trace: Resend accepted the email, then never delivered it. */
-const UNDELIVERED = new Set([
+/**
+ * The events worth a trace: Resend accepted the email, then it never arrived (bounced,
+ * suppressed) or the recipient reported it as spam (complained).
+ */
+const DELIVERY_PROBLEMS = new Set([
 	"email.bounced",
 	"email.suppressed",
 	"email.complained",
@@ -38,7 +42,7 @@ type ResendEvent = {
 export async function handleResendWebhook(
 	request: Request,
 	secret: string,
-	logger: { warn: (fields: object, message: string) => void },
+	logger: Pick<Logger, "warn">,
 ): Promise<Response> {
 	const body = await request.text();
 	if (!(await verifyResendWebhook(secret, request.headers, body))) {
@@ -50,7 +54,7 @@ export async function handleResendWebhook(
 	} catch {
 		return new Response(null, { status: 400 });
 	}
-	if (event.type && UNDELIVERED.has(event.type)) {
+	if (event.type && DELIVERY_PROBLEMS.has(event.type)) {
 		logger.warn(
 			{
 				event: event.type,
@@ -58,7 +62,7 @@ export async function handleResendWebhook(
 				bounceType: event.data?.bounce?.type,
 				bounceSubType: event.data?.bounce?.subType,
 			},
-			"email not delivered",
+			"email delivery problem",
 		);
 	}
 	// Every other event is acknowledged so Resend does not retry it.
@@ -76,7 +80,10 @@ export async function verifyResendWebhook(
 	const timestamp = headers.get("svix-timestamp");
 	const signatures = headers.get("svix-signature");
 	if (!id || !timestamp || !signatures) return false;
-	if (Math.abs(now - Number(timestamp)) > TOLERANCE_SECONDS) return false;
+	const sentAt = Number(timestamp);
+	if (!Number.isFinite(sentAt) || Math.abs(now - sentAt) > TOLERANCE_SECONDS) {
+		return false;
+	}
 
 	const key = await crypto.subtle.importKey(
 		"raw",
@@ -95,5 +102,5 @@ export async function verifyResendWebhook(
 	// A rotated secret sends several `v1,<signature>` entries: one match is enough.
 	return signatures
 		.split(" ")
-		.some((entry) => sameText(entry.replace(/^v1,/, ""), expected));
+		.some((entry) => constantTimeEqual(entry.replace(/^v1,/, ""), expected));
 }

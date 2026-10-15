@@ -56,6 +56,16 @@ describe("verifyResendWebhook", () => {
 		).toBe(false);
 	});
 
+	test("refuses a timestamp that is not a number, even when signed", async () => {
+		const signature = `v1,${createHmac("sha256", key).update(`msg_1.soon.${body}`).digest("base64")}`;
+		const forged = new Headers({
+			"svix-id": "msg_1",
+			"svix-timestamp": "soon",
+			"svix-signature": signature,
+		});
+		expect(await verifyResendWebhook(secret, forged, body, now)).toBe(false);
+	});
+
 	test("refuses a request without the Svix headers", async () => {
 		expect(await verifyResendWebhook(secret, new Headers(), body, now)).toBe(
 			false,
