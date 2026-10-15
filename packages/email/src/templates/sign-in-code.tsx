@@ -10,8 +10,8 @@ export type SignInCodeProps = {
 };
 
 export const SIGN_IN_CODE_SUBJECTS: Record<Locale, string> = {
-	fr: "Votre code de connexion CodeSphere",
-	en: "Your CodeSphere sign-in code",
+	fr: "Votre code de connexion CodeSphere Platform",
+	en: "Your CodeSphere Platform sign-in code",
 };
 
 const COPY: Record<
