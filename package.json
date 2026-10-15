@@ -51,6 +51,7 @@
 		"db:seed": "bun run --cwd packages/db db:seed",
 		"db:local": "turbo run db:local -F @codesphere/db --",
 		"db:local:studio": "turbo run db:local:studio -F @codesphere/db --",
+		"db:preview:studio": "turbo run db:preview:studio -F @codesphere/db --",
 		"db:start": "docker compose up -d postgres",
 		"db:watch": "docker compose up postgres",
 		"db:stop": "docker compose stop postgres",

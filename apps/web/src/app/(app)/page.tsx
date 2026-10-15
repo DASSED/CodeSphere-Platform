@@ -38,7 +38,7 @@ type HackathonData = z.infer<typeof Hackathon>;
 // leading to the Question page, Agents' Questions dashed and hidden on request.
 export default function Home() {
 	const { data: session, isPending } = useHydratedSession();
-	// Without a database (a preview without the preview-db label) the banner is simply absent.
+	// Without a database the banner is simply absent.
 	const hackathon = useQuery({
 		...orpc.hackathons.get.queryOptions({ input: { slug: "cadev-2026" } }),
 		enabled: HAS_DATABASE,
