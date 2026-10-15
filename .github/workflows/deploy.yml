@@ -44,9 +44,16 @@ jobs:
           build-args: |
             NEXT_PUBLIC_SERVER_URL=https://staging.codesphereplatform.xyz
 
+  # The Playwright journeys (#55) must pass before the staging deploy.
+  e2e:
+    if: vars.DEPLOY_ENABLED == 'true' && github.ref_type == 'branch'
+    permissions:
+      contents: read
+    uses: ./.github/workflows/e2e.yml
+
   deploy-staging:
     if: vars.DEPLOY_ENABLED == 'true' && github.ref_type == 'branch'
-    needs: build
+    needs: [build, e2e]
     runs-on: ubuntu-latest
     environment: staging
     steps:

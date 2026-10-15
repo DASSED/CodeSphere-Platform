@@ -131,6 +131,7 @@ codesphere/
 - `bun run db:local`: Turbo task of `@codesphere/db`: start the local Postgres (docker compose), apply the migrations and run the idempotent seed; `-- --no-seed` skips the seed
 - `bun run db:local:studio`: Same, then open Drizzle Studio (https://local.drizzle.studio) on the local database to inspect changes; `bun run db:stop` stops Postgres
 - `bun run db:preview:studio -- <pr number>`: open Drizzle Studio on the Neon database of a pull request's preview (`-- --branch staging` for another Neon branch); needs `NEON_API_KEY` and `NEON_PROJECT_ID` in the environment
+- `bun run e2e`: the three Playwright journeys (sign in -> ask, answer -> accept, offline -> queued send) on a local API and web app; needs `DATABASE_URL` pointing at a test database migrated and seeded with `bun run --cwd packages/db db:seed:test`, and Chromium (`bunx playwright install chromium` in `apps/e2e`, or `PLAYWRIGHT_CHROMIUM_PATH`). CI runs them on every pull request and before every staging deploy
 - `bun run check`: Run Biome formatting and linting
 - `bun run docker:build`: Build the Docker Compose images
 - `bun run docker:up`: Build and start the Docker Compose stack
