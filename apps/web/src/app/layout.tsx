@@ -1,6 +1,7 @@
 import { AppFooter } from "@codesphere/ui/components/organisms/app-footer";
 import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Outfit } from "next/font/google";
+import { headers } from "next/headers";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 
@@ -36,6 +37,8 @@ export default async function RootLayout({
 	const locale = await getLocale();
 	const messages = await getMessages();
 	const t = await getTranslations("legal");
+	// Drawn by src/proxy.ts for the CSP (#54).
+	const nonce = (await headers()).get("x-nonce") ?? undefined;
 
 	return (
 		<html
@@ -45,7 +48,7 @@ export default async function RootLayout({
 		>
 			<body>
 				<NextIntlClientProvider locale={locale} messages={messages}>
-					<Providers>
+					<Providers nonce={nonce}>
 						{children}
 						<AppFooter
 							version={process.env.APP_VERSION ?? "0.0.0"}
