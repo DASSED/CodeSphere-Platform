@@ -190,6 +190,8 @@ export function createListingService(db: Database) {
 	async function hot(
 		input: ListQuestionsInput,
 		tags: string[] | undefined,
+		// The For You feed also keeps the Member's own Questions, whatever their Tags.
+		ownerId?: string,
 	): Promise<{
 		items: QuestionListItem[];
 		nextCursor: string | null;
@@ -209,7 +211,14 @@ export function createListingService(db: Database) {
 				and(
 					...filters(input),
 					lte(questions.createdAt, snapshotAt),
-					tags?.length ? arrayOverlaps(questions.tags, tags) : undefined,
+					tags?.length
+						? ownerId
+							? or(
+									arrayOverlaps(questions.tags, tags),
+									eq(questions.authorId, ownerId),
+								)
+							: arrayOverlaps(questions.tags, tags)
+						: undefined,
 					input.country ? eq(user.country, input.country) : undefined,
 					position
 						? or(
@@ -256,7 +265,7 @@ export function createListingService(db: Database) {
 			);
 		},
 
-		/** `feed.forYou`: hottest Questions on the Tags the Member follows, or overall without any. */
+		/** `feed.forYou`: hottest Questions on the Tags the Member follows (plus their own), or overall without any. */
 		async forYou(
 			userId: string,
 			input: { cursor?: string; limit: number },
@@ -272,6 +281,7 @@ export function createListingService(db: Database) {
 			const { items, nextCursor, snapshotAt } = await hot(
 				{ ...input, sort: "hot", tags: undefined },
 				tags,
+				userId,
 			);
 			return {
 				items,

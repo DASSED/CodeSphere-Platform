@@ -193,6 +193,13 @@ describe.skipIf(!url)("questions.list and feed.forYou on Postgres", () => {
 		expect(page.items[0]?.id).toBe(followed.id);
 	});
 
+	test("forYou keeps the Member's own Questions outside their followed Tags", async () => {
+		const own = await ask(reader, { tags: [otherTag], score: 0 });
+		const page = await clientAs(reader).feed.forYou({ limit: 50 });
+		expect(page.fallback).toBe(false);
+		expect(page.items.some((i) => i.id === own.id)).toBe(true);
+	});
+
 	test("forYou falls back to the hottest Questions overall without a followed Tag", async () => {
 		const hottest = await ask(ng, { tags: [otherTag], score: 10_000 });
 		const page = await clientAs(loner).feed.forYou({ limit: 50 });
