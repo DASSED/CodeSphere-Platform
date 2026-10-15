@@ -9,8 +9,8 @@ import { emailOTP, oAuthProxy } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
 import { parseAdminEmails, roleFor } from "./admin";
-import { displayNameFor } from "./display-name";
 import { readConsent } from "./consent";
+import { displayNameFor } from "./display-name";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
 import { isRefusedProxyCallback } from "./proxy-target";
