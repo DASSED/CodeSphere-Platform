@@ -37,6 +37,7 @@ ou Actions › Staging › Run workflow, branche `develop`. Le bouton n'apparaî
 | `PREVIEW_GITLAB_CLIENT_ID`, `PREVIEW_GITLAB_CLIENT_SECRET` | Idem GitLab | optionnel |
 | `PREVIEW_GOOGLE_CLIENT_ID`, `PREVIEW_GOOGLE_CLIENT_SECRET` | Idem Google | optionnel |
 | `RESEND_API_KEY` | Envoi d'e-mails (staging seulement) | optionnel |
+| `RESEND_WEBHOOK_SECRET` | Secret de signature du webhook Resend (`whsec_…`). Déclarer `https://<staging>/webhooks/resend` dans Resend, événements `email.bounced`, `email.suppressed`, `email.complained` (#200) | optionnel |
 
 Les secrets passent au Worker par un fichier (`scripts/preview-secrets.mjs`), jamais par la ligne de commande ; une valeur absente est ignorée. Le workflow ajoute en `--var` : `BETTER_AUTH_URL`, `CORS_ORIGIN`, `OAUTH_PROXY_PRODUCTION_URL` (l'origine de staging) et `GIT_SHA`.
 

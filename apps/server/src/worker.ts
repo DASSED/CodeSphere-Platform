@@ -23,6 +23,7 @@ export type WorkerEnv = {
 	ADMIN_EMAILS?: string;
 	RESEND_API_KEY?: string;
 	EMAIL_FROM?: string;
+	RESEND_WEBHOOK_SECRET?: string;
 	GITHUB_CLIENT_ID?: string;
 	GITHUB_CLIENT_SECRET?: string;
 	GITLAB_CLIENT_ID?: string;
@@ -102,6 +103,7 @@ function buildApp(env: WorkerEnv) {
 		// The public Worker never serves the spec or its UI: they are for development only.
 		apiDocs: false,
 		notifications: createNotifications(env, logger),
+		resendWebhookSecret: env.RESEND_WEBHOOK_SECRET,
 	};
 	return createApp(deps) as unknown as Hono<never>;
 }

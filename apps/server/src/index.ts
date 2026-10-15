@@ -21,6 +21,7 @@ const app = createApp({
 	release: { version: ENV.APP_VERSION, commit: ENV.GIT_SHA },
 	apiDocs: ENV.NODE_ENV !== "production",
 	notifications,
+	resendWebhookSecret: ENV.RESEND_WEBHOOK_SECRET,
 });
 
 export default app;

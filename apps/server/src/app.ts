@@ -15,6 +15,7 @@ import { cors } from "hono/cors";
 import { MCPHandler } from "orpc-mcp/fetch";
 
 import { createContext } from "./context";
+import { handleResendWebhook } from "./resend-webhook";
 
 export type AppDeps = {
 	auth: ReturnType<typeof createAuth>;
@@ -27,6 +28,8 @@ export type AppDeps = {
 	notifications?: ApiContext["notifications"];
 	/** Serve the OpenAPI spec and its reference UI under /api/v1. Off on the public deployments. */
 	apiDocs: boolean;
+	/** Signing secret of the Resend webhook (#200); without it, /webhooks/resend is not mounted. */
+	resendWebhookSecret?: string;
 };
 
 // Stateless handlers: built once per isolate or process, shared by every request.
@@ -92,6 +95,14 @@ export function createApp(deps: AppDeps) {
 	app.on(["POST", "GET"], "/api/auth/*", async (c) =>
 		deps.auth.handler(c.req.raw),
 	);
+
+	const { resendWebhookSecret } = deps;
+	if (resendWebhookSecret) {
+		// Before the API middleware: Resend has no session, and the call needs no database.
+		app.post("/webhooks/resend", (c) =>
+			handleResendWebhook(c.req.raw, resendWebhookSecret, c.get("logger")),
+		);
+	}
 
 	app.use("/*", async (c, next) => {
 		const context = await createContext({ context: c, deps });
