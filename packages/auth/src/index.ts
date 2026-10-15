@@ -10,6 +10,7 @@ import { eq } from "drizzle-orm";
 
 import { parseAdminEmails, roleFor } from "./admin";
 import { readConsent } from "./consent";
+import { displayNameFor } from "./display-name";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
 import { isRefusedProxyCallback } from "./proxy-target";
@@ -165,6 +166,7 @@ export function createAuth(
 						return {
 							data: {
 								...user,
+								name: displayNameFor(user.name, user.email),
 								role: roleFor(user, staff),
 								consentVersion: consent.consentVersion,
 								consentAcceptedAt: consent.consentAcceptedAt,

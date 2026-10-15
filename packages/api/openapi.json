@@ -4804,6 +4804,9 @@
 										},
 										"tagsOnboardingSkipped": {
 											"type": "boolean"
+										},
+										"hasAskedQuestion": {
+											"type": "boolean"
 										}
 									},
 									"required": [
@@ -4816,7 +4819,8 @@
 										"city",
 										"cityPublic",
 										"hideAgentContent",
-										"tagsOnboardingSkipped"
+										"tagsOnboardingSkipped",
+										"hasAskedQuestion"
 									],
 									"additionalProperties": false
 								}

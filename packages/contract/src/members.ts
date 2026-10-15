@@ -27,6 +27,12 @@ export const OwnProfile = PublicProfile.extend({
 	tagsOnboardingSkipped: z.boolean(),
 });
 
+/** The signed-in Member, with what the « Getting started » checklist needs. */
+export const Me = OwnProfile.extend({
+	/** The Member has asked at least one Question that is not deleted. */
+	hasAskedQuestion: z.boolean(),
+});
+
 export const ProfileUpdate = z.object({
 	name: z.string().trim().min(1).max(80).optional(),
 	country: Region.shape.country.nullable().optional(),
@@ -104,7 +110,7 @@ export const membersContract = {
 				annotations: { readOnlyHint: true },
 			}),
 		)
-		.output(OwnProfile),
+		.output(Me),
 	update: base
 		.errors({ UNAUTHORIZED: {} })
 		.meta(

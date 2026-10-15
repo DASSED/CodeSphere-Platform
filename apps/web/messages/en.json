@@ -145,7 +145,9 @@
 			"title": "Getting started",
 			"account": "Account created",
 			"tags": "Follow at least 3 Tags",
-			"question": "Ask your first question"
+			"question": "Ask your first question",
+			"progress": "{done}/{total}",
+			"done": "Done"
 		},
 		"followed": {
 			"title": "Followed Tags",
@@ -159,7 +161,8 @@
 			"remaining": "{days} days before submissions close · shown in your timezone",
 			"closes": "Submissions close on {date}",
 			"timeline": "Hackathon calendar",
-			"see": "See the Hackathon"
+			"see": "See the Hackathon",
+			"daysShort": "d"
 		},
 		"loadError": "Could not load the Hackathon.",
 		"feed": {
@@ -360,7 +363,14 @@
 	},
 	"onboarding": {
 		"loading": "Loading Tags…",
-		"failed": "Could not save your Tags. Try again."
+		"failed": "Could not save your Tags. Try again.",
+		"title": "What do you want to follow?",
+		"lead": "Pick at least {min} Tags: your « For you » feed is built from them.",
+		"missing": "{count, plural, one {# more Tag to pick} other {# more Tags to pick}}",
+		"ready": "{count} Tags selected",
+		"skip": "Skip",
+		"submit": "Continue",
+		"saving": "Saving…"
 	},
 	"outbox": {
 		"failedTitle": "Refused sends",
@@ -484,7 +494,8 @@
 		"next": "Continue",
 		"publish": "Publish the question",
 		"publishing": "Publishing…",
-		"draftNotice": "Draft saved on this device, even offline."
+		"draftNotice": "Draft saved on this device, even offline.",
+		"published": "Question published, opening it…"
 	},
 	"member": {
 		"unnamed": "Member"
@@ -667,5 +678,10 @@
 		"error": "The hackathon could not be loaded.",
 		"retry": "Retry",
 		"unavailable": "Hackathons are not available on this deployment."
+	},
+	"tagInput": {
+		"placeholder": "Add a Tag",
+		"remove": "Remove {tag}",
+		"full": "{max} Tags at most"
 	}
 }

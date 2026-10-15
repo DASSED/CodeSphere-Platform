@@ -21,7 +21,7 @@ import {
 	TabsTrigger,
 } from "@codesphere/ui/components/molecules/tabs";
 import { TagInput } from "@codesphere/ui/components/molecules/tag-input";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
@@ -39,6 +39,7 @@ import {
 	stepOf,
 } from "@/lib/ask";
 import { useDraft } from "@/lib/use-draft";
+import { useTagInputLabels } from "@/lib/use-tag-input-labels";
 import { orpc } from "@/utils/orpc";
 
 const LANGUAGES = ["fr", "en"] as const;
@@ -51,8 +52,10 @@ const LANGUAGES = ["fr", "en"] as const;
 export function AskForm() {
 	const t = useTranslations("ask");
 	const tErrors = useTranslations("errors");
+	const tagInputLabels = useTagInputLabels();
 	const locale = useLocale();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const params = useSearchParams();
 	const { enqueue, dismiss, online } = useOutbox();
 	const draft = useDraft<QuestionDraft>("question:new", {
@@ -81,17 +84,22 @@ export function AskForm() {
 		// Only when the Draft is first ready: the Member may remove the Tag afterwards.
 	}, [ready, tag]);
 
-	// Published: open the Question, and the Draft is done with.
+	// Published: open the Question, and the Draft is done with. The form shows « published »
+	// meanwhile, never the emptied Draft (it flashed as a blank review step).
+	const [published, setPublished] = useState(false);
 	useEffect(() => {
 		if (entry?.state === "sent") {
 			const created = entry.result as { id?: string } | undefined;
+			setPublished(true);
 			dismiss(entry.id);
 			draft.discard();
+			// The « Getting started » checklist reads the first Question from the profile.
+			void queryClient.invalidateQueries({ queryKey: orpc.members.key() });
 			if (created?.id) {
 				router.push(`/questions/${created.id}`);
 			}
 		}
-	}, [entry, dismiss, draft, router]);
+	}, [entry, dismiss, draft, router, queryClient]);
 
 	// A field the server refused sends the Member back to its step, with the message on it.
 	useEffect(() => {
@@ -152,6 +160,17 @@ export function AskForm() {
 		errors[field] ? t(`errors.${errors[field]}`) : undefined;
 	const steps = ASK_STEPS.map((s) => t(`steps.${s}`));
 	const waitingOffline = entry?.state === "pending" && !online;
+
+	if (published) {
+		return (
+			<p
+				role="status"
+				className="rounded-2xl border border-border bg-card p-6 text-muted-foreground text-sm"
+			>
+				{t("published")}
+			</p>
+		);
+	}
 
 	return (
 		<div className="grid gap-6">
@@ -247,6 +266,7 @@ export function AskForm() {
 							required
 						>
 							<TagInput
+								{...tagInputLabels}
 								inputId="ask-tags"
 								value={value.tags}
 								onValueChange={(tags) => set("tags", tags)}
