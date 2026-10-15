@@ -4,6 +4,7 @@ import {
 	composeEmail,
 	createEmailClient,
 	type EmailEnv,
+	type EmailTransport,
 	localeFromAcceptLanguage,
 } from "@codesphere/email";
 import type { Logger } from "@codesphere/logger";
@@ -16,8 +17,9 @@ export function createMailHooks(
 	env: EmailEnv,
 	logger: Pick<Logger, "warn" | "info">,
 	development = false,
+	transport?: EmailTransport,
 ): AuthHooks {
-	const mail = createEmailClient(env);
+	const mail = createEmailClient(env, transport);
 	return {
 		async sendSignInOtp(email, otp, acceptLanguage) {
 			const result = await mail.send({
@@ -30,13 +32,16 @@ export function createMailHooks(
 					},
 				}),
 			});
-			if (result.status === "failed") {
-				logger.warn({ message: result.message }, "sign-in code not sent");
-			}
 			// Local development: the code is also in the server log, whatever the mail provider
 			// says (no address, spec §4). Never outside development.
 			if (development) {
 				logger.info({ otp }, "sign-in code (development)");
+			}
+			if (result.status === "failed") {
+				logger.warn({ message: result.message }, "sign-in code not sent");
+				// A code that never left must not read as sent: the request fails, so the
+				// sign-in form shows an error and the Member can ask for another code.
+				throw new Error("The sign-in code could not be sent.");
 			}
 		},
 		async onMemberCreated(member, acceptLanguage) {
