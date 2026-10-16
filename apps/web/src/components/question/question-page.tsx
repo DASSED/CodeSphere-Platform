@@ -7,6 +7,7 @@ import { Skeleton } from "@codesphere/ui/components/atoms/skeleton";
 import { StatusBadge } from "@codesphere/ui/components/atoms/status-badge";
 import { Tag } from "@codesphere/ui/components/atoms/tag";
 import { AnswerCard } from "@codesphere/ui/components/molecules/answer-card";
+import { Breadcrumb } from "@codesphere/ui/components/molecules/breadcrumb";
 import {
 	Collapsible,
 	CollapsiblePanel,
@@ -43,6 +44,7 @@ import { orpc } from "@/utils/orpc";
 
 import { AnswerComposer } from "./answer-composer";
 import { QuestionEditor } from "./question-editor";
+import { type QuestionStep, QuestionSteps } from "./question-steps";
 import { scoreAfter, useVote } from "./use-vote";
 
 type Viewer = { id: string; kind: "human" | "agent" } | null;
@@ -109,6 +111,7 @@ function Loaded({
 	viewer: Viewer;
 }) {
 	const t = useTranslations("question");
+	const tNav = useTranslations("question.nav");
 	const queryClient = useQueryClient();
 	const [editing, setEditing] = useState(false);
 	const isAuthor = viewer?.id === question.authorId;
@@ -117,6 +120,26 @@ function Loaded({
 	const answered = answers?.some((a) => a.authorId === viewer?.id) ?? false;
 	const canAnswer =
 		viewer !== null && question.status !== "closed" && !answered;
+	const showAnswers = !(accepted && others.length === 0);
+	const showReply = viewer === null || canAnswer;
+
+	// The journey through the page, in reading order: only the sections that are on screen.
+	const steps: QuestionStep[] = [
+		{ id: "question", label: tNav("question") },
+		...(accepted ? [{ id: "solution", label: tNav("solution") }] : []),
+		...(showAnswers
+			? [
+					{
+						id: "answers",
+						label:
+							answers === undefined
+								? tNav("answers")
+								: `${tNav("answers")} (${answers.length})`,
+					},
+				]
+			: []),
+		...(showReply ? [{ id: "reply", label: tNav("reply") }] : []),
+	];
 
 	const refresh = useCallback(() => {
 		void queryClient.invalidateQueries({ queryKey: orpc.questions.key() });
@@ -132,7 +155,16 @@ function Loaded({
 	return (
 		<main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 md:px-6 md:py-8 lg:grid-cols-[minmax(0,1fr)_18rem]">
 			<div className="grid min-w-0 content-start gap-6">
-				<header className="grid gap-3">
+				<Breadcrumb
+					aria-label={tNav("breadcrumb")}
+					linkAs={Link}
+					items={[
+						{ label: tNav("home"), href: "/" },
+						{ label: question.title },
+					]}
+				/>
+				<QuestionSteps steps={steps} label={tNav("steps")} className="-mt-3" />
+				<header id="question" className="grid scroll-mt-32 gap-3">
 					<div className="flex flex-wrap items-center gap-2">
 						<StatusBadge status={statusOf(question.status)}>
 							{t(`status.${question.status}`)}
@@ -156,7 +188,7 @@ function Loaded({
 				{accepted ? (
 					<>
 						<section aria-labelledby="solution" className="grid gap-3">
-							<h2 id="solution" className="font-semibold text-lg">
+							<h2 id="solution" className="scroll-mt-32 font-semibold text-lg">
 								{t("solution")}
 							</h2>
 							<AnswerItem
@@ -181,9 +213,9 @@ function Loaded({
 				)}
 
 				{/* Solved with nothing else to read: no empty « Réponses » heading. */}
-				{!(accepted && others.length === 0) && (
+				{showAnswers && (
 					<section aria-labelledby="answers" className="grid gap-3">
-						<h2 id="answers" className="font-semibold text-lg">
+						<h2 id="answers" className="scroll-mt-32 font-semibold text-lg">
 							{t("answers", { count: others.length })}
 						</h2>
 						{answers === undefined ? (
@@ -203,18 +235,22 @@ function Loaded({
 					</section>
 				)}
 
-				{viewer === null ? (
-					<div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border border-dashed p-4 text-sm">
-						<span className="text-muted-foreground">{t("signInToAnswer")}</span>
-						<SsoLoginDialog
-							trigger={<Button variant="outline">{t("signIn")}</Button>}
-						/>
-					</div>
-				) : question.status === "closed" ? (
-					<p className="text-muted-foreground text-sm">{t("closedNotice")}</p>
-				) : canAnswer ? (
-					<AnswerComposer questionId={question.id} onPublished={refresh} />
-				) : null}
+				<div id="reply" className="scroll-mt-32">
+					{viewer === null ? (
+						<div className="flex flex-wrap items-center gap-3 rounded-2xl border border-border border-dashed p-4 text-sm">
+							<span className="text-muted-foreground">
+								{t("signInToAnswer")}
+							</span>
+							<SsoLoginDialog
+								trigger={<Button variant="outline">{t("signIn")}</Button>}
+							/>
+						</div>
+					) : question.status === "closed" ? (
+						<p className="text-muted-foreground text-sm">{t("closedNotice")}</p>
+					) : canAnswer ? (
+						<AnswerComposer questionId={question.id} onPublished={refresh} />
+					) : null}
+				</div>
 			</div>
 
 			<Aside question={question} viewer={viewer} />
