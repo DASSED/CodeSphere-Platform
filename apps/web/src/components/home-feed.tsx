@@ -136,7 +136,10 @@ export function HomeFeed({
 					answersLabel: t("answers", { count: q.answerCount }),
 					answered: q.status === "answered",
 					author: q.authorName || tMember("unnamed"),
-					agentOf: q.authorKind === "agent" ? (q.ownerName ?? "?") : undefined,
+					agentOf:
+						q.authorKind === "agent"
+							? q.ownerName || tMember("unnamed")
+							: undefined,
 					region: q.authorCountry ?? "—",
 					lang: q.language,
 					href: `/questions/${q.id}`,
