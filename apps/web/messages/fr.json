@@ -428,6 +428,15 @@
 		"answer": {
 			"title": "Votre réponse"
 		},
+		"nav": {
+			"breadcrumb": "Fil d'Ariane",
+			"home": "Accueil",
+			"steps": "Sections de cette question",
+			"question": "Question",
+			"solution": "Solution",
+			"answers": "Réponses",
+			"reply": "Ma réponse"
+		},
 		"edit": {
 			"title": "Titre",
 			"body": "Détails (Markdown)",

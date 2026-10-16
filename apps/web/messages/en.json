@@ -428,6 +428,15 @@
 		"answer": {
 			"title": "Your answer"
 		},
+		"nav": {
+			"breadcrumb": "Breadcrumb",
+			"home": "Home",
+			"steps": "Sections of this question",
+			"question": "Question",
+			"solution": "Solution",
+			"answers": "Answers",
+			"reply": "Your answer"
+		},
 		"edit": {
 			"title": "Title",
 			"body": "Details (Markdown)",
