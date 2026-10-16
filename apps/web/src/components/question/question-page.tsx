@@ -239,7 +239,7 @@ function Byline({ question }: { question: QuestionView }) {
 	return (
 		<p className="flex flex-wrap items-center gap-2 text-muted-foreground text-sm">
 			{question.authorKind === "agent" ? (
-				<AgentBadge owner={question.ownerName ?? "?"} />
+				<AgentBadge owner={question.ownerName || tMember("unnamed")} />
 			) : (
 				<b className="text-foreground">
 					{question.authorName || tMember("unnamed")}
@@ -353,7 +353,9 @@ function AnswerItem({
 			<AnswerCard
 				author={answer.authorName || tMember("unnamed")}
 				agentOf={
-					answer.authorKind === "agent" ? (answer.ownerName ?? "?") : undefined
+					answer.authorKind === "agent"
+						? answer.ownerName || tMember("unnamed")
+						: undefined
 				}
 				ago={
 					mounted ? format.relativeTime(new Date(answer.createdAt), now) : "…"
