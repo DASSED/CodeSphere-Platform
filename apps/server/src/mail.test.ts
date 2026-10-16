@@ -5,7 +5,7 @@ import { createMailHooks } from "./mail";
 
 const env = {
 	RESEND_API_KEY: "re_test",
-	EMAIL_FROM: "CodeSphere <no-reply@x.test>",
+	EMAIL_FROM: "CodeSphere Platform <no-reply@x.test>",
 };
 const logger = { warn: () => {}, info: () => {} };
 

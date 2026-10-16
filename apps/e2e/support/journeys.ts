@@ -40,6 +40,14 @@ export async function fillQuestion(page: Page, title: string) {
 	).toBeVisible();
 }
 
+/** Asks a fresh Question through /ask and returns its page path (`/questions/<id>`). */
+export async function askQuestion(page: Page, label: string) {
+	const title = uniqueTitle(label);
+	await fillQuestion(page, title);
+	await publishQuestion(page, title);
+	return { title, path: new URL(page.url()).pathname };
+}
+
 /** Publishes the Question under review and waits for its page. */
 export async function publishQuestion(page: Page, title: string) {
 	await page.getByRole("button", { name: "Publier la question" }).click();

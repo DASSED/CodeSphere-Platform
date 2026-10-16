@@ -68,7 +68,7 @@ export function Layout({
 							color: BRAND,
 						}}
 					>
-						CODESPHERE
+						CODESPHERE PLATFORM
 					</Text>
 					<Heading as="h1" style={{ fontSize: 24, color: "#2b2118" }}>
 						{title}

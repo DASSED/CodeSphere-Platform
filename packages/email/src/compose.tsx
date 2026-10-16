@@ -33,7 +33,7 @@ import {
 	type WelcomeProps,
 } from "./templates/welcome";
 
-/** Every message CodeSphere can send. A new message is a new variant here, nowhere else. */
+/** Every message CodeSphere Platform can send. A new message is a new variant here, nowhere else. */
 export type EmailMessage =
 	| { kind: "welcome"; props: WelcomeProps }
 	| { kind: "account-deleted"; props: AccountDeletedProps }

@@ -23,6 +23,8 @@ type FeedFiltersProps = Omit<
 	onCountryChange: (value: string) => void;
 	languages?: readonly Option[];
 	countries: readonly Option[];
+	/** One line with no visible labels (kept for screen readers), to sit beside other controls. */
+	compact?: boolean;
 };
 
 const DEFAULT_LANGUAGES: readonly Option[] = [
@@ -39,6 +41,7 @@ function FeedFilters({
 	onCountryChange,
 	languages = DEFAULT_LANGUAGES,
 	countries,
+	compact,
 	className,
 	...props
 }: FeedFiltersProps) {
@@ -47,11 +50,17 @@ function FeedFilters({
 	return (
 		<div
 			data-slot="feed-filters"
-			className={cn("flex flex-wrap items-end gap-3", className)}
+			className={cn(
+				"flex flex-wrap gap-3",
+				compact ? "items-center" : "items-end",
+				className,
+			)}
 			{...props}
 		>
 			<div className="flex min-w-44 flex-col gap-1.5">
-				<Label htmlFor={languageId}>Langue</Label>
+				<Label htmlFor={languageId} className={cn(compact && "sr-only")}>
+					Langue
+				</Label>
 				<Select
 					value={language}
 					onValueChange={(value) => value && onLanguageChange(value)}
@@ -70,7 +79,9 @@ function FeedFilters({
 				</Select>
 			</div>
 			<div className="flex min-w-44 flex-col gap-1.5">
-				<Label htmlFor={countryId}>Pays</Label>
+				<Label htmlFor={countryId} className={cn(compact && "sr-only")}>
+					Pays
+				</Label>
 				<Select
 					value={country}
 					onValueChange={(value) => value && onCountryChange(value)}
