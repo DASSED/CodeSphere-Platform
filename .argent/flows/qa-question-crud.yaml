@@ -1,6 +1,6 @@
 steps:
   - echo: "Baseline: signed-in Home in English, no [QA argent] question in For you"
-  - await: { visible: { text: Getting started } }
+  - await: { visible: { text: Followed Tags } }
   - await: { idle: true }
   - assert: { hidden: { text: "[QA argent] How do I paginate a Drizzle query with a cursor?" } }
 
@@ -53,7 +53,7 @@ steps:
 
   - echo: Saved. Leave through the logo; expect Home with the edited question in For you
   - tap: { text: CodeSphere Platform }
-  - await: { visible: { text: Getting started }, timeout: 30000 }
+  - await: { visible: { text: Followed Tags }, timeout: 30000 }
   - await: { idle: true }
   - await: { visible: { text: "[QA argent] How do I paginate a Drizzle query with a cursor? [edited]" }, timeout: 15000 }
 
@@ -86,7 +86,7 @@ steps:
   - tool: keyboard
     args:
       key: enter
-  - await: { visible: { text: Getting started }, timeout: 30000 }
+  - await: { visible: { text: Followed Tags }, timeout: 30000 }
   - await: { idle: true }
   - await: { hidden: { text: "[QA argent] How do I paginate a Drizzle query with a cursor? [edited]" }, timeout: 15000 }
 executionPrerequisite: Chrome with CDP on port 9222 showing the CodeSphere home page (http://localhost:3001/) in English, signed in as a human Member; local API and web dev servers running.

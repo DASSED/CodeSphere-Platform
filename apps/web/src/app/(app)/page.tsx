@@ -175,28 +175,31 @@ function FeedSection({ signedIn }: { signedIn: boolean }) {
 					value={t(tab)}
 					onValueChange={(label) => setTab(TABS[labels.indexOf(label)] ?? tab)}
 				/>
-				{!signedIn && tab === "forYou" && (
-					<p className="text-muted-foreground text-sm">{t("signInForYou")}</p>
-				)}
+				<FeedFilters
+					compact
+					language={language}
+					onLanguageChange={setLanguage}
+					country={country}
+					onCountryChange={setCountry}
+					languages={[
+						{ value: "all", label: tFilters("allLanguages") },
+						{ value: "fr", label: "Français" },
+						{ value: "en", label: "English" },
+					]}
+					countries={[
+						{ value: "all", label: tFilters("allCountries") },
+						...FEED_COUNTRIES.map((code) => ({
+							value: code,
+							label: code === "OTHER" ? tFilters("diaspora") : code,
+						})),
+					]}
+				/>
 			</div>
-			<FeedFilters
-				language={language}
-				onLanguageChange={setLanguage}
-				country={country}
-				onCountryChange={setCountry}
-				languages={[
-					{ value: "all", label: tFilters("allLanguages") },
-					{ value: "fr", label: "Français" },
-					{ value: "en", label: "English" },
-				]}
-				countries={[
-					{ value: "all", label: tFilters("allCountries") },
-					...FEED_COUNTRIES.map((code) => ({
-						value: code,
-						label: code === "OTHER" ? tFilters("diaspora") : code,
-					})),
-				]}
-			/>
+			{!signedIn && tab === "forYou" && (
+				<p className="-mt-2 text-muted-foreground text-sm">
+					{t("signInForYou")}
+				</p>
+			)}
 			{!mounted || feed.isPending ? (
 				<FeedSkeleton />
 			) : feed.items.length === 0 ? (

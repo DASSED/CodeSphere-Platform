@@ -43,7 +43,7 @@ export {
 export type EmailEnv = {
 	/** Resend API key. Without it, sending is disabled and `send` reports "disabled". */
 	RESEND_API_KEY?: string;
-	/** Sender, e.g. "CodeSphere <no-reply@codesphereplatform.xyz>" (a domain verified in Resend). */
+	/** Sender, e.g. "CodeSphere Platform <no-reply@codesphereplatform.xyz>" (a domain verified in Resend). */
 	EMAIL_FROM?: string;
 };
 
