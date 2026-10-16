@@ -1,13 +1,18 @@
 "use client";
 
 import { cn } from "@codesphere/ui/lib/utils";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type QuestionStep = { id: string; label: string };
 
+/** A section is the current one once its top has passed this line, under the sticky bars. */
+const READING_LINE = 160;
+
 /**
  * The sections of a Question page as steps to jump to (question, solution, answers, reply). The
- * step whose section is under the top of the viewport is marked `aria-current="location"`.
+ * step being read is marked `aria-current="location"`: the last section whose top has passed the
+ * reading line, or the last step once the page is scrolled to its end (a short last section can
+ * never reach the line). A click keeps its step marked until the reader scrolls on their own.
  */
 export function QuestionSteps({
 	steps,
@@ -19,34 +24,44 @@ export function QuestionSteps({
 	className?: string;
 }) {
 	const [active, setActive] = useState(steps[0]?.id);
+	const pinned = useRef(false);
 	const ids = steps.map((step) => step.id).join("|");
 
 	useEffect(() => {
-		const nodes = ids
-			.split("|")
-			.map((id) => document.getElementById(id))
-			.filter((node): node is HTMLElement => node !== null);
-		if (nodes.length === 0) {
-			return;
-		}
-		const observer = new IntersectionObserver(
-			(entries) => {
-				const first = entries
-					.filter((entry) => entry.isIntersecting)
-					.sort(
-						(a, b) => a.boundingClientRect.top - b.boundingClientRect.top,
-					)[0];
-				if (first) {
-					setActive(first.target.id);
+		const ordered = ids.split("|");
+		const update = () => {
+			if (pinned.current) {
+				return;
+			}
+			const atEnd =
+				window.innerHeight + window.scrollY >=
+				document.documentElement.scrollHeight - 2;
+			let current = ordered[0];
+			for (const id of ordered) {
+				const node = document.getElementById(id);
+				if (node && node.getBoundingClientRect().top <= READING_LINE) {
+					current = id;
 				}
-			},
-			// A section counts once it reaches the upper part of the screen, under the header.
-			{ rootMargin: "-112px 0px -55% 0px" },
-		);
-		for (const node of nodes) {
-			observer.observe(node);
-		}
-		return () => observer.disconnect();
+			}
+			setActive(atEnd ? ordered[ordered.length - 1] : current);
+		};
+		const unpin = () => {
+			pinned.current = false;
+		};
+		update();
+		window.addEventListener("scroll", update, { passive: true });
+		window.addEventListener("resize", update);
+		// The reader takes over the scroll again.
+		window.addEventListener("wheel", unpin, { passive: true });
+		window.addEventListener("touchstart", unpin, { passive: true });
+		window.addEventListener("keydown", unpin);
+		return () => {
+			window.removeEventListener("scroll", update);
+			window.removeEventListener("resize", update);
+			window.removeEventListener("wheel", unpin);
+			window.removeEventListener("touchstart", unpin);
+			window.removeEventListener("keydown", unpin);
+		};
 	}, [ids]);
 
 	return (
@@ -67,6 +82,7 @@ export function QuestionSteps({
 								const target = document.getElementById(step.id);
 								if (target) {
 									event.preventDefault();
+									pinned.current = true;
 									target.scrollIntoView({ behavior: "smooth", block: "start" });
 									setActive(step.id);
 								}

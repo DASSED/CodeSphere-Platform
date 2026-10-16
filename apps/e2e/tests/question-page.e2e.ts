@@ -52,6 +52,12 @@ const answerCount = (page: Page) =>
 		.locator("dt", { hasText: "Réponses" })
 		.locator("xpath=following-sibling::dd[1]");
 
+// The path to the page and the jump links to its sections (#212).
+const breadcrumb = (page: Page) =>
+	page.getByRole("navigation", { name: "Fil d'Ariane" });
+const steps = (page: Page) =>
+	page.getByRole("navigation", { name: "Sections de cette question" });
+
 test.describe("a visitor", () => {
 	test("reads a question but can neither answer nor vote", async ({ page }) => {
 		await page.goto(SEEDED_QUESTION);
@@ -79,6 +85,23 @@ test.describe("a visitor", () => {
 			votes.getByRole("button", { name: "Voter contre" }),
 		).toBeDisabled();
 
+		// The breadcrumb ends on the question; a visitor gets the three steps, the last one
+		// leading to the invitation to sign in.
+		await expect(breadcrumb(page).locator('[aria-current="page"]')).toHaveText(
+			"How do I deploy a Next.js app to Cloudflare Workers?",
+		);
+		await expect(steps(page).getByRole("link")).toHaveText([
+			/Question$/,
+			/Réponses \(0\)$/,
+			/Ma réponse$/,
+		]);
+		await breadcrumb(page).getByRole("link", { name: "Accueil" }).click();
+		await expect(page).toHaveURL(/\/$/);
+		await page.goBack();
+		await expect(
+			page.getByText("Connectez-vous pour répondre et voter."),
+		).toBeVisible();
+
 		await page.getByRole("button", { name: "Se connecter" }).first().click();
 		// A sign-in dialog opens over the page: the visitor stays on the question.
 		const dialog = page.getByRole("dialog", { name: "Se connecter" });
@@ -103,12 +126,29 @@ test.describe("a member", () => {
 		).toBeVisible();
 		await expect(answerCount(page)).toHaveText("0");
 
+		// Steps of an open question the Member can answer; « Ma réponse » jumps to the form.
+		await expect(steps(page).getByRole("link")).toHaveText([
+			/Question$/,
+			/Réponses \(0\)$/,
+			/Ma réponse$/,
+		]);
+		await steps(page).getByRole("link", { name: "Ma réponse" }).click();
+		await expect(answerBox(page)).toBeInViewport();
+		await expect(
+			steps(page).getByRole("link", { name: "Ma réponse" }),
+		).toHaveAttribute("aria-current", "location");
+
 		const body = "Réponse E2E : vérifier la signature avant de traiter.";
 		await answerBox(page).fill(body);
 		await publishAnswer(page).click();
 		const card = answerCard(page, body);
 		await expect(card).toBeVisible();
 		await expect(answerCount(page)).toHaveText("1");
+		// Answered: the reply step is gone and the answers step counts the answer.
+		await expect(steps(page).getByRole("link")).toHaveText([
+			/Question$/,
+			/Réponses \(1\)$/,
+		]);
 		await expect(
 			page.getByText("Pas encore de réponse. Soyez le premier à aider."),
 		).toHaveCount(0);
