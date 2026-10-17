@@ -3,7 +3,7 @@ name: End-to-end
 # The three Playwright journeys (#55): sign in -> ask; answer -> accept; offline -> queued send.
 # They run on a local stack (Postgres service, API, production build of the web app) seeded with
 # the deterministic test data, on every pull request and before every staging deploy
-# (staging.yml and deploy.yml call this workflow and do not deploy when it fails).
+# (staging.yml and production.yml call this workflow and do not deploy when it fails).
 on:
   pull_request:
   workflow_call:

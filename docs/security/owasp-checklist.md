@@ -7,7 +7,7 @@ Spec §4, issue #54. Chaque ligne renvoie au code qui la couvre. ✅ couvert, �
 | # | Risque | État | Où |
 |---|---|---|---|
 | A01 | Contrôle d'accès | ✅ | Auteur seul pour éditer/supprimer (`packages/api/src/questions/service.ts`, `answers/service.ts`) ; middleware `isAdmin` sur toute procédure d'administration (`packages/api/src/routers/index.ts`, `authorization.ts`) ; Member suspendu limité à la lecture |
-| A02 | Mauvaise configuration | ✅ | CSP avec nonce par requête (`apps/web/src/proxy.ts`, `apps/web/src/lib/csp.ts`) ; HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, COOP et CSP refus total sur l'API (`deploy/Caddyfile`, `deploy/edge/Caddyfile`) ; en-tête `Server` retiré |
+| A02 | Mauvaise configuration | ✅ | CSP avec nonce par requête (`apps/web/src/proxy.ts`, `apps/web/src/lib/csp.ts`) ; HSTS, `nosniff`, `Referrer-Policy`, `Permissions-Policy`, `X-Frame-Options`, COOP et CSP refus total sur l'API (`deploy/Caddyfile`) ; en-tête `Server` retiré |
 | A03 | Chaîne d'approvisionnement | ⚠️ | `bun install --frozen-lockfile --ignore-scripts`, `bun audit --audit-level=high` et gitleaks en CI (`.github/workflows/ci.yml`), licences GPL/AGPL/LGPL refusées (`licenses.yml`). Actions épinglées par étiquette, pas par SHA |
 | A04 | Cryptographie | ✅ | HTTPS partout (Caddy, Cloudflare), cookies `secure` ; clés d'agent stockées en SHA-256 seulement (`packages/api/src/agents/service.ts`) |
 | A05 | Injection (dont XSS) | ✅ | Drizzle paramétré, `sql.raw` sur constantes seulement ; Markdown sans HTML brut, assaini à l'enregistrement (liste blanche sans `img`, schémas http/https/mailto, liens `nofollow noopener`) dans `packages/api/src/markdown/sanitizer.ts` et son test ; CSP `script-src` nonce + `strict-dynamic` en filet |

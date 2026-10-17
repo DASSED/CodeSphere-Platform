@@ -5,7 +5,7 @@ Spec §4 et §5, issue #54. À cocher par l'équipe sur le Cloud Server (Systali
 ## Réseau
 
 - [ ] Pare-feu : seuls 22, 80 et 443 (et 443/udp) ouverts (`ufw status`)
-- [x] Postgres non publié : aucun `ports` sur `postgres` (`docker-compose.prod.yml`, `deploy/compose.app.yml`)
+- [x] Postgres non publié : aucun `ports` sur `postgres` (`docker-compose.prod.yml`)
 - [ ] Postgres injoignable de l'extérieur, vérifié depuis une autre machine : `nc -zv <ip> 5432` échoue
 - [x] Seul Caddy publie des ports (80, 443)
 
