@@ -2,7 +2,7 @@
 # Dump the production PostgreSQL database to backups/ (custom format, restore with pg_restore).
 #
 # Run on the host from the repository root, e.g. every night from cron:
-#   17 3 * * *  cd /srv/codesphere && deploy/backup.sh >> /var/log/codesphere-backup.log 2>&1
+#   17 3 * * *  cd ~/codesphere && deploy/backup.sh >> backups/backup.log 2>&1
 #
 # Environment:
 #   BACKUP_DIR       where dumps go                  (default: ./backups)
@@ -11,6 +11,8 @@
 #                    (an rclone `crypt` remote over R2, so the copy is encrypted). Unset: no copy.
 #   BACKUP_HEARTBEAT_URL   healthchecks.io ping, sent only when the dump (and the off-server copy,
 #                    if configured) succeeded: a missed night alerts the team. Unset: no ping.
+#   NO_HEARTBEAT=1   skip that ping (the dump deploy/deploy.sh takes before a migration).
+# They are read from .env next to docker-compose.prod.yml when it exists, so cron needs no setup.
 #
 # Restore into an empty database:
 #   docker compose -f docker-compose.prod.yml exec -T postgres \
@@ -19,10 +21,19 @@ set -eu
 
 cd "$(dirname "$0")/.."
 
+if [ -f .env ]; then
+	set -a
+	. ./.env
+	set +a
+fi
+
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
 KEEP_DAYS="${KEEP_DAYS:-7}"
 OFFSITE_REMOTE="${OFFSITE_REMOTE:-}"
 BACKUP_HEARTBEAT_URL="${BACKUP_HEARTBEAT_URL:-}"
+if [ "${NO_HEARTBEAT:-}" = 1 ]; then
+	BACKUP_HEARTBEAT_URL=""
+fi
 COMPOSE="docker compose -f docker-compose.prod.yml"
 
 mkdir -p "$BACKUP_DIR"
