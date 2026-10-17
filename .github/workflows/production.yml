@@ -106,6 +106,8 @@ jobs:
     permissions:
       contents: read
     strategy:
+      # Each image reports on its own: a broken web build does not hide the state of the server one.
+      fail-fast: false
       matrix:
         app: [server, web]
     steps:
