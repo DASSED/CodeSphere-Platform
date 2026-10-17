@@ -177,6 +177,10 @@ function FeedSection({ signedIn }: { signedIn: boolean }) {
 				/>
 				<FeedFilters
 					compact
+					labels={{
+						language: tFilters("language"),
+						country: tFilters("country"),
+					}}
 					language={language}
 					onLanguageChange={setLanguage}
 					country={country}

@@ -180,7 +180,9 @@
 		"filters": {
 			"allLanguages": "All languages",
 			"allCountries": "All countries",
-			"diaspora": "Diaspora / other"
+			"diaspora": "Diaspora / other",
+			"language": "Language",
+			"country": "Country"
 		}
 	},
 	"admin": {
@@ -414,7 +416,7 @@
 		},
 		"solution": "Accepted answer",
 		"showQuestion": "Show the question",
-		"answers": "{count, plural, =0 {Answers} one {# other answer} other {# other answers}}",
+		"answers": "{count, plural, =0 {Answers} one {# answer} other {# answers}}",
 		"noAnswer": "No answer yet. Be the first to help.",
 		"signInToAnswer": "Sign in to answer and vote.",
 		"signIn": "Sign in",
@@ -426,7 +428,23 @@
 			"loading": "Preparing the preview…"
 		},
 		"answer": {
-			"title": "Your answer"
+			"title": "Your answer",
+			"write": "Write",
+			"preview": "Preview",
+			"body": "Your answer in Markdown",
+			"placeholder": "Write your answer in Markdown…",
+			"nothingToPreview": "Nothing to preview.",
+			"draft": "Draft saved on this device.",
+			"pending": "You are offline: the answer will be sent when the network returns.",
+			"rejected": "{reason} Your text is kept, you can fix it.",
+			"rejectedDefault": "The answer was refused.",
+			"submit": "Publish the answer",
+			"submitting": "Sending…",
+			"badge": {
+				"draft": "Draft",
+				"pending": "Waiting to send",
+				"rejected": "Refused"
+			}
 		},
 		"nav": {
 			"breadcrumb": "Breadcrumb",
@@ -463,6 +481,23 @@
 			"agentNoVote": "An agent can answer, never vote.",
 			"related": "On the same Tags",
 			"answerCount": "{count, plural, =0 {unanswered} one {# answer} other {# answers}}"
+		},
+		"otherAnswers": "{count, plural, =0 {Other answers} one {# other answer} other {# other answers}}",
+		"confirm": "Confirm ({seconds} s)",
+		"cancel": "Cancel",
+		"vote": {
+			"group": "Vote",
+			"up": "Upvote",
+			"down": "Downvote"
+		},
+		"card": {
+			"accepted": "Accepted",
+			"accept": "Accept",
+			"copyCode": "Copy the code",
+			"copied": "Copied",
+			"share": "Share",
+			"expand": "Read more",
+			"collapse": "Show less"
 		}
 	},
 	"ask": {
@@ -511,7 +546,12 @@
 		"publish": "Publish the question",
 		"publishing": "Publishing…",
 		"draftNotice": "Draft saved on this device, even offline.",
-		"published": "Question published, opening it…"
+		"published": "Question published, opening it…",
+		"related": {
+			"region": "Similar questions",
+			"title": "A similar question may already exist",
+			"answers": "{count, plural, =0 {0 answers} one {# answer} other {# answers}}"
+		}
 	},
 	"member": {
 		"unnamed": "Member"

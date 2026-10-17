@@ -10,7 +10,7 @@ import { insertAgentAnswer } from "../support/answers";
 import { askQuestion, signIn } from "../support/journeys";
 
 // The Question page end to end (#69): what a visitor reads, then everything a Member does on it.
-// Labels are the fr-FR ones; a few still come hard-coded in French from @codesphere/ui (#208).
+// Labels are the fr-FR ones; english.e2e.ts checks the English interface (#208).
 const SEEDED_QUESTION = "/questions/00000000-0000-4000-8000-000000000002";
 
 const answerBox = (page: Page) =>

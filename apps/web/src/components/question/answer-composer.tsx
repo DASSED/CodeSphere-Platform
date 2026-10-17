@@ -61,6 +61,26 @@ export function AnswerComposer({
 			</h2>
 			<AnswerForm
 				docked
+				bodyId="answer-body"
+				submitId="answer-submit"
+				labels={{
+					write: t("write"),
+					preview: t("preview"),
+					body: t("body"),
+					placeholder: t("placeholder"),
+					nothingToPreview: t("nothingToPreview"),
+					draft: t("draft"),
+					pending: t("pending"),
+					rejected: (reason) =>
+						reason ? t("rejected", { reason }) : t("rejectedDefault"),
+					submit: t("submit"),
+					submitting: t("submitting"),
+					badge: {
+						draft: t("badge.draft"),
+						pending: t("badge.pending"),
+						rejected: t("badge.rejected"),
+					},
+				}}
 				value={draft.value.body}
 				onValueChange={(body) => {
 					if (entry?.state === "rejected") {

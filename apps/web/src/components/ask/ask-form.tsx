@@ -377,6 +377,11 @@ function TitleStep({
 				/>
 			</Field>
 			<RelatedQuestions
+				labels={{
+					region: t("related.region"),
+					title: t("related.title"),
+					answers: (count) => t("related.answers", { count }),
+				}}
 				questions={(related.data?.items ?? []).map((q) => ({
 					id: q.id,
 					title: q.title,

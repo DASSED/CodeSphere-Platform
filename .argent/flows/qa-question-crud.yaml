@@ -65,10 +65,10 @@ steps:
 
   - echo: Persisted edit proven. Write and publish an answer; expect it listed and the empty state gone
   - assert: { visible: { text: No answer yet. Be the first to help. } }
-  - scroll-to: { target: { text: Votre réponse en Markdown } }
-  - type: { into: { text: Votre réponse en Markdown }, text: "QA argent answer: order by created_at and id, then filter with a tuple comparison on the last row.", submit: false }
-  - scroll-to: { target: { text: Publier la réponse } }
-  - tap: { text: Publier la réponse }
+  - scroll-to: { target: { id: answer-body } }
+  - type: { into: { id: answer-body }, text: "QA argent answer: order by created_at and id, then filter with a tuple comparison on the last row.", submit: false }
+  - scroll-to: { target: { text: Publish the answer } }
+  - tap: { text: Publish the answer }
   - await: { visible: { text: Delete my answer }, timeout: 15000 }
   - assert: { visible: { text: "QA argent answer: order by created_at and id, then filter with a tuple comparison on the last row." } }
   - assert: { hidden: { text: No answer yet. Be the first to help. } }

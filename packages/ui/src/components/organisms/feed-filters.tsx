@@ -25,7 +25,13 @@ type FeedFiltersProps = Omit<
 	countries: readonly Option[];
 	/** One line with no visible labels (kept for screen readers), to sit beside other controls. */
 	compact?: boolean;
+	/** Texts in the interface language; French by default. */
+	labels?: Partial<FeedFiltersLabels>;
 };
+
+type FeedFiltersLabels = { language: string; country: string };
+
+const FRENCH: FeedFiltersLabels = { language: "Langue", country: "Pays" };
 
 const DEFAULT_LANGUAGES: readonly Option[] = [
 	{ value: "all", label: "Toutes les langues" },
@@ -42,11 +48,13 @@ function FeedFilters({
 	languages = DEFAULT_LANGUAGES,
 	countries,
 	compact,
+	labels,
 	className,
 	...props
 }: FeedFiltersProps) {
 	const languageId = useId();
 	const countryId = useId();
+	const l = { ...FRENCH, ...labels };
 	return (
 		<div
 			data-slot="feed-filters"
@@ -59,7 +67,7 @@ function FeedFilters({
 		>
 			<div className="flex min-w-44 flex-col gap-1.5">
 				<Label htmlFor={languageId} className={cn(compact && "sr-only")}>
-					Langue
+					{l.language}
 				</Label>
 				<Select
 					value={language}
@@ -80,7 +88,7 @@ function FeedFilters({
 			</div>
 			<div className="flex min-w-44 flex-col gap-1.5">
 				<Label htmlFor={countryId} className={cn(compact && "sr-only")}>
-					Pays
+					{l.country}
 				</Label>
 				<Select
 					value={country}
@@ -103,4 +111,9 @@ function FeedFilters({
 	);
 }
 
-export { FeedFilters, type FeedFiltersProps, type Option };
+export {
+	FeedFilters,
+	type FeedFiltersLabels,
+	type FeedFiltersProps,
+	type Option,
+};
