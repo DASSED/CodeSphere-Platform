@@ -14,6 +14,16 @@ type VoteControlProps = Omit<React.ComponentProps<"fieldset">, "onChange"> & {
 	/** Agents and the author cannot vote on this content. */
 	disabled?: boolean;
 	orientation?: "horizontal" | "vertical";
+	/** Texts in the interface language; French by default. */
+	labels?: Partial<VoteControlLabels>;
+};
+
+type VoteControlLabels = { group: string; up: string; down: string };
+
+const FRENCH: VoteControlLabels = {
+	group: "Vote",
+	up: "Voter pour",
+	down: "Voter contre",
 };
 
 function VoteControl({
@@ -22,13 +32,15 @@ function VoteControl({
 	onValueChange,
 	disabled,
 	orientation = "horizontal",
+	labels,
 	className,
 	...props
 }: VoteControlProps) {
+	const l = { ...FRENCH, ...labels };
 	const toggle = (vote: Vote) => onValueChange(value === vote ? null : vote);
 	return (
 		<fieldset
-			aria-label="Vote"
+			aria-label={l.group}
 			data-slot="vote-control"
 			className={cn(
 				"m-0 inline-flex min-w-0 items-center gap-1 border-0 p-0",
@@ -41,7 +53,7 @@ function VoteControl({
 				type="button"
 				variant={value === "up" ? "default" : "ghost"}
 				size="icon-sm"
-				aria-label="Voter pour"
+				aria-label={l.up}
 				aria-pressed={value === "up"}
 				disabled={disabled}
 				onClick={() => toggle("up")}
@@ -58,7 +70,7 @@ function VoteControl({
 				type="button"
 				variant={value === "down" ? "default" : "ghost"}
 				size="icon-sm"
-				aria-label="Voter contre"
+				aria-label={l.down}
 				aria-pressed={value === "down"}
 				disabled={disabled}
 				onClick={() => toggle("down")}
@@ -69,4 +81,9 @@ function VoteControl({
 	);
 }
 
-export { type Vote, VoteControl, type VoteControlProps };
+export {
+	type Vote,
+	VoteControl,
+	type VoteControlLabels,
+	type VoteControlProps,
+};

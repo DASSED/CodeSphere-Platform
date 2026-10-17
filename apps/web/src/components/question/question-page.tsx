@@ -40,6 +40,11 @@ import SsoLoginDialog from "@/components/sso-login-dialog";
 import { errorCodeOf } from "@/i18n/errors";
 import { useHydratedSession } from "@/lib/use-hydrated-session";
 import { useMounted } from "@/lib/use-mounted";
+import {
+	useAnswerCardLabels,
+	useConfirmLabels,
+	useVoteLabels,
+} from "@/lib/use-question-labels";
 import { orpc } from "@/utils/orpc";
 
 import { AnswerComposer } from "./answer-composer";
@@ -216,7 +221,9 @@ function Loaded({
 				{showAnswers && (
 					<section aria-labelledby="answers" className="grid gap-3">
 						<h2 id="answers" className="scroll-mt-32 font-semibold text-lg">
-							{t("answers", { count: others.length })}
+							{t(accepted ? "otherAnswers" : "answers", {
+								count: others.length,
+							})}
 						</h2>
 						{answers === undefined ? (
 							<Skeleton className="h-32 rounded-xl" />
@@ -300,6 +307,7 @@ function QuestionBody({
 	viewer: Viewer;
 }) {
 	const t = useTranslations("question");
+	const voteLabels = useVoteLabels();
 	const queryClient = useQueryClient();
 	const key = orpc.questions.get.queryKey({ input: { id: question.id } });
 	const vote = useVote("question", question.id, (next) =>
@@ -322,6 +330,7 @@ function QuestionBody({
 				onValueChange={vote}
 				disabled={!canVote(viewer, question.authorId)}
 				aria-label={t("voteQuestion")}
+				labels={voteLabels}
 			/>
 			<RenderedMarkdown html={question.bodyHtml} />
 		</article>
@@ -344,6 +353,7 @@ function AnswerItem({
 }) {
 	const t = useTranslations("question");
 	const tMember = useTranslations("member");
+	const cardLabels = useAnswerCardLabels();
 	const format = useFormatter();
 	const now = useNow({ updateInterval: 60_000 });
 	const mounted = useMounted();
@@ -403,6 +413,7 @@ function AnswerItem({
 				accepted={answer.accepted}
 				onAccept={isQuestionAuthor ? accept : undefined}
 				long={answer.body.length > 1500}
+				labels={cardLabels}
 			>
 				<RenderedMarkdown html={answer.bodyHtml} />
 			</AnswerCard>
@@ -422,6 +433,7 @@ function OwnAnswerActions({
 	label: string;
 }) {
 	const tErrors = useTranslations("errors");
+	const confirmLabels = useConfirmLabels();
 	const queryClient = useQueryClient();
 	const remove = useMutation(
 		orpc.answers.delete.mutationOptions({
@@ -435,6 +447,7 @@ function OwnAnswerActions({
 	return (
 		<div className="flex justify-end">
 			<ConfirmTwoStep
+				{...confirmLabels}
 				label={label}
 				disabled={remove.isPending}
 				onConfirm={() =>
@@ -455,6 +468,7 @@ function AuthorActions({
 }) {
 	const t = useTranslations("question.author");
 	const tErrors = useTranslations("errors");
+	const confirmLabels = useConfirmLabels();
 	const queryClient = useQueryClient();
 	const router = useRouter();
 	const { online } = useOutbox();
@@ -509,6 +523,7 @@ function AuthorActions({
 				</Button>
 			)}
 			<ConfirmTwoStep
+				{...confirmLabels}
 				label={t("delete")}
 				disabled={!online || remove.isPending}
 				onConfirm={() => remove.mutate(input)}

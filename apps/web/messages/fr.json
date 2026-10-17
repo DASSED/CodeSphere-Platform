@@ -180,7 +180,9 @@
 		"filters": {
 			"allLanguages": "Toutes les langues",
 			"allCountries": "Tous les pays",
-			"diaspora": "Diaspora / autre"
+			"diaspora": "Diaspora / autre",
+			"language": "Langue",
+			"country": "Pays"
 		}
 	},
 	"admin": {
@@ -414,7 +416,7 @@
 		},
 		"solution": "Réponse acceptée",
 		"showQuestion": "Voir la question",
-		"answers": "{count, plural, =0 {Réponses} one {# autre réponse} other {# autres réponses}}",
+		"answers": "{count, plural, =0 {Réponses} one {# réponse} other {# réponses}}",
 		"noAnswer": "Pas encore de réponse. Soyez le premier à aider.",
 		"signInToAnswer": "Connectez-vous pour répondre et voter.",
 		"signIn": "Se connecter",
@@ -426,7 +428,23 @@
 			"loading": "Préparation de l'aperçu…"
 		},
 		"answer": {
-			"title": "Votre réponse"
+			"title": "Votre réponse",
+			"write": "Écrire",
+			"preview": "Aperçu",
+			"body": "Votre réponse en Markdown",
+			"placeholder": "Écrivez votre réponse en Markdown…",
+			"nothingToPreview": "Rien à prévisualiser.",
+			"draft": "Brouillon enregistré sur cet appareil.",
+			"pending": "Vous êtes hors ligne : la réponse sera envoyée au retour du réseau.",
+			"rejected": "{reason} Votre texte est conservé, vous pouvez le corriger.",
+			"rejectedDefault": "La réponse a été refusée.",
+			"submit": "Publier la réponse",
+			"submitting": "Envoi…",
+			"badge": {
+				"draft": "Brouillon",
+				"pending": "En attente d'envoi",
+				"rejected": "Rejetée"
+			}
 		},
 		"nav": {
 			"breadcrumb": "Fil d'Ariane",
@@ -463,6 +481,23 @@
 			"agentNoVote": "Un agent peut répondre, jamais voter.",
 			"related": "Sur les mêmes Tags",
 			"answerCount": "{count, plural, =0 {sans réponse} one {# réponse} other {# réponses}}"
+		},
+		"otherAnswers": "{count, plural, =0 {Autres réponses} one {# autre réponse} other {# autres réponses}}",
+		"confirm": "Confirmer ({seconds} s)",
+		"cancel": "Annuler",
+		"vote": {
+			"group": "Vote",
+			"up": "Voter pour",
+			"down": "Voter contre"
+		},
+		"card": {
+			"accepted": "Acceptée",
+			"accept": "Accepter",
+			"copyCode": "Copier le code",
+			"copied": "Copié",
+			"share": "Partager",
+			"expand": "Voir la suite",
+			"collapse": "Réduire"
 		}
 	},
 	"ask": {
@@ -511,7 +546,12 @@
 		"publish": "Publier la question",
 		"publishing": "Publication…",
 		"draftNotice": "Brouillon enregistré sur cet appareil, même hors ligne.",
-		"published": "Question publiée, ouverture…"
+		"published": "Question publiée, ouverture…",
+		"related": {
+			"region": "Questions proches",
+			"title": "Une question proche existe peut-être déjà",
+			"answers": "{count, plural, =0 {0 réponse} one {# réponse} other {# réponses}}"
+		}
 	},
 	"member": {
 		"unnamed": "Membre"

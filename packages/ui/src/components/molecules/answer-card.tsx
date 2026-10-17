@@ -6,6 +6,7 @@ import { StatusBadge } from "@codesphere/ui/components/atoms/status-badge";
 import {
 	type Vote,
 	VoteControl,
+	type VoteControlLabels,
 } from "@codesphere/ui/components/molecules/vote-control";
 import { cn } from "@codesphere/ui/lib/utils";
 import { CheckIcon, CircleCheckIcon, CopyIcon, Share2Icon } from "lucide-react";
@@ -31,6 +32,29 @@ type AnswerCardProps = Omit<React.ComponentProps<"article">, "children"> & {
 	long?: boolean;
 	/** The answer body, already rendered and sanitized by the server. */
 	children: React.ReactNode;
+	/** Texts in the interface language; French by default. */
+	labels?: Partial<AnswerCardLabels>;
+};
+
+type AnswerCardLabels = {
+	accepted: string;
+	accept: string;
+	copyCode: string;
+	copied: string;
+	share: string;
+	expand: string;
+	collapse: string;
+	vote?: Partial<VoteControlLabels>;
+};
+
+const FRENCH: AnswerCardLabels = {
+	accepted: "Acceptée",
+	accept: "Accepter",
+	copyCode: "Copier le code",
+	copied: "Copié",
+	share: "Partager",
+	expand: "Voir la suite",
+	collapse: "Réduire",
 };
 
 function AnswerCard({
@@ -47,9 +71,11 @@ function AnswerCard({
 	onShare,
 	long = false,
 	children,
+	labels,
 	className,
 	...props
 }: AnswerCardProps) {
+	const l = { ...FRENCH, ...labels };
 	const bodyId = useId();
 	const [expanded, setExpanded] = useState(false);
 	const [copied, setCopied] = useState(false);
@@ -83,7 +109,7 @@ function AnswerCard({
 				<span>· {ago}</span>
 				{accepted && (
 					<StatusBadge status="accepted" className="ml-auto">
-						<CircleCheckIcon className="size-3" /> Acceptée
+						<CircleCheckIcon className="size-3" /> {l.accepted}
 					</StatusBadge>
 				)}
 			</header>
@@ -113,7 +139,7 @@ function AnswerCard({
 					aria-controls={bodyId}
 					onClick={() => setExpanded((value) => !value)}
 				>
-					{expanded ? "Réduire" : "Voir la suite"}
+					{expanded ? l.collapse : l.expand}
 				</Button>
 			)}
 
@@ -123,12 +149,13 @@ function AnswerCard({
 					value={vote}
 					onValueChange={onVoteChange}
 					disabled={voteDisabled}
+					labels={l.vote}
 				/>
 				<div className="ml-auto flex flex-wrap items-center gap-1">
 					{onCopyCode && (
 						<Button type="button" variant="ghost" size="sm" onClick={copy}>
 							{copied ? <CheckIcon /> : <CopyIcon />}
-							{copied ? "Copié" : "Copier le code"}
+							{copied ? l.copied : l.copyCode}
 						</Button>
 					)}
 					{onAccept && !accepted && (
@@ -138,12 +165,12 @@ function AnswerCard({
 							size="sm"
 							onClick={onAccept}
 						>
-							<CircleCheckIcon /> Accepter
+							<CircleCheckIcon /> {l.accept}
 						</Button>
 					)}
 					{onShare && (
 						<Button type="button" variant="ghost" size="sm" onClick={onShare}>
-							<Share2Icon /> Partager
+							<Share2Icon /> {l.share}
 						</Button>
 					)}
 				</div>
@@ -152,4 +179,4 @@ function AnswerCard({
 	);
 }
 
-export { AnswerCard, type AnswerCardProps };
+export { AnswerCard, type AnswerCardLabels, type AnswerCardProps };
