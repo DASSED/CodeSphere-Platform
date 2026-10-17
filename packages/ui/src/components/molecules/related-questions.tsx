@@ -48,9 +48,7 @@ function RelatedQuestions({
 			)}
 			{...props}
 		>
-			<h3 className="font-semibold text-muted-foreground text-xs">
-				{l.title}
-			</h3>
+			<h3 className="font-semibold text-muted-foreground text-xs">{l.title}</h3>
 			<ul className="flex flex-col gap-1">
 				{questions.map((question) => (
 					<li key={question.id}>
