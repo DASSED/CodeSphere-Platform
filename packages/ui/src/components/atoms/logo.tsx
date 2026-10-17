@@ -14,7 +14,7 @@ function Logo({
 			)}
 			{...props}
 		>
-			<span className="grid size-7 place-items-center rounded-full bg-primary text-primary-foreground text-sm">
+			<span className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground text-sm">
 				◍
 			</span>
 			<span
