@@ -69,6 +69,9 @@ export default defineConfig({
 				CORS_ORIGIN: WEB_URL,
 				// Sign-in by email code: the tests read the code from the database.
 				EMAIL_OTP_SIGNIN: "true",
+				// The back-office staff of the tests: the role is derived from these lists at sign-in.
+				ADMIN_EMAILS: "e2e.admin@example.com",
+				MODERATOR_EMAILS: "e2e.moderator@example.com",
 			},
 		},
 		{
