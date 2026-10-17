@@ -1,8 +1,8 @@
 # Staging
 
-`https://staging.codesphereplatform.xyz` : Worker Cloudflare `codesphere-staging` (`wrangler --env staging`, `apps/web/wrangler.jsonc`) sur la branche Neon dont partent les previews. C'est aussi l'URL de production du proxy OAuth : la seule callback connue des fournisseurs d'identité ([#100](https://github.com/DASSED/CodeSphere-Platform/issues/100)).
+`https://staging.codesphereplatform.xyz` : Worker Cloudflare `codesphere-staging` (`wrangler --env staging`, `apps/web/wrangler.jsonc`) sur la branche Neon dont partent les previews. C'est aussi l'URL de production du proxy OAuth : la seule callback connue des fournisseurs d'identité ([#100](https://github.com/davexstudio-dev/CodeSphere-Platform/issues/100)).
 
-Workflow : [`.github/workflows/staging.yml`](../.github/workflows/staging.yml) ([#106](https://github.com/DASSED/CodeSphere-Platform/issues/106)).
+Workflow : [`.github/workflows/staging.yml`](../.github/workflows/staging.yml) ([#106](https://github.com/davexstudio-dev/CodeSphere-Platform/issues/106)).
 
 ## Lancer un déploiement
 
