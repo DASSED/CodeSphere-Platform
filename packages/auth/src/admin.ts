@@ -1,3 +1,5 @@
+import type { Role } from "@codesphere/contract/roles";
+
 // Staff roles are designated by environment variables (spec §2). Only a verified email counts, so
 // an unverified provider address cannot grant a role. A human holds the highest role whose list
 // names their email: super_admin, then admin, then moderator.
@@ -18,7 +20,7 @@ export function isAdminEmail(
 	return emailVerified && admins.has(email.trim().toLowerCase());
 }
 
-export type Role = "super_admin" | "admin" | "moderator" | "member";
+export type { Role } from "@codesphere/contract/roles";
 
 export type StaffLists = {
 	superAdmins: ReadonlySet<string>;

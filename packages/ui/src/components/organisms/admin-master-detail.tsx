@@ -9,7 +9,9 @@ type AdminMasterDetailProps = Omit<React.ComponentProps<"div">, "children"> & {
 
 /**
  * The admin list/detail layout (#117): the list stays put on the left (sticky, under the fixed
- * page header) while the record scrolls on the right. Below 760 px they stack.
+ * page header) while the record scrolls on the right. They stack when the content area is
+ * narrower than 736 px: a container query, not a viewport one, because the sidebar takes 16 rem
+ * of a tablet's width.
  */
 function AdminMasterDetail({
 	list,
@@ -18,18 +20,19 @@ function AdminMasterDetail({
 	...props
 }: AdminMasterDetailProps) {
 	return (
-		<div
-			data-slot="admin-master-detail"
-			className={cn(
-				"flex flex-col gap-6 min-[760px]:grid min-[760px]:grid-cols-[minmax(14rem,20rem)_minmax(0,1fr)] min-[760px]:items-start",
-				className,
-			)}
-			{...props}
-		>
-			<div className="flex flex-col min-[760px]:sticky min-[760px]:top-28 min-[760px]:max-h-[calc(100svh-8rem)]">
-				{list}
+		<div data-slot="admin-master-detail" className="@container min-w-0">
+			<div
+				className={cn(
+					"flex @min-[46rem]:grid @min-[46rem]:grid-cols-[minmax(14rem,20rem)_minmax(0,1fr)] flex-col @min-[46rem]:items-start gap-6",
+					className,
+				)}
+				{...props}
+			>
+				<div className="@min-[46rem]:sticky @min-[46rem]:top-28 flex @min-[46rem]:max-h-[calc(100svh-8rem)] flex-col">
+					{list}
+				</div>
+				<div className="min-w-0">{detail}</div>
 			</div>
-			<div className="min-w-0">{detail}</div>
 		</div>
 	);
 }

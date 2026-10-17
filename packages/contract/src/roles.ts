@@ -4,6 +4,22 @@ export const STAFF_ROLES = ["super_admin", "admin", "moderator"] as const;
 
 export type StaffRole = (typeof STAFF_ROLES)[number];
 
+/** The plain Member's role: the default of every account. */
+export const DEFAULT_ROLE = "member" as const;
+
+/**
+ * Every role an account can hold, lowest first. The single source of the Postgres `user_role`
+ * enum (packages/db), of the Better Auth access control (packages/auth) and of the types below.
+ */
+export const ROLES = [
+	DEFAULT_ROLE,
+	"moderator",
+	"admin",
+	"super_admin",
+] as const;
+
+export type Role = (typeof ROLES)[number];
+
 const RANK: Record<StaffRole, number> = {
 	super_admin: 3,
 	admin: 2,
@@ -21,7 +37,7 @@ export function outranks(actor: unknown, target: unknown): boolean {
 }
 
 /** The roles a Member may hold and still be moderated by `actor`: `member` and every staff role below. */
-export function rolesBelow(actor: unknown): string[] {
+export function rolesBelow(actor: unknown): Role[] {
 	return [
 		"member",
 		...STAFF_ROLES.filter((role) => RANK[role] < staffRank(actor)),

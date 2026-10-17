@@ -1,6 +1,32 @@
 import { describe, expect, test } from "bun:test";
 
-import { isStaffRole, outranks, rolesBelow, staffRank } from "./roles";
+import {
+	DEFAULT_ROLE,
+	isStaffRole,
+	outranks,
+	ROLES,
+	rolesBelow,
+	STAFF_ROLES,
+	staffRank,
+} from "./roles";
+
+describe("ROLES", () => {
+	test("is the default role then every staff role, lowest rank first", () => {
+		expect([...ROLES]).toEqual([
+			DEFAULT_ROLE,
+			"moderator",
+			"admin",
+			"super_admin",
+		]);
+		expect(ROLES.map(staffRank)).toEqual([0, 1, 2, 3]);
+	});
+
+	test("every staff role is a role", () => {
+		for (const role of STAFF_ROLES) {
+			expect(ROLES).toContain(role);
+		}
+	});
+});
 
 describe("staff rank", () => {
 	test("super_admin > admin > moderator > member", () => {
@@ -25,13 +51,15 @@ describe("staff rank", () => {
 		expect(outranks("member", "member")).toBe(false);
 	});
 
+	const below = (actor: string): string[] => rolesBelow(actor);
+
 	test("rolesBelow lists the roles an actor may moderate", () => {
-		expect(rolesBelow("super_admin").sort()).toEqual(
+		expect(below("super_admin").sort()).toEqual(
 			["admin", "member", "moderator"].sort(),
 		);
-		expect(rolesBelow("admin").sort()).toEqual(["member", "moderator"].sort());
-		expect(rolesBelow("moderator")).toEqual(["member"]);
-		expect(rolesBelow("member")).toEqual(["member"]);
+		expect(below("admin").sort()).toEqual(["member", "moderator"].sort());
+		expect(below("moderator")).toEqual(["member"]);
+		expect(below("member")).toEqual(["member"]);
 	});
 
 	test("every role below an actor is one the actor outranks", () => {

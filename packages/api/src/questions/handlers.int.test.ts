@@ -53,7 +53,7 @@ describe.skipIf(!url)(
 					id,
 					name: id,
 					email: `${id}@example.com`,
-					role: id === admin ? "admin" : "member",
+					role: id === admin ? ("admin" as const) : ("member" as const),
 				})),
 			);
 		});
