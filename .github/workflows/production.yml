@@ -6,7 +6,7 @@ name: Release
 #
 # Pipeline, same shape as staging.yml and preview.yml:
 #   gate    -> on main, a new vX.Y.Z, and the commit's CI and licence runs passed
-#   build   -> the web and server images, once, pushed to GHCR tagged with the commit (in parallel
+#   build   -> the web and server images, once, pushed to ghcr.io/davexstudio tagged with the commit (in parallel
 #              with e2e); nothing is ever built on the server
 #   e2e     -> the Playwright journeys on a local stack (e2e.yml, #55)
 #   deploy  -> environment "production" (its required reviewers approve here), then over SSH:
@@ -50,6 +50,10 @@ concurrency:
 
 env:
   VERSION: ${{ inputs.version }}
+  # The images live under the davexstudio account, not the repository owner: the run's own token
+  # cannot publish there, so a token of that account (GHCR_TOKEN, scopes write:packages and
+  # read:packages) pushes them in build and pulls them on the server in deploy.
+  REGISTRY: ghcr.io/davexstudio
 
 jobs:
   # TEST: waits for the push runs of ci.yml and licenses.yml on this commit; fails when one
@@ -101,26 +105,23 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read
-      packages: write
     strategy:
       matrix:
         app: [server, web]
     steps:
       - uses: actions/checkout@v4
-      # GHCR names are lowercase; the owner is DASSED.
       - name: Image name
         id: image
         env:
-          OWNER: ${{ github.repository_owner }}
           APP: ${{ matrix.app }}
           SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: echo "name=ghcr.io/${OWNER,,}/codesphere-${APP}:${SHA}" >> "$GITHUB_OUTPUT"
+        run: echo "name=${REGISTRY}/codesphere-${APP}:${SHA}" >> "$GITHUB_OUTPUT"
       - uses: docker/login-action@v3
         if: github.event_name == 'workflow_dispatch'
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          username: ${{ vars.GHCR_USERNAME }}
+          password: ${{ secrets.GHCR_TOKEN }}
       - uses: docker/setup-buildx-action@v3
       # The build mounts these as BuildKit secrets (never in a layer). Nothing secret is needed to
       # build: the web image holds public values only, the server reads its secrets at runtime.
@@ -160,7 +161,6 @@ jobs:
       url: https://${{ vars.PROD_PUBLIC_HOST }}
     permissions:
       contents: read
-      packages: read
     steps:
       - name: Require the images and the journeys
         env:
@@ -179,13 +179,6 @@ jobs:
           sparse-checkout-cone-mode: false
 
       # The compose file, the Caddyfile and the scripts of this commit, next to the env files.
-      # GHCR names are lowercase; the owner is DASSED.
-      - name: Registry
-        id: registry
-        env:
-          OWNER: ${{ github.repository_owner }}
-        run: echo "name=ghcr.io/${OWNER,,}" >> "$GITHUB_OUTPUT"
-
       - name: Copy the stack to the server
         uses: appleboy/scp-action@v1
         with:
@@ -202,9 +195,8 @@ jobs:
           PROD_COMPOSE_ENV: ${{ secrets.PROD_COMPOSE_ENV }}
           PROD_SERVER_ENV: ${{ secrets.PROD_SERVER_ENV }}
           PROD_WEB_ENV: ${{ secrets.PROD_WEB_ENV }}
-          GHCR_USER: ${{ github.actor }}
-          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REGISTRY: ${{ steps.registry.outputs.name }}
+          GHCR_USER: ${{ vars.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.DEPLOY_HOST }}
@@ -222,7 +214,7 @@ jobs:
             printf '%s\n' "$PROD_COMPOSE_ENV" > .env
             printf '%s\n' "$PROD_SERVER_ENV" > apps/server/.env
             printf '%s\n' "$PROD_WEB_ENV" > apps/web/.env
-            # The run's token pulls the images; it expires with the run, and is dropped right after.
+            # Logged in for the pull only: the token is removed from the server right after.
             printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             trap 'docker logout ghcr.io >/dev/null' EXIT
             deploy/deploy.sh "$SHA" "$VERSION"
