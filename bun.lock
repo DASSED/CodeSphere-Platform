@@ -66,6 +66,7 @@
       "name": "web",
       "dependencies": {
         "@codesphere/api": "workspace:*",
+        "@codesphere/auth": "workspace:*",
         "@codesphere/contract": "workspace:*",
         "@codesphere/ui": "workspace:*",
         "@orpc/client": "catalog:",
@@ -170,6 +171,7 @@
     "packages/db": {
       "name": "@codesphere/db",
       "dependencies": {
+        "@codesphere/contract": "workspace:*",
         "@neondatabase/serverless": "^1.2.0",
         "drizzle-orm": "catalog:",
         "pg": "^8.23.0",

@@ -87,7 +87,7 @@ describe.skipIf(!url)("answers, votes and limits on Postgres", () => {
 				id,
 				name: id,
 				email: `${id}@example.com`,
-				role: id === admin ? "admin" : "member",
+				role: id === admin ? ("admin" as const) : ("member" as const),
 				kind: id === robot ? "agent" : "human",
 			})),
 		);

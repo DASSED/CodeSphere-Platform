@@ -3,6 +3,7 @@
 // against a real Postgres, through the router.
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import type { Session } from "@codesphere/auth";
+import type { Role } from "@codesphere/contract/roles";
 import { createDb } from "@codesphere/db";
 import { auditLog } from "@codesphere/db/schema/audit";
 import { user } from "@codesphere/db/schema/auth";
@@ -19,7 +20,8 @@ describe.skipIf(!url)("moderation rank on Postgres (#123)", () => {
 	const run = crypto.randomUUID();
 	const id = (role: string) => `it-rank-${role}-${run}`;
 	const roles = ["super_admin", "admin", "peer_admin", "moderator", "member"];
-	const dbRole = (role: string) => (role === "peer_admin" ? "admin" : role);
+	const dbRole = (role: string): Role =>
+		role === "peer_admin" ? "admin" : (role as Role);
 	const ids = roles.map(id);
 
 	const as = (role: string) =>

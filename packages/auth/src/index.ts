@@ -1,13 +1,15 @@
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { CONSENT_VERSION } from "@codesphere/contract/consent";
+import { DEFAULT_ROLE, ROLES, STAFF_ROLES } from "@codesphere/contract/roles";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
 import { createAuthMiddleware } from "better-auth/api";
-import { emailOTP, oAuthProxy } from "better-auth/plugins";
+import { admin, emailOTP, oAuthProxy } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
+import { ac, roles } from "./access";
 import { parseAdminEmails, roleFor } from "./admin";
 import { readConsent } from "./consent";
 import { displayNameFor } from "./display-name";
@@ -218,18 +220,28 @@ export function createAuth(
 				ownerId: { type: "string", required: false, input: false },
 				// Set by an Admin suspension (#123): read by the API context, never by the client.
 				suspendedAt: { type: "date", required: false, input: false },
-				// "super_admin" | "admin" | "moderator" | "member"; derived from the staff email lists at
-				// sign-in, never by the client.
+				// Also declared by the admin plugin below; restated here with the enum's values so the
+				// Session type carries the exact roles. Derived from the staff email lists at sign-in,
+				// never by the client.
 				role: {
-					type: "string",
+					type: [...ROLES],
 					required: false,
-					defaultValue: "member",
+					defaultValue: DEFAULT_ROLE,
 					input: false,
 				},
 			},
 		},
 		plugins: [
 			...(proxy ? [oAuthProxy(proxy)] : []),
+			// Role management and access control (#120). The roles and what each may do live in
+			// ./access; the permissions that would let a role bypass the email lists or the audited
+			// suspension (set-role, ban, impersonate…) are granted to none.
+			admin({
+				ac,
+				roles,
+				defaultRole: DEFAULT_ROLE,
+				adminRoles: [...STAFF_ROLES],
+			}),
 			...(env.EMAIL_OTP_SIGNIN && hooks.sendSignInOtp
 				? [
 						emailOTP({
