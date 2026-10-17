@@ -7,6 +7,8 @@ import {
 	LogOutIcon,
 	ScrollTextIcon,
 	ShieldIcon,
+	TagIcon,
+	TrophyIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,9 +19,11 @@ import LocaleSwitcher from "@/components/locale-switcher";
 import { authClient } from "@/lib/auth-client";
 
 const NAV = [
-	{ key: "moderation", href: "/admin", icon: ShieldIcon },
-	{ key: "kpi", href: "/admin/kpi", icon: BarChart3Icon },
-	{ key: "audit", href: "/admin/audit", icon: ScrollTextIcon },
+	{ key: "dashboard.title", href: "/dashboard", icon: BarChart3Icon },
+	{ key: "moderation.title", href: "/admin", icon: ShieldIcon },
+	{ key: "hackathons.title", href: "/admin/hackathons", icon: TrophyIcon },
+	{ key: "tags.title", href: "/admin/tags", icon: TagIcon },
+	{ key: "audit.title", href: "/admin/audit", icon: ScrollTextIcon },
 ] as const;
 
 /** The back-office layout with the navigation wired to the router and the signed-in Admin. */
@@ -54,7 +58,7 @@ export default function AdminFrame({
 					? {
 							name: identity.name,
 							email: identity.email,
-							role: identity.role === "admin" ? t("role") : identity.role,
+							role: identity.role,
 						}
 					: undefined
 			}

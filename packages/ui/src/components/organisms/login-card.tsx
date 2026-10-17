@@ -14,7 +14,10 @@ import {
 } from "@codesphere/ui/components/molecules/provider-button";
 import { cn } from "@codesphere/ui/lib/utils";
 import { TriangleAlertIcon } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useState } from "react";
+
+/** Wait before another sign-in code can be asked for. */
+const RESEND_DELAY_SECONDS = 30;
 
 type Consent = {
 	/** Version of the terms the member accepted. */
@@ -73,10 +76,32 @@ function LoginCard({
 	const [codeSent, setCodeSent] = useState(false);
 	const [busy, setBusy] = useState(false);
 	const [emailError, setEmailError] = useState<string>();
+	const [resent, setResent] = useState(false);
+	// Seconds before another code can be asked for, so a slow inbox does not trigger a burst.
+	const [resendIn, setResendIn] = useState(0);
 	const consent = (): Consent => ({
 		version: consentVersion,
 		acceptedAt: new Date().toISOString(),
 	});
+
+	useEffect(() => {
+		if (resendIn <= 0) {
+			return;
+		}
+		const timer = setTimeout(() => setResendIn((seconds) => seconds - 1), 1000);
+		return () => clearTimeout(timer);
+	}, [resendIn]);
+
+	const requestCode = async () => {
+		if (!emailSignIn) {
+			return undefined;
+		}
+		const message = await emailSignIn.onRequestCode(email, consent());
+		if (!message) {
+			setResendIn(RESEND_DELAY_SECONDS);
+		}
+		return message;
+	};
 
 	const submitEmail = async (event: React.FormEvent) => {
 		event.preventDefault();
@@ -85,15 +110,41 @@ function LoginCard({
 		}
 		setBusy(true);
 		setEmailError(undefined);
+		setResent(false);
 		const message = codeSent
 			? await emailSignIn.onVerifyCode(email, code, consent())
-			: await emailSignIn.onRequestCode(email, consent());
+			: await requestCode();
 		setBusy(false);
 		if (message) {
 			setEmailError(message);
 		} else if (!codeSent) {
 			setCodeSent(true);
 		}
+	};
+
+	const resendCode = async () => {
+		if (busy || resendIn > 0) {
+			return;
+		}
+		setBusy(true);
+		setEmailError(undefined);
+		setResent(false);
+		const message = await requestCode();
+		setBusy(false);
+		if (message) {
+			setEmailError(message);
+		} else {
+			setCode("");
+			setResent(true);
+		}
+	};
+
+	const changeEmail = () => {
+		setCodeSent(false);
+		setCode("");
+		setResent(false);
+		setEmailError(undefined);
+		setResendIn(0);
 	};
 
 	return (
@@ -158,6 +209,11 @@ function LoginCard({
 					/>
 					{codeSent && (
 						<>
+							<p className="text-muted-foreground text-xs" aria-live="polite">
+								{resent
+									? "Nouveau code envoyé. Seul le dernier code est valable."
+									: "Code envoyé. Il peut mettre une minute à arriver : pensez à vérifier les spams."}
+							</p>
 							<Label htmlFor={`${consentId}-code`}>Code reçu par email</Label>
 							<Input
 								id={`${consentId}-code`}
@@ -180,6 +236,32 @@ function LoginCard({
 					<Button type="submit" disabled={!accepted || busy}>
 						{codeSent ? "Valider le code" : "Envoyer le code"}
 					</Button>
+					{codeSent && (
+						<div className="flex flex-wrap items-center justify-between gap-2 text-xs">
+							<Button
+								type="button"
+								variant="link"
+								size="sm"
+								className="h-auto px-0"
+								onClick={resendCode}
+								disabled={busy || resendIn > 0}
+							>
+								{resendIn > 0
+									? `Renvoyer le code (${resendIn} s)`
+									: "Pas reçu ? Renvoyer le code"}
+							</Button>
+							<Button
+								type="button"
+								variant="link"
+								size="sm"
+								className="h-auto px-0 text-muted-foreground"
+								onClick={changeEmail}
+								disabled={busy}
+							>
+								Changer d'adresse
+							</Button>
+						</div>
+					)}
 				</form>
 			)}
 

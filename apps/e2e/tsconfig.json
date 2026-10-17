@@ -1,0 +1,9 @@
+{
+	"extends": "@codesphere/config/tsconfig.base.json",
+	"compilerOptions": {
+		"noEmit": true,
+		"lib": ["ESNext", "DOM"],
+		"types": ["node"]
+	},
+	"include": ["**/*.ts"]
+}

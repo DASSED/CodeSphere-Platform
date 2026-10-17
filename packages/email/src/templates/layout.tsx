@@ -18,8 +18,8 @@ import type { Locale } from "../locale";
 const BRAND = "#a8432a";
 
 const FOOTER: Record<Locale, string> = {
-	fr: "Vous recevez ce message parce que vous avez un compte CodeSphere.",
-	en: "You receive this message because you have a CodeSphere account.",
+	fr: "Vous recevez ce message parce que vous avez un compte CodeSphere Platform.",
+	en: "You receive this message because you have a CodeSphere Platform account.",
 };
 
 export const paragraph: CSSProperties = {
@@ -68,7 +68,7 @@ export function Layout({
 							color: BRAND,
 						}}
 					>
-						CODESPHERE
+						CODESPHERE PLATFORM
 					</Text>
 					<Heading as="h1" style={{ fontSize: 24, color: "#2b2118" }}>
 						{title}

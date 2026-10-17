@@ -1,9 +1,11 @@
-import { exposedOverOpenAPI } from "@codesphere/api/exposure";
+import type { Context as ApiContext } from "@codesphere/api/context";
+import { exposedOverMCP, exposedOverOpenAPI } from "@codesphere/api/exposure";
+import { openApiDocument } from "@codesphere/api/openapi";
 import { appRouter } from "@codesphere/api/routers/index";
 import type { createAuth } from "@codesphere/auth";
 import type { Database } from "@codesphere/db";
 import { type Logger, type LoggerEnv, requestLogger } from "@codesphere/logger";
-import { OpenAPIGenerator } from "@orpc/openapi";
+import { SmartCoercionHandlerPlugin } from "@orpc/json-schema";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferenceHandlerPlugin } from "@orpc/openapi/plugins";
 import { RPCHandler } from "@orpc/server/fetch";
@@ -13,6 +15,7 @@ import { cors } from "hono/cors";
 import { MCPHandler } from "orpc-mcp/fetch";
 
 import { createContext } from "./context";
+import { handleResendWebhook } from "./resend-webhook";
 
 export type AppDeps = {
 	auth: ReturnType<typeof createAuth>;
@@ -21,37 +24,53 @@ export type AppDeps = {
 	corsOrigin: string;
 	trustProxy: boolean;
 	release: { version: string; commit: string };
+	/** Emails the API sends on its own; left out where there is no mail provider. */
+	notifications?: ApiContext["notifications"];
+	/** Serve the OpenAPI spec and its reference UI under /api/v1. Off on the public deployments. */
+	apiDocs: boolean;
+	/** Signing secret of the Resend webhook (#200); without it, /webhooks/resend is not mounted. */
+	resendWebhookSecret?: string;
 };
 
 // Stateless handlers: built once per isolate or process, shared by every request.
-const openapiGenerator = new OpenAPIGenerator({
-	converters: [new ZodToJsonSchemaConverter()],
-});
+let openapiSpec: ReturnType<typeof openApiDocument> | undefined;
 
-let openapiSpec: ReturnType<typeof openapiGenerator.generate> | undefined;
-
-// Admin mutations stay off the REST surface and its spec: they are served over /rpc only (#122).
-const apiHandler = new OpenAPIHandler(appRouter, {
-	filter: exposedOverOpenAPI,
-	plugins: [
-		new OpenAPIReferenceHandlerPlugin({
-			// The spec only depends on the router: generate it once, not per request.
-			spec: () => {
-				openapiSpec ??= openapiGenerator.generate(appRouter, {
-					filter: exposedOverOpenAPI,
-					base: { info: { title: "CodeSphere API", version: "1.0.0" } },
-				});
-				return openapiSpec;
-			},
-		}),
-	],
-});
+/**
+ * The REST surface. Staff operations are documented on it, and only staff can call them (requireAdmin).
+ * The reference plugin adds `/spec.json` and the docs UI, so it is mounted only when asked.
+ */
+export function restHandler(apiDocs: boolean) {
+	return new OpenAPIHandler(appRouter, {
+		filter: exposedOverOpenAPI,
+		plugins: [
+			// Query strings arrive as text: smart coercion turns `limit=5` into the number the
+			// `.input` schema declares, so the GET operations of the spec can be called as
+			// documented (#65).
+			new SmartCoercionHandlerPlugin({
+				converters: [new ZodToJsonSchemaConverter()],
+			}),
+			...(apiDocs
+				? [
+						new OpenAPIReferenceHandlerPlugin({
+							// The spec only depends on the router: generate it once, not per request.
+							spec: () => {
+								openapiSpec ??= openApiDocument();
+								return openapiSpec;
+							},
+						}),
+					]
+				: []),
+		],
+	});
+}
 
 const rpcHandler = new RPCHandler(appRouter);
 
+// Admin mutations are not MCP tools, neither listed nor callable: the same rule as the OpenAPI filter.
 const mcpHandler = new MCPHandler(appRouter, {
 	serverInfo: { name: "codesphere", version: "0.1.0" },
 	converters: [new ZodToJsonSchemaConverter()],
+	authorizeCatalogEntry: ({ entry }) => exposedOverMCP(entry),
 });
 
 /**
@@ -60,6 +79,7 @@ const mcpHandler = new MCPHandler(appRouter, {
  */
 export function createApp(deps: AppDeps) {
 	const app = new Hono<LoggerEnv>();
+	const apiHandler = restHandler(deps.apiDocs);
 
 	app.use(requestLogger(deps.logger, { trustProxy: deps.trustProxy }));
 	app.use(
@@ -75,6 +95,14 @@ export function createApp(deps: AppDeps) {
 	app.on(["POST", "GET"], "/api/auth/*", async (c) =>
 		deps.auth.handler(c.req.raw),
 	);
+
+	const { resendWebhookSecret } = deps;
+	if (resendWebhookSecret) {
+		// Before the API middleware: Resend has no session, and the call needs no database.
+		app.post("/webhooks/resend", (c) =>
+			handleResendWebhook(c.req.raw, resendWebhookSecret, c.get("logger")),
+		);
+	}
 
 	app.use("/*", async (c, next) => {
 		const context = await createContext({ context: c, deps });

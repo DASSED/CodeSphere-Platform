@@ -14,12 +14,14 @@ const KEYS = [
 	"GOOGLE_CLIENT_SECRET",
 	// Only the staging workflow exports them: previews send no email.
 	"RESEND_API_KEY",
+	"RESEND_WEBHOOK_SECRET",
 	// Not a secret, but "Name <address>" cannot go on the command line: opennextjs-cloudflare
 	// re-runs wrangler through /bin/sh, which reads the "<" as a redirection.
 	"EMAIL_FROM",
 ];
 
-const REQUIRED = ["DATABASE_URL", "BETTER_AUTH_SECRET"];
+// DATABASE_URL is optional: a preview without the `preview-db` label has no database (#150).
+const REQUIRED = ["BETTER_AUTH_SECRET"];
 
 const target = process.argv[2];
 if (!target) {

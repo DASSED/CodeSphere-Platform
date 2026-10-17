@@ -12,6 +12,10 @@ type TagInputProps = Omit<React.ComponentProps<"div">, "onChange"> & {
 	suggestions?: readonly string[];
 	max?: number;
 	placeholder?: string;
+	/** Accessible name of a Tag's remove button. */
+	removeLabel?: (tag: string) => string;
+	/** Placeholder once `max` Tags are entered. */
+	fullPlaceholder?: (max: number) => string;
 	inputId?: string;
 	invalid?: boolean;
 };
@@ -33,6 +37,8 @@ function TagInput({
 	suggestions = [],
 	max = 5,
 	placeholder = "Ajouter un tag",
+	removeLabel = (tag) => `Retirer ${tag}`,
+	fullPlaceholder = (limit) => `${limit} tags au maximum`,
 	inputId,
 	invalid,
 	className,
@@ -70,7 +76,7 @@ function TagInput({
 						{tag}
 						<button
 							type="button"
-							aria-label={`Retirer ${tag}`}
+							aria-label={removeLabel(tag)}
 							className="rounded-sm p-0.5 text-muted-foreground outline-none hover:bg-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
 							onClick={() => onValueChange(value.filter((t) => t !== tag))}
 						>
@@ -82,7 +88,7 @@ function TagInput({
 					id={inputId}
 					value={draft}
 					disabled={full}
-					placeholder={full ? `${max} tags au maximum` : placeholder}
+					placeholder={full ? fullPlaceholder(max) : placeholder}
 					aria-invalid={invalid}
 					className="min-w-24 flex-1 bg-transparent text-xs outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
 					onChange={(event) => {

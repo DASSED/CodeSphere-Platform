@@ -8,7 +8,16 @@ import { CloudOffIcon, KeyRoundIcon, SparklesIcon } from "lucide-react";
 
 type LoginPageProps = Omit<React.ComponentProps<"main">, "children"> & {
 	card: Omit<LoginCardProps, "className" | "hideHeading">;
+	/** Where the logo leads, the home page by default. */
+	homeHref?: string;
+	/** The router's link component (next/link). Defaults to a plain `a`. */
+	LinkComponent?: React.ElementType;
+	/** Accessible name of the logo link. */
+	homeLabel?: string;
 };
+
+const HOME_LINK =
+	"relative w-fit rounded-md outline-none focus-visible:ring-2 focus-visible:ring-ring/50";
 
 const HIGHLIGHTS = [
 	{
@@ -29,7 +38,15 @@ const HIGHLIGHTS = [
 ] as const;
 
 /** Full sign-in page: a brand panel next to the SSO card (a single column on small screens). */
-function LoginPage({ card, className, ...props }: LoginPageProps) {
+function LoginPage({
+	card,
+	homeHref = "/",
+	LinkComponent = "a",
+	homeLabel = "Accueil",
+	className,
+	...props
+}: LoginPageProps) {
+	const Link = LinkComponent;
 	return (
 		<main
 			data-slot="login-page"
@@ -45,7 +62,10 @@ function LoginPage({ card, className, ...props }: LoginPageProps) {
 					aria-hidden="true"
 					className="absolute -bottom-24 left-24 size-72 rounded-full bg-gold/20"
 				/>
-				<Logo className="relative text-lg [&>span]:bg-primary-foreground [&>span]:text-primary" />
+				{/* Only the round mark is inverted: the name keeps the panel's colours. */}
+				<Link href={homeHref} aria-label={homeLabel} className={HOME_LINK}>
+					<Logo className="text-lg [&>span:first-child]:bg-primary-foreground [&>span:first-child]:text-primary" />
+				</Link>
 				<div className="relative flex flex-col gap-8">
 					<h1 className="max-w-md font-bold text-4xl leading-tight tracking-tight">
 						Posez vos questions. Partagez vos solutions.
@@ -68,7 +88,13 @@ function LoginPage({ card, className, ...props }: LoginPageProps) {
 			</aside>
 
 			<section className="flex flex-col items-center justify-center gap-8 p-6 sm:p-10">
-				<Logo className="text-lg lg:hidden" />
+				<Link
+					href={homeHref}
+					aria-label={homeLabel}
+					className={cn(HOME_LINK, "lg:hidden")}
+				>
+					<Logo className="text-lg" />
+				</Link>
 				<div className="w-full max-w-sm">
 					<LoginCard {...card} />
 				</div>

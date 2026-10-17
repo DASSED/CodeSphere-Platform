@@ -1,6 +1,6 @@
 {
 	"footer": {
-		"build": "CodeSphere v{version} · {sha}"
+		"build": "CodeSphere Platform v{version} · {sha}"
 	},
 	"language": {
 		"label": "Language",
@@ -14,7 +14,8 @@
 		"CONFLICT": "This item already exists or was changed in the meantime.",
 		"BAD_REQUEST": "Some information is invalid.",
 		"TOO_MANY_REQUESTS": "Too many requests. Try again in a moment.",
-		"INTERNAL_SERVER_ERROR": "An unexpected error occurred."
+		"INTERNAL_SERVER_ERROR": "An unexpected error occurred.",
+		"retry": "Retry"
 	},
 	"settings": {
 		"title": "Settings",
@@ -40,7 +41,70 @@
 		"privacy": {
 			"title": "Privacy",
 			"cityPublic": "Make my city public",
-			"cityPublicHint": "Otherwise only your country is visible to other members."
+			"cityPublicHint": "Otherwise only your country is visible to other members.",
+			"dataTitle": "Your data",
+			"dataDescription": "Download everything the platform keeps about you, or delete your account.",
+			"export": "Export my data",
+			"exportHint": "An immediate JSON file: profile, questions, answers, votes, Tags, agents (without their keys) and consent.",
+			"exportAction": "Download",
+			"exporting": "Preparing…",
+			"deleteTitle": "Delete my account",
+			"deleteModes": {
+				"anonymise": "Anonymise",
+				"erase": "Erase my content"
+			},
+			"deleteHints": {
+				"anonymise": "Your questions and answers stay, signed “Deleted member”. Email, sessions, linked accounts and keys are erased; your agents are disabled.",
+				"erase": "Your questions and answers are deleted, except answers accepted on other members' questions. Email, sessions, linked accounts and keys are erased."
+			},
+			"deleteAction": "Delete my account for good",
+			"deleted": "Account deleted. This device's data was erased."
+		},
+		"tags": {
+			"title": "Tags",
+			"description": "The Tags you follow drive your “For you” feed.",
+			"followed": "Followed Tags",
+			"none": "You follow no Tag.",
+			"unfollow": "Unfollow {name}",
+			"search": "Find a Tag to follow",
+			"searchPlaceholder": "mobile-money, ussd…",
+			"follow": "Follow {name}",
+			"noResult": "No Tag found.",
+			"failed": "The change failed."
+		},
+		"agents": {
+			"title": "My agents",
+			"description": "AI agents that ask and answer on your behalf, always badged “agent of you”. They never vote.",
+			"none": "No agent yet.",
+			"create": "New agent ({count}/{max})",
+			"name": "Agent name",
+			"namePlaceholder": "SQL helper",
+			"preset": "Rights",
+			"presets": {
+				"read": "Read only",
+				"contribute": "Contribute"
+			},
+			"presetHints": {
+				"read": "Reads questions and answers, writes nothing.",
+				"contribute": "May also ask questions and answer."
+			},
+			"full": "You have 3 agents: delete one to create another.",
+			"keyOnce": "The cs_live_ key is shown only once.",
+			"submit": "Create the agent",
+			"usage": "Usage: Authorization: Bearer cs_live_… (or x-api-key) header on /api/v1 and /mcp. 120 requests per minute per key.",
+			"enabled": "Active",
+			"disabled": "Disabled",
+			"createdAt": "Created on {date}",
+			"rotate": "Rotate the key",
+			"enable": "Re-enable with a new key",
+			"disable": "Disable",
+			"delete": "Delete the agent"
+		},
+		"tabs": {
+			"profile": "Profile",
+			"tags": "Tags",
+			"agents": "Agents",
+			"data": "Your data"
 		}
 	},
 	"signin": {
@@ -51,12 +115,15 @@
 	"header": {
 		"signIn": "Sign in",
 		"ask": "Ask a question",
-		"askSoon": "The question form is coming soon.",
 		"account": "Account menu",
 		"profile": "Public profile",
 		"settings": "Settings",
 		"admin": "Administration",
-		"signOut": "Sign out"
+		"signOut": "Sign out",
+		"toggleTheme": "Switch theme",
+		"menu": "Menu",
+		"language": "Language",
+		"home": "CodeSphere home"
 	},
 	"home": {
 		"tabs": {
@@ -85,11 +152,14 @@
 			"title": "Getting started",
 			"account": "Account created",
 			"tags": "Follow at least 3 Tags",
-			"question": "Ask your first question"
+			"question": "Ask your first question",
+			"progress": "{done}/{total}",
+			"done": "Done"
 		},
 		"followed": {
 			"title": "Followed Tags",
-			"none": "No Tags followed yet. They shape « For you »."
+			"none": "No Tags followed yet. They shape « For you ».",
+			"manage": "Manage my Tags"
 		},
 		"banner": {
 			"eyebrow": "Hackathon in progress",
@@ -99,15 +169,575 @@
 			"closes": "Submissions close on {date}",
 			"timeline": "Hackathon calendar",
 			"see": "See the Hackathon",
-			"soon": "Available with the Hackathon page"
+			"daysShort": "d"
 		},
-		"loadError": "Could not load the Hackathon."
+		"loadError": "Could not load the Hackathon.",
+		"feed": {
+			"answers": "{count, plural, =0 {No answers} one {# answer} other {# answers}}",
+			"more": "Load more",
+			"loading": "Loading…"
+		},
+		"filters": {
+			"allLanguages": "All languages",
+			"allCountries": "All countries",
+			"diaspora": "Diaspora / other",
+			"language": "Language",
+			"country": "Country"
+		}
 	},
 	"admin": {
-		"role": "Administrator",
-		"moderation": "Moderation",
+		"moderation": {
+			"title": "Moderation",
+			"description": "Suspend or reactivate a Member. Every action is logged.",
+			"groups": {
+				"active": "Active",
+				"agents": "Agents",
+				"suspended": "Suspended"
+			},
+			"status": {
+				"label": "Status",
+				"all": "All",
+				"active": "Active",
+				"suspended": "Suspended"
+			},
+			"errors": {
+				"forbidden": "Refused: you can only moderate a Member of lower rank.",
+				"conflict": "This Member already changed state. The list was reloaded.",
+				"notFound": "This Member no longer exists.",
+				"generic": "Something went wrong. Try again."
+			},
+			"unavailable": "List unavailable",
+			"retry": "Retry",
+			"list": "Members",
+			"search": "Search a Member",
+			"searchPlaceholder": "Name or email",
+			"loading": "Loading…",
+			"empty": "No Member to show.",
+			"more": "Show more",
+			"pick": "Pick a Member from the list.",
+			"refusal": {
+				"self": "You cannot suspend yourself.",
+				"rank": "Equal or higher rank than yours: you cannot moderate this Member."
+			},
+			"kind": {
+				"agent": "Agent",
+				"human": "Human"
+			},
+			"suspended": "Suspended",
+			"account": "Account",
+			"email": "Email",
+			"role": "Role",
+			"joined": "Joined",
+			"suspendedOn": "Suspended on",
+			"reason": "Reason",
+			"moderate": "Moderation",
+			"reactivate": "Reactivate",
+			"suspend": "Suspend this Member",
+			"reasonLabel": "Reason (required)",
+			"reasonTooShort": "At least 3 characters."
+		},
+		"hackathons": {
+			"title": "Hackathon",
+			"description": "The CADEV, its Milestones and judging criteria.",
+			"list": "Hackathons",
+			"group": "Hackathon",
+			"loading": "Loading…",
+			"empty": "No Hackathon.",
+			"unavailable": "Hackathon unavailable",
+			"unavailableBody": "Could not load the Hackathon.",
+			"retry": "Retry",
+			"general": "General",
+			"name": "Name",
+			"organizer": "Organizer",
+			"teamMin": "Team min.",
+			"teamMax": "Team max.",
+			"team": "Team",
+			"teamRange": "{min} to {max}",
+			"summary": "Summary",
+			"sourceNote": "Source note",
+			"sourceNoteHint": "Where the information comes from, shown next to “verified on”.",
+			"version": "Version",
+			"milestones": "Milestones",
+			"label": "Label",
+			"start": "Start",
+			"end": "End",
+			"timezone": "Dates shown in your timezone.",
+			"criteria": "Judging criteria",
+			"weight": "Weight (%)",
+			"total": "Total: {total}%",
+			"mustBe100": "(must be 100%)",
+			"confirmTitle": "Confirmation",
+			"confirmBody": "Save these changes? They change the public Hackathon page and are logged.",
+			"confirmAction": "Save",
+			"noDelete": "The Hackathon cannot be deleted.",
+			"staleTitle": "Stale version",
+			"stale": "Someone saved in the meantime (server version: {version}). Nothing was overwritten.",
+			"reload": "Reload",
+			"failure": {
+				"forbidden": "Staff only.",
+				"failed": "Saving failed. Try again."
+			}
+		},
+		"tags": {
+			"title": "Tags",
+			"description": "Official Tags: create, rename, delete.",
+			"list": "Tags",
+			"search": "Search a Tag",
+			"searchPlaceholder": "Search",
+			"loading": "Loading…",
+			"empty": "No Tag.",
+			"unavailable": "List unavailable",
+			"retry": "Retry",
+			"groups": {
+				"protected": "Protected",
+				"used": "Used",
+				"unused": "Unused"
+			},
+			"create": "Create a Tag",
+			"newTitle": "New Tag",
+			"general": "General",
+			"name": "Name",
+			"nameHint": "Lowercased, no surrounding spaces.",
+			"questions": "Questions",
+			"owner": "Owner",
+			"ownerHackathon": "Hackathon {slug}",
+			"protected": "Protected",
+			"deletion": "Deletion",
+			"delete": "Delete this Tag",
+			"pick": "Pick a Tag, or create one with “+”.",
+			"blocked": {
+				"owned": "Protected: owned by the Hackathon {slug}",
+				"used": "Used by {count, plural, one {# Question} other {# Questions}}"
+			},
+			"errors": {
+				"conflict": "This name is already taken (same normalized form), or the Tag changed in the meantime.",
+				"forbidden": "Staff only.",
+				"notFound": "This Tag no longer exists.",
+				"generic": "Something went wrong. Try again."
+			}
+		},
 		"kpi": "KPIs",
-		"audit": "Audit log",
-		"signOut": "Sign out"
+		"audit": {
+			"title": "Audit log",
+			"description": "Staff actions: suspensions, edits, deletions.",
+			"action": "Action",
+			"actor": "Actor (id)",
+			"target": "Target type",
+			"unavailable": "Log unavailable",
+			"forbidden": "Staff only.",
+			"error": "Something went wrong.",
+			"retry": "Retry",
+			"loading": "Loading…",
+			"empty": "No event for these filters.",
+			"more": "Show more",
+			"system": "System"
+		},
+		"signOut": "Sign out",
+		"common": {
+			"confirm": "Confirm ({seconds} s)",
+			"cancel": "Cancel",
+			"save": "Save",
+			"create": "Create",
+			"dirty": "Unsaved changes",
+			"clean": "No changes",
+			"edit": "Edit"
+		},
+		"dashboard": {
+			"title": "Dashboard",
+			"description": "Community activity and health.",
+			"periods": {
+				"7d": "7 days",
+				"30d": "30 days"
+			},
+			"versus": {
+				"7d": "vs previous 7 days",
+				"30d": "vs previous 30 days"
+			},
+			"metrics": {
+				"activeMembers": "Active members",
+				"questions": "Questions asked",
+				"answerRate": "Questions with an answer",
+				"medianFirstAnswerMinutes": "Median time to first answer",
+				"unanswered": "Unanswered questions",
+				"acceptedRate": "Questions with an accepted answer",
+				"agentShare": "Agent content"
+			},
+			"none": "—",
+			"loading": "Loading the indicators…",
+			"unavailable": "Indicators unavailable",
+			"error": "The server did not answer.",
+			"forbidden": "Your role does not give access to the indicators.",
+			"retry": "Retry"
+		}
+	},
+	"onboarding": {
+		"loading": "Loading Tags…",
+		"failed": "Could not save your Tags. Try again.",
+		"title": "What do you want to follow?",
+		"lead": "Pick at least {min} Tags: your « For you » feed is built from them.",
+		"missing": "{count, plural, one {# more Tag to pick} other {# more Tags to pick}}",
+		"ready": "{count} Tags selected",
+		"skip": "Skip",
+		"submit": "Continue",
+		"saving": "Saving…"
+	},
+	"outbox": {
+		"failedTitle": "Refused sends",
+		"rejected": "{action}: {reason}",
+		"abandoned": "{action}: abandoned after 30 days without network.",
+		"dismiss": "Dismiss",
+		"actions": {
+			"question": {
+				"create": "Question"
+			},
+			"answer": {
+				"create": "Answer",
+				"accept": "Acceptance"
+			},
+			"vote": {
+				"cast": "Vote",
+				"retract": "Vote retraction"
+			},
+			"tag": {
+				"follow": "Tag follow"
+			}
+		}
+	},
+	"question": {
+		"notFound": {
+			"title": "Question not found",
+			"description": "It may have been deleted, or not loaded on this device yet.",
+			"back": "Back to the feed"
+		},
+		"status": {
+			"open": "Open",
+			"answered": "Solved",
+			"closed": "Closed"
+		},
+		"solution": "Accepted answer",
+		"showQuestion": "Show the question",
+		"answers": "{count, plural, =0 {Answers} one {# answer} other {# answers}}",
+		"noAnswer": "No answer yet. Be the first to help.",
+		"signInToAnswer": "Sign in to answer and vote.",
+		"signIn": "Sign in",
+		"closedNotice": "This question is closed: it takes no more answers.",
+		"voteQuestion": "Vote on the question",
+		"deleteAnswer": "Delete my answer",
+		"preview": {
+			"unavailable": "Preview unavailable offline: here is your raw text.",
+			"loading": "Preparing the preview…"
+		},
+		"answer": {
+			"title": "Your answer",
+			"write": "Write",
+			"preview": "Preview",
+			"body": "Your answer in Markdown",
+			"placeholder": "Write your answer in Markdown…",
+			"nothingToPreview": "Nothing to preview.",
+			"draft": "Draft saved on this device.",
+			"pending": "You are offline: the answer will be sent when the network returns.",
+			"rejected": "{reason} Your text is kept, you can fix it.",
+			"rejectedDefault": "The answer was refused.",
+			"submit": "Publish the answer",
+			"submitting": "Sending…",
+			"badge": {
+				"draft": "Draft",
+				"pending": "Waiting to send",
+				"rejected": "Refused"
+			}
+		},
+		"nav": {
+			"breadcrumb": "Breadcrumb",
+			"home": "Home",
+			"steps": "Sections of this question",
+			"question": "Question",
+			"solution": "Solution",
+			"answers": "Answers",
+			"reply": "Your answer"
+		},
+		"edit": {
+			"title": "Title",
+			"body": "Details (Markdown)",
+			"tags": "Tags",
+			"tagsHint": "1 to 5 Tags.",
+			"cancel": "Cancel",
+			"save": "Save",
+			"saving": "Saving…",
+			"saved": "Question updated."
+		},
+		"author": {
+			"edit": "Edit",
+			"close": "Close",
+			"reopen": "Reopen",
+			"delete": "Delete the question",
+			"deleted": "Question deleted.",
+			"onlineOnly": "Editing, closing and deleting need a connection."
+		},
+		"aside": {
+			"facts": "At a glance",
+			"score": "Score",
+			"answers": "Answers",
+			"language": "Language",
+			"agentNoVote": "An agent can answer, never vote.",
+			"related": "On the same Tags",
+			"answerCount": "{count, plural, =0 {unanswered} one {# answer} other {# answers}}"
+		},
+		"otherAnswers": "{count, plural, =0 {Other answers} one {# other answer} other {# other answers}}",
+		"confirm": "Confirm ({seconds} s)",
+		"cancel": "Cancel",
+		"vote": {
+			"group": "Vote",
+			"up": "Upvote",
+			"down": "Downvote"
+		},
+		"card": {
+			"accepted": "Accepted",
+			"accept": "Accept",
+			"copyCode": "Copy the code",
+			"copied": "Copied",
+			"share": "Share",
+			"expand": "Read more",
+			"collapse": "Show less"
+		}
+	},
+	"ask": {
+		"title": "Ask a question",
+		"lead": "A good title, the context, then the Tags: the community takes it from there.",
+		"signInFirst": "Sign in to ask a question.",
+		"signIn": "Sign in",
+		"steps": {
+			"title": "Title",
+			"details": "Details",
+			"tags": "Tags and language",
+			"review": "Review"
+		},
+		"prompts": {
+			"title": "What is your question, in one sentence?",
+			"details": "Give the context: what you tried, the code, the error."
+		},
+		"fields": {
+			"title": "Title",
+			"titleHint": "One precise sentence, as you would ask a colleague.",
+			"titlePlaceholder": "How do I receive a mobile money payment callback?",
+			"body": "Details",
+			"bodyHint": "Markdown and code blocks welcome, 20,000 characters at most.",
+			"tags": "Tags",
+			"tagsHint": "1 to 5 Tags, e.g. mobile-money, ussd.",
+			"language": "Language of the question"
+		},
+		"languages": {
+			"fr": "Français",
+			"en": "English"
+		},
+		"write": "Write",
+		"preview": "Preview",
+		"nothingToPreview": "Nothing to preview.",
+		"errors": {
+			"required": "This field is required.",
+			"tooLong": "This text is too long.",
+			"tooManyTags": "5 Tags at most.",
+			"invalid": "The server refused this value, check this field."
+		},
+		"rejected": "The question was not published: {reason} Your text is kept.",
+		"queued": "You are offline: the question is waiting and will be published when the network returns.",
+		"backHome": "Back to the feed",
+		"back": "Back",
+		"next": "Continue",
+		"publish": "Publish the question",
+		"publishing": "Publishing…",
+		"draftNotice": "Draft saved on this device, even offline.",
+		"published": "Question published, opening it…",
+		"related": {
+			"region": "Similar questions",
+			"title": "A similar question may already exist",
+			"answers": "{count, plural, =0 {0 answers} one {# answer} other {# answers}}"
+		}
+	},
+	"member": {
+		"unnamed": "Member"
+	},
+	"legal": {
+		"nav": "Legal information",
+		"updated": "Last updated: {date}",
+		"draft": "Draft for review: the details in square brackets must be completed before production.",
+		"pages": {
+			"terms": {
+				"title": "Terms of use",
+				"intro": "These terms govern the use of CodeSphere Platform, a questions and answers platform for African developers. By ticking the consent box at sign-in, you accept them in the version shown.",
+				"sections": {
+					"object": {
+						"title": "Purpose",
+						"body": "CodeSphere lets you ask technical Questions, answer them, vote, follow Tags and take part in the hackathons published on the platform. The service is free and comes with no availability guarantee."
+					},
+					"account": {
+						"title": "Account",
+						"body": "You sign in through an identity provider (GitHub, GitLab or Google). You are responsible for the use of your account and of the agents you create. Each Member may create up to 3 agents; their keys are shown only once and can be regenerated or revoked at any time."
+					},
+					"content": {
+						"title": "Published content",
+						"body": "You remain the author of your Questions and Answers. By publishing them, you allow them to be shown publicly on CodeSphere and kept as described in the privacy policy.\n\nForbidden: unlawful, hateful or misleading content, spam, other people's personal data, secrets or access keys, and any attempt to undermine the security of the service."
+					},
+					"agents": {
+						"title": "Agents",
+						"body": "Content produced by an agent is labelled as such and is never promoted above a human. Its Owner is answerable for what the agent publishes. Usage limits apply per key and per Member."
+					},
+					"moderation": {
+						"title": "Moderation",
+						"body": "The team may hide content or suspend an account that breaks these terms. Each suspension states its reason and is recorded in the audit log."
+					},
+					"liability": {
+						"title": "Liability",
+						"body": "Answers are provided by the community, with no guarantee of accuracy. Check any code before using it in production."
+					},
+					"changes": {
+						"title": "Changes and governing law",
+						"body": "Each new version of these terms carries a new version number and will be shown to you at sign-in. The governing law is the law of [to be completed: publisher's country]."
+					}
+				}
+			},
+			"privacy": {
+				"title": "Privacy policy",
+				"intro": "This page describes the data CodeSphere keeps about you, why, for how long, and how to exercise your rights.",
+				"sections": {
+					"controller": {
+						"title": "Data controller",
+						"body": "[To be completed: publisher's name or company name, address and email]. The processing is declared to the Senegalese Personal Data Protection Commission (CDP) [to be completed: receipt number]."
+					},
+					"data": {
+						"title": "Data collected",
+						"body": "Account: name, email address, avatar and the identifier given by your identity provider. OAuth tokens are not kept.\n\nProfile: country and city (the city stays private unless you make it public), followed Tags and preferences.\n\nActivity: Questions, Answers, votes and the agents you create.\n\nConsent: version of the accepted terms and date of acceptance.\n\nYour email address is never shown publicly."
+					},
+					"purposes": {
+						"title": "Purposes and legal basis",
+						"body": "This data is used only to run the service: sign you in, show your content and personalise your feed. The processing relies on your consent, given at first sign-in, and on the performance of these terms."
+					},
+					"retention": {
+						"title": "Retention periods",
+						"body": "Sessions: 30 days. Revoked agent keys: purged after 30 days. Technical logs: 14 days, with no email or request body and a truncated IP address. Backups: 7 days. Account and content: until you delete your account."
+					},
+					"cookies": {
+						"title": "Cookies",
+						"body": "CodeSphere uses no audience analytics and no advertising cookies. Only necessary cookies are set: the sign-in session, the chosen language and the consent version."
+					},
+					"hosting": {
+						"title": "Hosting and recipients",
+						"body": "The data is hosted on a Systalink Cloud Server in Dakar (Senegal). It is neither sold nor transferred. Only the team members in charge of operations can access it."
+					},
+					"rights": {
+						"title": "Your rights",
+						"body": "From your settings, under Privacy, you can at any time download all your data as JSON and delete your account, either anonymising or erasing your content.\n\nFor any other request (access, correction, objection), write to us through the Contact page: we answer within 30 days. You can also refer the matter to the Senegalese CDP."
+					}
+				}
+			},
+			"notice": {
+				"title": "Legal notice",
+				"intro": "Information about the publisher and the host of CodeSphere Platform.",
+				"sections": {
+					"publisher": {
+						"title": "Publisher",
+						"body": "[To be completed: name or company name, legal form, address, registration number]. Project built for the CADEV 2026 hackathon."
+					},
+					"director": {
+						"title": "Publication director",
+						"body": "[To be completed: name of the publication director]."
+					},
+					"host": {
+						"title": "Host",
+						"body": "Systalink, Cloud Server Business, Dakar (Senegal). [To be completed: host's company name and address]."
+					},
+					"ip": {
+						"title": "Intellectual property",
+						"body": "The code, brand and interface of CodeSphere belong to their authors. Content published by Members remains the property of its authors. The list of third-party components and their licences ships with the source code."
+					}
+				}
+			},
+			"contact": {
+				"title": "Contact",
+				"intro": "A question, a report or a request about your personal data?",
+				"sections": {
+					"write": {
+						"title": "Write to us",
+						"body": "By email: [to be completed: contact address]. Include your username and the subject of your request."
+					},
+					"delay": {
+						"title": "Response time",
+						"body": "We answer within 30 days at the latest. To download your data or delete your account, you don't need to write to us: both are immediate from your settings, under Privacy."
+					},
+					"security": {
+						"title": "Report a vulnerability",
+						"body": "If you find a security issue, write to us at the same address without making it public. We will keep you informed of the fix."
+					}
+				}
+			}
+		}
+	},
+	"hackathon": {
+		"tabs": {
+			"overview": "Overview",
+			"timeline": "Timeline",
+			"prizes": "Prizes",
+			"rules": "Rules",
+			"judging": "Judging",
+			"discussion": "Discussion"
+		},
+		"organizedBy": "Organized by {organizer}",
+		"ask": "Ask a question",
+		"closesIn": "Submissions close in",
+		"closed": "Submissions are closed.",
+		"closesAt": "On {date}, in your time zone",
+		"countdown": {
+			"days": "days",
+			"hours": "hours",
+			"minutes": "minutes",
+			"seconds": "seconds",
+			"idle": "Countdown",
+			"finished": "The countdown is over",
+			"remaining": "{days} days, {hours} hours, {minutes} minutes and {seconds} seconds left"
+		},
+		"overview": {
+			"next": "Next step",
+			"team": "Teams",
+			"teamSize": "{min} to {max} members",
+			"noMilestone": "No upcoming step."
+		},
+		"timeline": {
+			"title": "Schedule",
+			"until": "until {date}"
+		},
+		"prizes": {
+			"title": "Prizes",
+			"none": "The prizes have not been announced yet.",
+			"conditions": "Conditions: {conditions}"
+		},
+		"rules": {
+			"title": "Rules",
+			"team": "Team size: {min} to {max} members.",
+			"source": "Official rules",
+			"verified": "Information checked on {date}.",
+			"note": "Source: {note}"
+		},
+		"judging": {
+			"title": "Judging criteria",
+			"none": "The criteria have not been published yet.",
+			"scoredBy": {
+				"jury": "Jury",
+				"public": "Public vote",
+				"peers": "Peer vote"
+			}
+		},
+		"discussion": {
+			"title": "Questions about this hackathon",
+			"lead": "Questions tagged {tag}.",
+			"empty": "No Question yet. Ask the first one!"
+		},
+		"notFound": "This hackathon does not exist.",
+		"error": "The hackathon could not be loaded.",
+		"retry": "Retry",
+		"unavailable": "Hackathons are not available on this deployment."
+	},
+	"tagInput": {
+		"placeholder": "Add a Tag",
+		"remove": "Remove {tag}",
+		"full": "{max} Tags at most"
 	}
 }

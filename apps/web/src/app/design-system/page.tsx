@@ -69,6 +69,7 @@ import {
 	CollapsiblePanel,
 	CollapsibleTrigger,
 } from "@codesphere/ui/components/molecules/collapsible";
+import { ConfirmTwoStep } from "@codesphere/ui/components/molecules/confirm-two-step";
 import { Countdown } from "@codesphere/ui/components/molecules/countdown";
 import {
 	Dialog,
@@ -100,6 +101,10 @@ import {
 import { Field } from "@codesphere/ui/components/molecules/field";
 import { FollowedTags } from "@codesphere/ui/components/molecules/followed-tags";
 import {
+	GroupedList,
+	type GroupedListItem,
+} from "@codesphere/ui/components/molecules/grouped-list";
+import {
 	InputGroup,
 	InputGroupAddon,
 	InputGroupButton,
@@ -114,7 +119,11 @@ import {
 import { OfflineBanner } from "@codesphere/ui/components/molecules/offline-banner";
 import { ProviderButton } from "@codesphere/ui/components/molecules/provider-button";
 import { QuestionCard } from "@codesphere/ui/components/molecules/question-card";
+import { ReasonDialog } from "@codesphere/ui/components/molecules/reason-dialog";
+import { ReasonField } from "@codesphere/ui/components/molecules/reason-field";
 import { RelatedQuestions } from "@codesphere/ui/components/molecules/related-questions";
+import { RowActions } from "@codesphere/ui/components/molecules/row-actions";
+import { SaveBar } from "@codesphere/ui/components/molecules/save-bar";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
 import {
 	Select,
@@ -127,15 +136,32 @@ import {
 	SettingRow,
 	SettingsSection,
 } from "@codesphere/ui/components/molecules/setting-row";
+import { StateGate } from "@codesphere/ui/components/molecules/state-gate";
 import { Stepper } from "@codesphere/ui/components/molecules/stepper";
 import {
 	Table,
 	TableBody,
 	TableCell,
+	TableEmpty,
 	TableHead,
 	TableHeader,
 	TableRow,
 } from "@codesphere/ui/components/molecules/table";
+import {
+	TableBulkBar,
+	TablePagination,
+	TableSelectCell,
+	TableSelectHead,
+	TableSortHead,
+} from "@codesphere/ui/components/molecules/table-controls";
+import {
+	NO_SELECTION,
+	pageSelectionState,
+	type Selection,
+	type SortState,
+	togglePage,
+	toggleRow,
+} from "@codesphere/ui/components/molecules/table-state";
 import {
 	Tabs,
 	TabsContent,
@@ -149,6 +175,7 @@ import {
 	type Vote,
 	VoteControl,
 } from "@codesphere/ui/components/molecules/vote-control";
+import { AdminMasterDetail } from "@codesphere/ui/components/organisms/admin-master-detail";
 import { AnswerForm } from "@codesphere/ui/components/organisms/answer-form";
 import { ApiKeyReveal } from "@codesphere/ui/components/organisms/api-key-reveal";
 import { AppFooter } from "@codesphere/ui/components/organisms/app-footer";
@@ -173,8 +200,16 @@ import {
 	MessageScrollerProvider,
 	MessageScrollerViewport,
 } from "@codesphere/ui/components/organisms/message-scroller";
-import { ModerationTable } from "@codesphere/ui/components/organisms/moderation-table";
+import {
+	type ModerationRow,
+	ModerationTable,
+} from "@codesphere/ui/components/organisms/moderation-table";
 import { QuestionFeed } from "@codesphere/ui/components/organisms/question-feed";
+import {
+	RecordFields,
+	RecordSection,
+	RecordSheet,
+} from "@codesphere/ui/components/organisms/record-sheet";
 import { TagPicker } from "@codesphere/ui/components/organisms/tag-picker";
 import {
 	BookOpenIcon,
@@ -186,9 +221,39 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { auditEntries, moderationRows } from "@/app/(admin)/admin/sample-data";
+import { auditEntries, moderationRows } from "./sample-data";
 
 const TABS = ["Pour toi", "Récents", "Sans réponse"] as const;
+/** The caller sorts: the table only reports the click. */
+function sortModerationRows(
+	rows: readonly ModerationRow[],
+	sort: SortState,
+): readonly ModerationRow[] {
+	if (!sort) {
+		return rows;
+	}
+	const pick = (row: ModerationRow) =>
+		sort.key === "title"
+			? row.title
+			: sort.key === "author"
+				? row.author
+				: row.reportedAgo;
+	return [...rows].sort((a, b) => {
+		const order = pick(a).localeCompare(pick(b), "fr");
+		return sort.direction === "asc" ? order : -order;
+	});
+}
+
+const TABLE_DEMO = [
+	{ tag: "mobile-money", questions: 128 },
+	{ tag: "ussd", questions: 41 },
+	{ tag: "docker", questions: 96 },
+	{ tag: "nodejs", questions: 212 },
+	{ tag: "postgresql", questions: 77 },
+	{ tag: "react", questions: 154 },
+	{ tag: "webhooks", questions: 33 },
+] as const;
+
 const SAMPLE_QUESTIONS = [
 	{
 		id: "q1",
@@ -274,8 +339,24 @@ const COLOR_TOKENS = [
 	{ name: "border", className: "bg-border" },
 ] as const;
 
+const ADMIN_GROUPS = [
+	{ key: "active", label: "Actifs" },
+	{ key: "suspended", label: "Suspendus" },
+] as const;
+
+const ADMIN_ITEMS: GroupedListItem[] = [
+	{ id: "awa", name: "awa_dev", group: "active", meta: "12" },
+	{ id: "moussa", name: "moussa", group: "active", meta: "4" },
+	{ id: "fatou", name: "fatou_k", group: "suspended", meta: "Suspendu" },
+];
+
 export default function DesignSystemPage() {
 	const [tab, setTab] = useState<(typeof TABS)[number]>("Pour toi");
+	const [tableSort, setTableSort] = useState<SortState>(null);
+	const [moderationSort, setModerationSort] = useState<SortState>(null);
+	const [tablePage, setTablePage] = useState(1);
+	const [tableChecked, setTableChecked] = useState<Selection>(NO_SELECTION);
+	const [tableReasonOpen, setTableReasonOpen] = useState(false);
 	const [checked, setChecked] = useState(false);
 	const [vote, setVote] = useState<Vote | null>("up");
 	const [step, setStep] = useState(1);
@@ -287,6 +368,9 @@ export default function DesignSystemPage() {
 	const [locale, setLocale] = useState<Locale>("fr");
 	const [online, setOnline] = useState(false);
 	const [language, setLanguage] = useState<string | null>("fr");
+	const [adminSelected, setAdminSelected] = useState("awa");
+	const [adminEditing, setAdminEditing] = useState(false);
+	const [reason, setReason] = useState("");
 	const [answerText, setAnswerText] = useState(
 		"Utilise un `callback_url` public avec un tunnel en local.",
 	);
@@ -683,6 +767,138 @@ export default function DesignSystemPage() {
 							</Table>
 						</div>
 					</Specimen>
+					<Specimen label="Table headless — tri, sélection, pagination, menu ⋯ et motif">
+						<div className="flex w-full flex-col gap-3">
+							{(() => {
+								const sorted = [...TABLE_DEMO].sort((a, b) => {
+									if (!tableSort) {
+										return 0;
+									}
+									const left = String(a[tableSort.key as "tag" | "questions"]);
+									const right = String(b[tableSort.key as "tag" | "questions"]);
+									const order = left.localeCompare(right, "fr", {
+										numeric: true,
+									});
+									return tableSort.direction === "asc" ? order : -order;
+								});
+								const pageRows = sorted.slice(
+									(tablePage - 1) * 3,
+									tablePage * 3,
+								);
+								const ids = pageRows.map((row) => row.tag);
+								return (
+									<>
+										<Table maxHeight={220}>
+											<TableHeader>
+												<TableRow>
+													<TableSelectHead
+														state={pageSelectionState(tableChecked, ids)}
+														onToggle={() =>
+															setTableChecked(togglePage(tableChecked, ids))
+														}
+													/>
+													<TableSortHead
+														sortKey="tag"
+														sort={tableSort}
+														onSortChange={setTableSort}
+													>
+														Tag
+													</TableSortHead>
+													<TableSortHead
+														sortKey="questions"
+														sort={tableSort}
+														onSortChange={setTableSort}
+													>
+														Questions
+													</TableSortHead>
+													<TableHead className="w-12">
+														<span className="sr-only">Actions</span>
+													</TableHead>
+												</TableRow>
+											</TableHeader>
+											<TableBody>
+												{pageRows.map((row) => (
+													<TableRow
+														key={row.tag}
+														selected={tableChecked.has(row.tag)}
+													>
+														<TableSelectCell
+															label={`Sélectionner ${row.tag}`}
+															checked={tableChecked.has(row.tag)}
+															onCheckedChange={() =>
+																setTableChecked(
+																	toggleRow(tableChecked, row.tag),
+																)
+															}
+														/>
+														<TableCell>{row.tag}</TableCell>
+														<TableCell className="tabular-nums">
+															{row.questions}
+														</TableCell>
+														<TableCell className="text-right">
+															<RowActions
+																label={`Actions pour ${row.tag}`}
+																actions={[
+																	{
+																		id: "open",
+																		label: "Voir les questions",
+																		onSelect: () => {},
+																	},
+																	{
+																		id: "reject",
+																		label: "Rejeter ce Tag",
+																		destructive: true,
+																		onSelect: () => setTableReasonOpen(true),
+																	},
+																]}
+															/>
+														</TableCell>
+													</TableRow>
+												))}
+												{pageRows.length === 0 && (
+													<TableEmpty colSpan={4}>Aucun Tag.</TableEmpty>
+												)}
+											</TableBody>
+										</Table>
+										<TablePagination
+											page={tablePage}
+											pageCount={Math.ceil(TABLE_DEMO.length / 3)}
+											pageSize={3}
+											total={TABLE_DEMO.length}
+											onPageChange={(next) => {
+												setTablePage(next);
+												setTableChecked(NO_SELECTION);
+											}}
+										/>
+										<TableBulkBar
+											count={tableChecked.size}
+											onClear={() => setTableChecked(NO_SELECTION)}
+											actions={
+												<Button
+													variant="destructive"
+													size="sm"
+													onClick={() => setTableReasonOpen(true)}
+												>
+													Rejeter la sélection…
+												</Button>
+											}
+										/>
+										<ReasonDialog
+											open={tableReasonOpen}
+											onOpenChange={setTableReasonOpen}
+											title="Rejeter ce Tag"
+											description="Le Tag est retiré du catalogue. L'action est enregistrée dans le journal d'audit."
+											confirmLabel="Rejeter"
+											onSubmit={() => {
+												setTableChecked(NO_SELECTION);
+												setTableReasonOpen(false);
+											}}
+										/>
+									</>
+								);
+							})()}
+						</div>
+					</Specimen>
 					<Specimen label="KpiCard — hausse, baisse, métrique à minimiser">
 						<div className="grid w-full gap-4 md:grid-cols-3">
 							<KpiCard
@@ -878,8 +1094,9 @@ export default function DesignSystemPage() {
 					</Specimen>
 					<Specimen label="QuestionCard">
 						<div className="grid w-full gap-4 md:grid-cols-2">
-							<QuestionCard {...SAMPLE_QUESTIONS[0]!} />
-							<QuestionCard {...SAMPLE_QUESTIONS[1]!} />
+							{SAMPLE_QUESTIONS.slice(0, 2).map((question) => (
+								<QuestionCard key={question.id} {...question} />
+							))}
 						</div>
 					</Specimen>
 					<Specimen label="CadevBanner">
@@ -1010,7 +1227,13 @@ export default function DesignSystemPage() {
 					</Specimen>
 					<Specimen label="ModerationTable (données d'exemple)">
 						<div className="w-full">
-							<ModerationTable rows={moderationRows} onConfirm={() => {}} />
+							<ModerationTable
+								rows={sortModerationRows(moderationRows, moderationSort)}
+								onConfirm={() => {}}
+								sort={moderationSort}
+								onSortChange={setModerationSort}
+								maxHeight={320}
+							/>
 						</div>
 					</Specimen>
 					<Specimen label="AuditLog (données d'exemple)">
@@ -1202,8 +1425,8 @@ export default function DesignSystemPage() {
 						<Link href="/admin" className="text-primary text-sm underline">
 							/admin (modération)
 						</Link>
-						<Link href="/admin/kpi" className="text-primary text-sm underline">
-							/admin/kpi
+						<Link href="/dashboard" className="text-primary text-sm underline">
+							/dashboard
 						</Link>
 						<Link
 							href="/admin/audit"
@@ -1252,6 +1475,81 @@ export default function DesignSystemPage() {
 								</EmptyDescription>
 							</EmptyHeader>
 						</Empty>
+					</Specimen>
+				</Section>
+
+				<Section
+					title="Socle admin"
+					description="Composants du back-office : liste et fiche, enregistrement, confirmation en deux temps."
+				>
+					<Specimen label="AdminMasterDetail — GroupedList + RecordSheet">
+						<AdminMasterDetail
+							className="w-full"
+							list={
+								<GroupedList
+									label="Membres"
+									items={ADMIN_ITEMS}
+									groups={ADMIN_GROUPS}
+									selectedId={adminSelected}
+									onSelect={(item) => setAdminSelected(item.id)}
+								/>
+							}
+							detail={
+								<RecordSheet
+									title={
+										ADMIN_ITEMS.find((item) => item.id === adminSelected)?.name
+									}
+									editing={adminEditing}
+									onEdit={() => setAdminEditing(true)}
+								>
+									<RecordSection title="Profil">
+										<RecordFields
+											fields={[
+												{ label: "Pays", value: "Burkina Faso" },
+												{ label: "Langue", value: "Français" },
+											]}
+										/>
+									</RecordSection>
+								</RecordSheet>
+							}
+						/>
+					</Specimen>
+					<Specimen label="SaveBar — modifié / inchangé">
+						<div className="flex w-full flex-col gap-3">
+							<SaveBar
+								dirty
+								onSave={() => setAdminEditing(false)}
+								onDiscard={() => setAdminEditing(false)}
+							/>
+							<SaveBar dirty={false} onSave={() => {}} onDiscard={() => {}} />
+						</div>
+					</Specimen>
+					<Specimen label="ConfirmTwoStep + ReasonField">
+						<div className="flex w-full max-w-md flex-col gap-3">
+							<ReasonField
+								id="ds-reason"
+								value={reason}
+								onValueChange={setReason}
+							/>
+							<ConfirmTwoStep
+								label="Suspendre ce Member"
+								disabled={reason.trim().length < 3}
+								onConfirm={() => setReason("")}
+							/>
+						</div>
+					</Specimen>
+					<Specimen label="StateGate — chargement, erreur, vide">
+						<div className="grid w-full gap-4 md:grid-cols-3">
+							<StateGate status="loading">
+								<p>Contenu</p>
+							</StateGate>
+							<StateGate status="error" onRetry={() => {}}>
+								<p>Contenu</p>
+							</StateGate>
+							<StateGate status="empty">
+								<p>Contenu</p>
+							</StateGate>
+						</div>
 					</Specimen>
 				</Section>
 			</main>

@@ -1,16 +1,21 @@
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { CONSENT_VERSION } from "@codesphere/contract/consent";
+import { DEFAULT_ROLE, ROLES, STAFF_ROLES } from "@codesphere/contract/roles";
 import type { Database } from "@codesphere/db";
 import * as schema from "@codesphere/db/schema/auth";
 import { betterAuth } from "better-auth";
-import { emailOTP, oAuthProxy } from "better-auth/plugins";
+import { createAuthMiddleware } from "better-auth/api";
+import { admin, emailOTP, oAuthProxy } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
+import { ac, roles } from "./access";
 import { parseAdminEmails, roleFor } from "./admin";
 import { readConsent } from "./consent";
+import { displayNameFor } from "./display-name";
 import { type OAuthProxyEnv, oauthProxyFrom } from "./oauth-proxy";
 import { type SocialProviderEnv, socialProvidersFrom } from "./providers";
+import { isRefusedProxyCallback } from "./proxy-target";
 import { withoutOAuthTokens } from "./tokens";
 
 export type AuthConfig = SocialProviderEnv &
@@ -18,7 +23,13 @@ export type AuthConfig = SocialProviderEnv &
 		BETTER_AUTH_URL: string;
 		BETTER_AUTH_SECRET: string;
 		CORS_ORIGIN: string;
+		/** Origin of the back-office host (production): trusted for auth calls, like CORS_ORIGIN. */
+		ADMIN_ORIGIN?: string;
+		/** Parent domain (e.g. codesphereplatform.xyz) so the session cookie reaches the back-office host. */
+		COOKIE_DOMAIN?: string;
+		SUPER_ADMIN_EMAILS?: string;
 		ADMIN_EMAILS?: string;
+		MODERATOR_EMAILS?: string;
 		/** Sign in with a one-time code sent by email: for local development and previews, where SSO cannot work. */
 		EMAIL_OTP_SIGNIN?: boolean;
 	};
@@ -53,7 +64,11 @@ export function createAuth(
 	desktopOrigins: readonly string[] = [],
 	hooks: AuthHooks = {},
 ) {
-	const admins = parseAdminEmails(env.ADMIN_EMAILS);
+	const staff = {
+		superAdmins: parseAdminEmails(env.SUPER_ADMIN_EMAILS),
+		admins: parseAdminEmails(env.ADMIN_EMAILS),
+		moderators: parseAdminEmails(env.MODERATOR_EMAILS),
+	};
 	const proxy = oauthProxyFrom(env);
 
 	return betterAuth({
@@ -61,7 +76,42 @@ export function createAuth(
 			provider: "pg",
 			schema,
 		}),
-		trustedOrigins: [env.CORS_ORIGIN, ...desktopOrigins],
+		trustedOrigins: [
+			env.CORS_ORIGIN,
+			...(env.ADMIN_ORIGIN ? [env.ADMIN_ORIGIN] : []),
+			...desktopOrigins,
+		],
+		// Staging only: refuse a proxy callback that would send a member to an origin other than
+		// staging or one preview (#149). The plugin redirects to whatever its state carries.
+		hooks: proxy
+			? {
+					before: createAuthMiddleware(async (ctx) => {
+						if (ctx.path !== "/callback/:id") {
+							return;
+						}
+						const state = ctx.query?.state;
+						if (typeof state !== "string") {
+							return;
+						}
+						if (
+							!(await isRefusedProxyCallback(
+								state,
+								proxy.secret,
+								proxy.productionURL,
+							))
+						) {
+							return;
+						}
+						ctx.context.logger.error(
+							"OAuth proxy: refused a callback target outside staging and previews",
+						);
+						// The sign-in page shows a generic failure for unknown codes (sign-in-error.ts).
+						throw ctx.redirect(
+							`${proxy.productionURL}/signin?error=invalid_callback`,
+						);
+					}),
+				}
+			: undefined,
 		// SSO in production: no email/password sign-in (#59, spec §3). The email code below is
 		// opt-in (EMAIL_OTP_SIGNIN), for local development and previews only.
 		socialProviders: socialProvidersFrom(env),
@@ -91,7 +141,7 @@ export function createAuth(
 							.from(schema.user)
 							.where(eq(schema.user.id, session.userId));
 						if (row && row.kind === "human") {
-							const role = roleFor(row, admins);
+							const role = roleFor(row, staff);
 							if (role !== row.role) {
 								await database
 									.update(schema.user)
@@ -118,7 +168,8 @@ export function createAuth(
 						return {
 							data: {
 								...user,
-								role: roleFor(user, admins),
+								name: displayNameFor(user.name, user.email),
+								role: roleFor(user, staff),
 								consentVersion: consent.consentVersion,
 								consentAcceptedAt: consent.consentAcceptedAt,
 							},
@@ -144,8 +195,14 @@ export function createAuth(
 		secret: env.BETTER_AUTH_SECRET,
 		baseURL: env.BETTER_AUTH_URL,
 		advanced: {
+			// One origin per deployment (map #86): the web and the API share a site, so the session
+			// cookie is first-party. With the back-office on its own host (COOKIE_DOMAIN), the cookie is
+			// scoped to the parent domain so both hosts see the same session.
+			crossSubDomainCookies: env.COOKIE_DOMAIN
+				? { enabled: true, domain: env.COOKIE_DOMAIN }
+				: undefined,
 			defaultCookieAttributes: {
-				sameSite: "none",
+				sameSite: "lax",
 				secure: true,
 				httpOnly: true,
 			},
@@ -161,17 +218,30 @@ export function createAuth(
 				},
 				// For agents: the human Member who owns and answers for them.
 				ownerId: { type: "string", required: false, input: false },
-				// "admin" | "member"; derived from ADMIN_EMAILS at account creation, never by the client.
+				// Set by an Admin suspension (#123): read by the API context, never by the client.
+				suspendedAt: { type: "date", required: false, input: false },
+				// Also declared by the admin plugin below; restated here with the enum's values so the
+				// Session type carries the exact roles. Derived from the staff email lists at sign-in,
+				// never by the client.
 				role: {
-					type: "string",
+					type: [...ROLES],
 					required: false,
-					defaultValue: "member",
+					defaultValue: DEFAULT_ROLE,
 					input: false,
 				},
 			},
 		},
 		plugins: [
 			...(proxy ? [oAuthProxy(proxy)] : []),
+			// Role management and access control (#120). The roles and what each may do live in
+			// ./access; the permissions that would let a role bypass the email lists or the audited
+			// suspension (set-role, ban, impersonate…) are granted to none.
+			admin({
+				ac,
+				roles,
+				defaultRole: DEFAULT_ROLE,
+				adminRoles: [...STAFF_ROLES],
+			}),
 			...(env.EMAIL_OTP_SIGNIN && hooks.sendSignInOtp
 				? [
 						emailOTP({

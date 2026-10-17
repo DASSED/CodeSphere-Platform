@@ -26,25 +26,46 @@ type AnswerFormProps = Omit<React.ComponentProps<"form">, "onSubmit"> & {
 	submitting?: boolean;
 	/** On small screens, dock the form at the bottom of the viewport. */
 	docked?: boolean;
+	/** Stable ids for the Markdown field and the submit button, for tests and QA flows. */
+	bodyId?: string;
+	submitId?: string;
+	/** Texts in the interface language; French by default. */
+	labels?: Partial<AnswerFormLabels>;
 };
 
-const STATUS_NOTICE: Record<
-	Exclude<AnswerFormStatus, "idle">,
-	{ badge: "draft" | "pending" | "rejected"; text: (reason?: string) => string }
-> = {
-	draft: {
-		badge: "draft",
-		text: () => "Brouillon enregistré sur cet appareil.",
-	},
-	pending: {
-		badge: "pending",
-		text: () =>
-			"Vous êtes hors ligne : la réponse sera envoyée au retour du réseau.",
-	},
-	rejected: {
-		badge: "rejected",
-		text: (reason) =>
-			`${reason ?? "La réponse a été refusée"}. Votre texte est conservé, vous pouvez le corriger.`,
+type AnswerFormLabels = {
+	write: string;
+	preview: string;
+	body: string;
+	placeholder: string;
+	nothingToPreview: string;
+	draft: string;
+	pending: string;
+	/** Shown when the answer was refused, with the reason when there is one. */
+	rejected: (reason?: string) => string;
+	submit: string;
+	submitting: string;
+	/** Text of the status badge shown beside the notice. */
+	badge: Record<Exclude<AnswerFormStatus, "idle">, string>;
+};
+
+const FRENCH: AnswerFormLabels = {
+	write: "Écrire",
+	preview: "Aperçu",
+	body: "Votre réponse en Markdown",
+	placeholder: "Écrivez votre réponse en Markdown…",
+	nothingToPreview: "Rien à prévisualiser.",
+	draft: "Brouillon enregistré sur cet appareil.",
+	pending:
+		"Vous êtes hors ligne : la réponse sera envoyée au retour du réseau.",
+	rejected: (reason) =>
+		`${reason ?? "La réponse a été refusée."} Votre texte est conservé, vous pouvez le corriger.`,
+	submit: "Publier la réponse",
+	submitting: "Envoi…",
+	badge: {
+		draft: "Brouillon",
+		pending: "En attente d'envoi",
+		rejected: "Rejetée",
 	},
 };
 
@@ -57,10 +78,20 @@ function AnswerForm({
 	rejectionReason,
 	submitting = false,
 	docked = false,
+	bodyId,
+	submitId,
+	labels,
 	className,
 	...props
 }: AnswerFormProps) {
-	const notice = status === "idle" ? null : STATUS_NOTICE[status];
+	const l = { ...FRENCH, ...labels };
+	const notice =
+		status === "idle"
+			? null
+			: {
+					badge: status,
+					text: status === "rejected" ? l.rejected(rejectionReason) : l[status],
+				};
 	const empty = value.trim().length === 0;
 
 	return (
@@ -83,13 +114,14 @@ function AnswerForm({
 		>
 			<Tabs defaultValue="write">
 				<TabsList>
-					<TabsTrigger value="write">Écrire</TabsTrigger>
-					<TabsTrigger value="preview">Aperçu</TabsTrigger>
+					<TabsTrigger value="write">{l.write}</TabsTrigger>
+					<TabsTrigger value="preview">{l.preview}</TabsTrigger>
 				</TabsList>
 				<TabsContent value="write">
 					<Textarea
-						aria-label="Votre réponse en Markdown"
-						placeholder="Écrivez votre réponse en Markdown…"
+						id={bodyId}
+						aria-label={l.body}
+						placeholder={l.placeholder}
 						className="min-h-32"
 						value={value}
 						onChange={(event) => onValueChange(event.target.value)}
@@ -98,7 +130,7 @@ function AnswerForm({
 				<TabsContent value="preview">
 					<div className="min-h-32 rounded-md border border-border p-3 text-sm leading-relaxed">
 						{empty ? (
-							<p className="text-muted-foreground">Rien à prévisualiser.</p>
+							<p className="text-muted-foreground">{l.nothingToPreview}</p>
 						) : (
 							preview
 						)}
@@ -111,18 +143,25 @@ function AnswerForm({
 					role="status"
 					className="flex flex-wrap items-center gap-2 text-muted-foreground text-xs"
 				>
-					<StatusBadge status={notice.badge} />
-					{notice.text(rejectionReason)}
+					<StatusBadge status={notice.badge}>
+						{l.badge[notice.badge]}
+					</StatusBadge>
+					{notice.text}
 				</p>
 			)}
 
 			<div className="flex justify-end">
-				<Button type="submit" disabled={empty || submitting}>
-					{submitting ? "Envoi…" : "Publier la réponse"}
+				<Button id={submitId} type="submit" disabled={empty || submitting}>
+					{submitting ? l.submitting : l.submit}
 				</Button>
 			</div>
 		</form>
 	);
 }
 
-export { AnswerForm, type AnswerFormProps, type AnswerFormStatus };
+export {
+	AnswerForm,
+	type AnswerFormLabels,
+	type AnswerFormProps,
+	type AnswerFormStatus,
+};

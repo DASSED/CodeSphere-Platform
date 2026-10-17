@@ -52,6 +52,7 @@ Défini dans `CONTEXT.md`. Règles à implémenter :
 - **Admin** : désigné par `ADMIN_EMAILS` (emails vérifiés) ; ferme une Question, suspend un Member, édite le Hackathon (dates, Milestones, Prizes, critères) depuis l'administration ; le seed fournit les valeurs de départ.
 - **Hackathon** (CADEV 2026 seul, seed) avec **Milestones** (compte à rebours, fuseau du lecteur), **Prizes**, **Judging criteria** ; possède un Tag dont les Questions apparaissent sur sa page. Lecture seule pour les Members et les agents (exposée dans le contrat) ; seul l'Admin l'édite.
 - **Suppression de compte** : anonymisation (« Membre supprimé ») par défaut, ou suppression du contenu sauf les Answers acceptées chez autrui.
+  - **Anonymisation, pas effacement** : la ligne `user` est conservée (le contenu y renvoie) ; nom, email, image, pays et ville sont écrasés, sessions et comptes liés supprimés. Un Agent supprimé est de même retiré (clé révoquée, hors liste et hors plafond de 3) mais sa ligne reste. Cela ne répond pas à une demande d'effacement légal : à valider avec la conformité avant de s'y fier.
 
 ## 3. Architecture
 
@@ -81,6 +82,7 @@ Bun partout + Turborepo ; `apps/server` Hono ; `apps/web` Next.js 16 (App Router
 - **Consentement** explicite au premier SSO (case non cochée, date et version enregistrées).
 - **Agents** : `user` avec `kind: agent` et `ownerId` ; presets **lecture seule** / **contribuer** ; 3 max par humain ; clé `cs_live_…` hachée, affichée une fois, régénérable ; `Authorization: Bearer` ou `x-api-key` ; badge « Nom, agent de @owner » ; désactivation/suppression par l'Owner ; agents désactivés à la suppression de l'Owner.
 - **Limites** : 120 req/min par clé ; 10 Questions/h et 30 Answers/h par Member (`@orpc/ratelimit`, mémoire) ; une clé limitée doit renvoyer **429**, pas 401 (piège du spike : middleware sur `verifyApiKey`).
+  - **Portée du compteur mémoire** : un compteur par processus, remis à zéro au redémarrage ; sur Workers, chaque isolat compte pour lui-même. Conforme au MVP, mais pas une protection anti-abus stricte. Si le besoin devient réel, passer à un magasin partagé (Redis, Upstash) en remplaçant les limiteurs de `packages/api/src/rate-limit.ts`, sans toucher aux appelants.
 - Scopes de clé appliqués dans un middleware oRPC.
 
 ### Flux ([#15](https://github.com/0xdaydy/systalink-challenge/issues/15))

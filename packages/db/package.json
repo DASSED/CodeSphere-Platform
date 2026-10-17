@@ -13,9 +13,14 @@
 		"db:migrate:deploy": "drizzle-kit migrate",
 		"db:studio": "drizzle-kit studio",
 		"db:migrate": "drizzle-kit migrate",
-		"db:seed": "bun src/seed/index.ts"
+		"db:seed": "bun src/seed/index.ts",
+		"db:seed:test": "bun src/seed/test.ts",
+		"db:local": "bun ../../scripts/db-local.mjs",
+		"db:local:studio": "bun ../../scripts/db-local.mjs --studio",
+		"db:preview:studio": "bun ../../scripts/db-preview.mjs"
 	},
 	"dependencies": {
+		"@codesphere/contract": "workspace:*",
 		"@neondatabase/serverless": "^1.2.0",
 		"drizzle-orm": "catalog:",
 		"pg": "^8.23.0",

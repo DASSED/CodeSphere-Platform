@@ -1,0 +1,259 @@
+name: Release
+
+# Releases main to production, https://codesphereplatform.xyz, on the Systalink Cloud Server in
+# Dakar (#35, decisions of #168: the server hosts production only; staging and previews stay on
+# Cloudflare Workers). One stack: docker-compose.prod.yml (Caddy, web, migrate, server, Postgres).
+#
+# Pipeline, same shape as staging.yml and preview.yml:
+#   gate    -> on main, a new vX.Y.Z, and the commit's CI and licence runs passed
+#   build   -> the web and server images, once, pushed to ghcr.io/davexstudio-dev tagged with the commit (in parallel
+#              with e2e); nothing is ever built on the server
+#   e2e     -> the Playwright journeys on a local stack (e2e.yml, #55)
+#   deploy  -> environment "production" (its required reviewers approve here), then over SSH:
+#              env files from the environment's secrets, pull, dump the database, migrate, start
+#              (deploy/deploy.sh), and HTTPS checks: /api/v1/ready answers 200 and /api/v1/health
+#              reports this commit
+#   release -> the vX.Y.Z tag and GitHub Release, only once production runs the commit
+# deploy needs build AND e2e, and fails explicitly when one did not succeed: a red CI, a broken
+# image or a broken journey never reaches production, and never shows up as « skipped ».
+#
+# Manual only: Actions > Release > Run workflow, branch main, with the version
+# (`gh workflow run production.yml --ref main -f version=v1.0.0`). The Run workflow button needs
+# this file on the default branch (main). Pull requests that touch the stack only build the
+# images (nothing is pushed), so a broken Dockerfile shows up before it is merged.
+#
+# Rollback: release an earlier commit again from main (revert, then a new version). Schema changes
+# stay backward compatible over two releases (#168); deploy.sh dumps the database before migrating.
+#
+# Variables and secrets: deploy/README.md.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to release, e.g. v1.0.0 (becomes the tag and the GitHub Release)
+        required: true
+  pull_request:
+    paths:
+      - apps/server/Dockerfile
+      - apps/web/Dockerfile
+      - docker-compose.prod.yml
+      - deploy/**
+      - .github/workflows/production.yml
+
+permissions:
+  contents: read
+
+# Releases run one after the other; a newer run never cancels a migration halfway.
+concurrency:
+  group: production-${{ github.event_name }}-${{ github.event.number || 'release' }}
+  cancel-in-progress: false
+
+env:
+  VERSION: ${{ inputs.version }}
+  # The images live under the repository owner (davexstudio-dev): the run's own token pushes them
+  # in build. The server pulls them in deploy with GHCR_TOKEN (read:packages), since the run's
+  # token does not leave GitHub.
+  REGISTRY: ghcr.io/davexstudio-dev
+
+jobs:
+  # TEST: waits for the push runs of ci.yml and licenses.yml on this commit; fails when one
+  # failed, was cancelled, or never ran. Blocking: nothing below starts without it.
+  gate:
+    name: CI passed
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Release main, as a new vX.Y.Z
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Production is released from main only, not $GITHUB_REF."
+            exit 1
+          fi
+          if ! printf '%s' "$VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$VERSION' is not vX.Y.Z."
+            exit 1
+          fi
+          if gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$VERSION" >/dev/null 2>&1; then
+            echo "::error::$VERSION already exists: pick the next version."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/actions
+      - uses: ./.github/actions/wait-for-ci
+        with:
+          sha: ${{ github.sha }}
+          event: push
+          workflows: ci.yml licenses.yml
+
+  # BUILD: once per commit. On a release the images are pushed to GHCR; on a pull request they
+  # are only built.
+  build:
+    name: Build the ${{ matrix.app }} image
+    needs: gate
+    # always(): runs on pull requests, where gate is skipped; on a release, only after gate.
+    if: >
+      always() &&
+      (github.event_name == 'pull_request' || needs.gate.result == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # Pushes the images to ghcr.io under the repository owner.
+      packages: write
+    strategy:
+      # Each image reports on its own: a broken web build does not hide the state of the server one.
+      fail-fast: false
+      matrix:
+        app: [server, web]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image name
+        id: image
+        env:
+          APP: ${{ matrix.app }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: echo "name=${REGISTRY}/codesphere-${APP}:${SHA}" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v3
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v3
+      # The build mounts these as BuildKit secrets (never in a layer). Nothing secret is needed to
+      # build: the web image holds public values only, the server reads its secrets at runtime.
+      - run: touch apps/web/.env apps/server/.env
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/${{ matrix.app }}/Dockerfile
+          push: ${{ github.event_name == 'workflow_dispatch' }}
+          tags: ${{ steps.image.outputs.name }}
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+          secret-files: |
+            web_env=apps/web/.env
+            server_env=apps/server/.env
+          build-args: |
+            NEXT_PUBLIC_SERVER_URL=
+            APP_VERSION=${{ inputs.version || format('pr-{0}', github.event.number) }}
+            GIT_SHA=${{ github.event.pull_request.head.sha || github.sha }}
+
+  # E2E: the journeys must pass before production changes (#55). In parallel with build.
+  e2e:
+    name: End-to-end journeys
+    needs: gate
+    uses: ./.github/workflows/e2e.yml
+
+  # DEPLOY: the environment's reviewers approve, then the server runs the images of this commit.
+  deploy:
+    name: Deploy production
+    needs: [build, e2e]
+    # always(): a failed or skipped stage must turn THIS job red, not leave it « skipped ».
+    if: always() && github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment:
+      name: production
+      url: https://${{ vars.PROD_PUBLIC_HOST }}
+    permissions:
+      contents: read
+    steps:
+      - name: Require the images and the journeys
+        env:
+          BUILD: ${{ needs.build.result }}
+          E2E: ${{ needs.e2e.result }}
+        run: |
+          if [ "$BUILD" != "success" ] || [ "$E2E" != "success" ]; then
+            echo "::error::Not deployed: build is '$BUILD', e2e is '$E2E'."
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            /docker-compose.prod.yml
+            /deploy/
+          sparse-checkout-cone-mode: false
+
+      # The compose file, the Caddyfile and the scripts of this commit, next to the env files.
+      - name: Copy the stack to the server
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          fingerprint: ${{ secrets.DEPLOY_HOST_FINGERPRINT }}
+          source: docker-compose.prod.yml,deploy
+          target: codesphere
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        env:
+          PROD_COMPOSE_ENV: ${{ secrets.PROD_COMPOSE_ENV }}
+          PROD_SERVER_ENV: ${{ secrets.PROD_SERVER_ENV }}
+          PROD_WEB_ENV: ${{ secrets.PROD_WEB_ENV }}
+          GHCR_USER: ${{ vars.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          SHA: ${{ github.sha }}
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: deploy
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          fingerprint: ${{ secrets.DEPLOY_HOST_FINGERPRINT }}
+          command_timeout: 15m
+          envs: PROD_COMPOSE_ENV,PROD_SERVER_ENV,PROD_WEB_ENV,GHCR_USER,GHCR_TOKEN,REGISTRY,SHA,VERSION
+          script: |
+            set -euo pipefail
+            cd ~/codesphere
+            # The env files live only on the server, readable by deploy alone (#168).
+            umask 077
+            mkdir -p apps/server apps/web backups
+            printf '%s\n' "$PROD_COMPOSE_ENV" > .env
+            printf '%s\n' "$PROD_SERVER_ENV" > apps/server/.env
+            printf '%s\n' "$PROD_WEB_ENV" > apps/web/.env
+            # Logged in for the pull only: the token is removed from the server right after.
+            printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            trap 'docker logout ghcr.io >/dev/null' EXIT
+            deploy/deploy.sh "$SHA" "$VERSION"
+
+      # The public URL, over HTTPS from outside: DNS, the certificate, Caddy, the server and the
+      # database must all answer, and the server must report this very commit.
+      - name: Check /api/v1/ready and /api/v1/health
+        env:
+          ORIGIN: https://${{ vars.PROD_PUBLIC_HOST }}
+        run: |
+          for attempt in $(seq 1 30); do
+            status=$(curl -sS -m 10 -o /dev/null -w '%{http_code}' "$ORIGIN/api/v1/ready" || true)
+            if [ "$status" = "200" ]; then
+              commit=$(curl -sS -m 10 "$ORIGIN/api/v1/health" | jq -r '.commit' 2>/dev/null || true)
+              if [ "$commit" = "$GITHUB_SHA" ]; then
+                echo "ready after $attempt attempt(s), running $VERSION ($commit)"
+                exit 0
+              fi
+              echo "ready, but /api/v1/health reports '$commit', not $GITHUB_SHA"
+            fi
+            sleep 10
+          done
+          echo "::error::$ORIGIN is not ready on $GITHUB_SHA within 5 minutes (last status: ${status:-none})"
+          exit 1
+
+  # RELEASE: the tag and the notes, only once production runs the commit.
+  release:
+    name: GitHub Release
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Tag and publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "$VERSION" --generate-notes

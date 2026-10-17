@@ -30,7 +30,7 @@ describe("createEmailClient", () => {
 
 	test("renders HTML and plain text and sends", async () => {
 		const client = createEmailClient(
-			{ EMAIL_FROM: "CodeSphere <no-reply@x.test>" },
+			{ EMAIL_FROM: "CodeSphere Platform <no-reply@x.test>" },
 			transport,
 		);
 		const result = await client.send({

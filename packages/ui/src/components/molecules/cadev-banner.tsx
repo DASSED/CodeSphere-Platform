@@ -8,6 +8,8 @@ type BannerMilestone = { key: string; label: string; startsAt: string };
 type CadevBannerLabels = {
 	eyebrow: string;
 	days: string;
+	/** Unit after the number in the rail's ring, e.g. « j » (12j) or « d » (12d). */
+	daysShort: string;
 	hours: string;
 	/** Under the countdown, e.g. « 13 jours avant la clôture · affiché dans votre fuseau horaire ». */
 	remaining: (days: number) => string;
@@ -19,6 +21,7 @@ type CadevBannerLabels = {
 const FR: CadevBannerLabels = {
 	eyebrow: "Hackathon en cours",
 	days: "jours",
+	daysShort: "j",
 	hours: "heures",
 	remaining: (days) =>
 		`${days} jours avant la clôture · affiché dans votre fuseau horaire`,
@@ -172,7 +175,8 @@ function CadevBanner({
 							className="fill-foreground font-mono font-semibold"
 							fontSize="20"
 						>
-							{left.days ?? "…"}j
+							{left.days ?? "…"}
+							{l.daysShort}
 						</text>
 					</svg>
 					<div className="min-w-0">

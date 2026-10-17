@@ -1,4 +1,5 @@
 import type { Context as ApiContext } from "@codesphere/api/context";
+import { carriesApiKey, sessionForRequest } from "@codesphere/api/suspension";
 import type { LoggerEnv } from "@codesphere/logger";
 import type { Context as HonoContext } from "hono";
 
@@ -6,7 +7,7 @@ import type { AppDeps } from "./app";
 
 export type CreateContextOptions = {
 	context: HonoContext<LoggerEnv>;
-	deps: Pick<AppDeps, "auth" | "db" | "release">;
+	deps: Pick<AppDeps, "auth" | "db" | "release" | "notifications">;
 };
 
 export async function createContext({
@@ -14,17 +15,43 @@ export async function createContext({
 	deps,
 }: CreateContextOptions): Promise<ApiContext> {
 	// An invalid or revoked API key makes better-auth throw; treat it as "not authenticated"
-	// so procedures answer UNAUTHORIZED instead of a 500.
-	const session = await deps.auth.api
-		.getSession({ headers: context.req.raw.headers })
-		.catch(() => null);
+	// so procedures answer UNAUTHORIZED instead of a 500. A key over its rate limit is the
+	// exception: it must answer 429, not 401 (spec §3), so the wait is kept for the router.
+	const headers = context.req.raw.headers;
+	let apiKeyRetryAfter: number | undefined;
+	const session = await deps.auth.api.getSession({ headers }).catch((error) => {
+		apiKeyRetryAfter = rateLimitRetryAfter(error);
+		return null;
+	});
 	return {
+		apiKeyRetryAfter,
 		db: deps.db,
-		session,
+		// A suspended Member's API keys stop being accepted (#123).
+		session: sessionForRequest(session, carriesApiKey(headers)),
 		logger: context.get("logger"),
 		requestId: context.get("requestId"),
 		release: deps.release,
+		notifications: deps.notifications,
 	};
+}
+
+/**
+ * Seconds to wait when `error` is better-auth's refusal of a rate-limited API key, else undefined.
+ * The plugin reports `tryAgainIn` in milliseconds.
+ */
+export function rateLimitRetryAfter(error: unknown): number | undefined {
+	const refusal = error as
+		| {
+				statusCode?: number;
+				body?: { details?: { tryAgainIn?: number }; tryAgainIn?: number };
+		  }
+		| undefined;
+	if (refusal?.statusCode !== 429) {
+		return undefined;
+	}
+	const wait =
+		refusal.body?.details?.tryAgainIn ?? refusal.body?.tryAgainIn ?? 60_000;
+	return Math.max(1, Math.ceil(wait / 1000));
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>;

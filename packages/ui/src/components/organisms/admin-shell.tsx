@@ -1,7 +1,11 @@
+"use client";
+
 import { Badge } from "@codesphere/ui/components/atoms/badge";
 import { Logo } from "@codesphere/ui/components/atoms/logo";
 import { ThemeToggle } from "@codesphere/ui/components/molecules/theme-toggle";
 import { cn } from "@codesphere/ui/lib/utils";
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
+import { useState } from "react";
 
 type AdminNavItem = {
 	label: string;
@@ -35,19 +39,46 @@ function AdminShell({
 	...props
 }: AdminShellProps) {
 	const Link = LinkComponent;
+	const [collapsed, setCollapsed] = useState(false);
+	const ToggleIcon = collapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon;
 	return (
 		<div
 			data-slot="admin-shell"
+			data-collapsed={collapsed}
 			className={cn(
-				"min-h-svh bg-background md:grid md:grid-cols-[14rem_1fr]",
+				"min-h-svh bg-background transition-[grid-template-columns] duration-200 md:grid",
+				collapsed ? "md:grid-cols-[4.5rem_1fr]" : "md:grid-cols-[16rem_1fr]",
 				className,
 			)}
 			{...props}
 		>
 			<aside className="flex flex-col gap-3 border-border border-b bg-sidebar p-3 text-sidebar-foreground md:sticky md:top-0 md:h-svh md:gap-6 md:border-r md:border-b-0 md:p-4">
-				<div className="flex items-center justify-between gap-2">
-					<Logo />
-					<Badge variant="outline">Admin</Badge>
+				<div
+					className={cn(
+						"flex items-start justify-between gap-2",
+						collapsed && "md:flex-col md:items-center",
+					)}
+				>
+					<div className="flex min-w-0 flex-col gap-1.5">
+						<Logo
+							compact={collapsed}
+							className="min-w-0 whitespace-nowrap text-sm"
+						/>
+						{!collapsed && (
+							<Badge variant="outline" className="ml-9 w-fit">
+								Admin
+							</Badge>
+						)}
+					</div>
+					<button
+						type="button"
+						onClick={() => setCollapsed((value) => !value)}
+						aria-label={collapsed ? "Déployer le menu" : "Réduire le menu"}
+						aria-expanded={!collapsed}
+						className="hidden size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground md:inline-flex"
+					>
+						<ToggleIcon className="size-4" />
+					</button>
 				</div>
 				<nav
 					aria-label="Administration"
@@ -59,21 +90,28 @@ function AdminShell({
 								<Link
 									href={href}
 									aria-current={active ? "page" : undefined}
+									title={collapsed ? label : undefined}
 									className={cn(
 										"flex items-center gap-2 rounded-md px-3 py-2 font-medium text-sm transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+										collapsed && "md:justify-center md:px-0",
 										active &&
 											"bg-sidebar-accent text-sidebar-accent-foreground",
 									)}
 								>
-									<Icon className="size-4" />
-									{label}
+									<Icon className="size-4 shrink-0" />
+									<span className={cn(collapsed && "md:sr-only")}>{label}</span>
 								</Link>
 							</li>
 						))}
 					</ul>
 				</nav>
 				{user && (
-					<div className="mt-auto hidden flex-col text-xs md:flex">
+					<div
+						className={cn(
+							"mt-auto hidden flex-col text-xs md:flex",
+							collapsed && "md:hidden",
+						)}
+					>
 						<span className="font-medium">{user.name}</span>
 						{user.email && (
 							<span className="truncate text-muted-foreground">
@@ -86,7 +124,8 @@ function AdminShell({
 			</aside>
 
 			<div className="flex min-w-0 flex-col">
-				<header className="flex flex-wrap items-center justify-between gap-3 border-border border-b px-4 py-4 md:px-8">
+				{/* Fixed page title and subtitle (#131): the list and the record scroll under it. */}
+				<header className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-border border-b bg-background/95 px-4 py-4 backdrop-blur md:px-8">
 					<div className="min-w-0">
 						<h1 className="truncate font-semibold text-xl tracking-tight">
 							{title}

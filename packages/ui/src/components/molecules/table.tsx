@@ -1,10 +1,24 @@
 import { cn } from "@codesphere/ui/lib/utils";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+type TableProps = React.ComponentProps<"table"> & {
+	/**
+	 * Bounds the height of the table (a CSS length or a number of px): the body then scrolls
+	 * under a sticky header. Left out, the table grows with its rows, as before.
+	 */
+	maxHeight?: number | string;
+};
+
+function Table({ className, maxHeight, ...props }: TableProps) {
 	return (
 		<div
 			data-slot="table-container"
-			className="relative w-full overflow-x-auto rounded-lg border border-border"
+			data-scroll={maxHeight === undefined ? undefined : ""}
+			style={maxHeight === undefined ? undefined : { maxHeight }}
+			className={cn(
+				"relative w-full overflow-x-auto rounded-lg border border-border",
+				maxHeight !== undefined &&
+					"overflow-y-auto [&_thead_th]:sticky [&_thead_th]:top-0 [&_thead_th]:z-[1] [&_thead_th]:bg-muted",
+			)}
 		>
 			<table
 				data-slot="table"
@@ -35,12 +49,19 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
 	);
 }
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+type TableRowProps = React.ComponentProps<"tr"> & {
+	/** The active or checked row: marked for sight and for assistive technology. */
+	selected?: boolean;
+};
+
+function TableRow({ className, selected, ...props }: TableRowProps) {
 	return (
 		<tr
 			data-slot="table-row"
+			data-state={selected ? "selected" : undefined}
+			aria-selected={selected === undefined ? undefined : selected}
 			className={cn(
-				"border-border border-b transition-colors hover:bg-muted/40",
+				"border-border border-b transition-colors hover:bg-muted/40 data-[state=selected]:bg-accent",
 				className,
 			)}
 			{...props}
@@ -71,6 +92,29 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
 	);
 }
 
+/** « Aucun résultat » on one row, so the header stays visible: a filter that matched nothing. */
+function TableEmpty({
+	colSpan,
+	className,
+	children,
+	...props
+}: Omit<React.ComponentProps<"td">, "colSpan"> & { colSpan: number }) {
+	return (
+		<tr data-slot="table-empty" className="border-0">
+			<td
+				colSpan={colSpan}
+				className={cn(
+					"h-24 px-3 text-center text-muted-foreground text-sm",
+					className,
+				)}
+				{...props}
+			>
+				{children}
+			</td>
+		</tr>
+	);
+}
+
 function TableCaption({
 	className,
 	...props
@@ -89,7 +133,10 @@ export {
 	TableBody,
 	TableCaption,
 	TableCell,
+	TableEmpty,
 	TableHead,
 	TableHeader,
+	type TableProps,
 	TableRow,
+	type TableRowProps,
 };

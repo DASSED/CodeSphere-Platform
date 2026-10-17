@@ -10,8 +10,8 @@ export type AccountDeletedProps = {
 };
 
 export const ACCOUNT_DELETED_SUBJECTS: Record<Locale, string> = {
-	fr: "Votre compte CodeSphere a été supprimé",
-	en: "Your CodeSphere account has been deleted",
+	fr: "Votre compte CodeSphere Platform a été supprimé",
+	en: "Your CodeSphere Platform account has been deleted",
 };
 
 const COPY: Record<
@@ -27,7 +27,7 @@ const COPY: Record<
 		preview: "La suppression de votre compte est effective",
 		title: "Compte supprimé",
 		body: (name) =>
-			`Bonjour ${name}, la suppression de votre compte CodeSphere est effective. Vos données personnelles ont été effacées ou anonymisées.`,
+			`Bonjour ${name}, la suppression de votre compte CodeSphere Platform est effective. Vos données personnelles ont été effacées ou anonymisées.`,
 		after:
 			"Vous pouvez à tout moment créer un nouveau compte par SSO. Il ne reprendra rien de l'ancien.",
 	},
@@ -35,7 +35,7 @@ const COPY: Record<
 		preview: "Your account deletion is complete",
 		title: "Account deleted",
 		body: (name) =>
-			`Hello ${name}, the deletion of your CodeSphere account is complete. Your personal data has been erased or anonymised.`,
+			`Hello ${name}, the deletion of your CodeSphere Platform account is complete. Your personal data has been erased or anonymised.`,
 		after:
 			"You can create a new account through SSO at any time. It will carry nothing over from the old one.",
 	},

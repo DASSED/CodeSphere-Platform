@@ -1,0 +1,36 @@
+steps:
+  - echo: "Baseline: signed-in Home in English, drizzle not followed"
+  - await: { visible: { text: Followed Tags } }
+  - await: { idle: true }
+
+  - echo: Home. Open Manage my Tags; expect the Tags tab of the settings
+  - tap: { text: Manage my Tags }
+  - await: { visible: { text: Find a Tag to follow }, timeout: 60000 }
+  - await: { idle: true }
+
+  - echo: Settings, Tags tab. Search drizzle and follow it; expect an Unfollow drizzle chip
+  - type: { into: { id: tag-search }, text: drizzle, submit: false }
+  - await: { visible: { text: Follow drizzle }, timeout: 10000 }
+  - tap: { text: Follow drizzle }
+  - await: { visible: { text: Unfollow drizzle }, timeout: 10000 }
+
+  - echo: "drizzle followed. Go Home through the logo; expect # drizzle in Followed Tags"
+  - tap: { text: CodeSphere Platform }
+  - await: { visible: { text: Hackathon in progress }, timeout: 30000 }
+  - await: { idle: true }
+  - await: { visible: { text: "# drizzle" }, timeout: 10000 }
+
+  - echo: Restore the baseline. Manage my Tags, unfollow drizzle; expect it gone from the settings and from Home
+  - tap: { text: Manage my Tags }
+  - await: { visible: { text: Find a Tag to follow }, timeout: 30000 }
+  - await: { idle: true }
+  - assert: { visible: { text: Unfollow drizzle } }
+  - tap: { text: Unfollow drizzle }
+  - await: { hidden: { text: Unfollow drizzle }, timeout: 10000 }
+
+  - tap: { text: CodeSphere Platform }
+  - await: { visible: { text: Hackathon in progress }, timeout: 30000 }
+  - await: { idle: true }
+  - assert: { visible: { text: Followed Tags } }
+  - await: { hidden: { text: "# drizzle" }, timeout: 10000 }
+executionPrerequisite: Chrome with CDP on port 9222 showing the CodeSphere home page (http://localhost:3001/) in English, signed in as a human Member who does not follow the drizzle Tag; local API and web dev servers running.

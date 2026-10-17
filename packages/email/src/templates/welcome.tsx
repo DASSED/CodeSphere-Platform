@@ -10,8 +10,8 @@ export type WelcomeProps = {
 };
 
 export const WELCOME_SUBJECTS: Record<Locale, string> = {
-	fr: "Bienvenue sur CodeSphere",
-	en: "Welcome to CodeSphere",
+	fr: "Bienvenue sur CodeSphere Platform",
+	en: "Welcome to CodeSphere Platform",
 };
 
 /** English subject, kept for callers that predate the locale. */
@@ -22,14 +22,14 @@ const COPY: Record<
 	{ preview: string; title: (name: string) => string; body: string }
 > = {
 	fr: {
-		preview: "Votre compte CodeSphere est prêt",
+		preview: "Votre compte CodeSphere Platform est prêt",
 		title: (name) => `Bienvenue, ${name}`,
-		body: "Votre compte CodeSphere est prêt. Suivez quelques Tags pour composer votre fil « Pour vous », ou posez votre première Question.",
+		body: "Votre compte CodeSphere Platform est prêt. Suivez quelques Tags pour composer votre fil « Pour vous », ou posez votre première Question.",
 	},
 	en: {
-		preview: "Your CodeSphere account is ready",
+		preview: "Your CodeSphere Platform account is ready",
 		title: (name) => `Welcome, ${name}`,
-		body: "Your CodeSphere account is ready. Follow a few Tags to shape your For You feed, or ask your first Question.",
+		body: "Your CodeSphere Platform account is ready. Follow a few Tags to shape your For You feed, or ask your first Question.",
 	},
 };
 

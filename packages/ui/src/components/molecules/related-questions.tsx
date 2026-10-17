@@ -11,30 +11,44 @@ type RelatedQuestion = {
 
 type RelatedQuestionsProps = Omit<React.ComponentProps<"aside">, "children"> & {
 	questions: readonly RelatedQuestion[];
+	/** Texts in the interface language; French by default. */
+	labels?: Partial<RelatedQuestionsLabels>;
+};
+
+type RelatedQuestionsLabels = {
+	region: string;
+	title: string;
+	answers: (count: number) => string;
+};
+
+const FRENCH: RelatedQuestionsLabels = {
+	region: "Questions proches",
+	title: "Une question proche existe peut-être déjà",
+	answers: (count) => `${count} réponse${count > 1 ? "s" : ""}`,
 };
 
 /** Close questions shown while the member types a title, to avoid duplicates (#68). */
 function RelatedQuestions({
 	questions,
+	labels,
 	className,
 	...props
 }: RelatedQuestionsProps) {
+	const l = { ...FRENCH, ...labels };
 	if (questions.length === 0) {
 		return null;
 	}
 	return (
 		<aside
 			data-slot="related-questions"
-			aria-label="Questions proches"
+			aria-label={l.region}
 			className={cn(
 				"flex flex-col gap-2 rounded-lg border border-border bg-muted/40 p-3",
 				className,
 			)}
 			{...props}
 		>
-			<h3 className="font-semibold text-muted-foreground text-xs">
-				Une question proche existe peut-être déjà
-			</h3>
+			<h3 className="font-semibold text-muted-foreground text-xs">{l.title}</h3>
 			<ul className="flex flex-col gap-1">
 				{questions.map((question) => (
 					<li key={question.id}>
@@ -52,7 +66,7 @@ function RelatedQuestions({
 								)}
 							>
 								{question.answered && <CircleCheckIcon className="size-3.5" />}
-								{question.answers} réponse{question.answers > 1 ? "s" : ""}
+								{l.answers(question.answers)}
 							</span>
 						</a>
 					</li>
@@ -62,4 +76,9 @@ function RelatedQuestions({
 	);
 }
 
-export { type RelatedQuestion, RelatedQuestions, type RelatedQuestionsProps };
+export {
+	type RelatedQuestion,
+	RelatedQuestions,
+	type RelatedQuestionsLabels,
+	type RelatedQuestionsProps,
+};

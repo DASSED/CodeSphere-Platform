@@ -1,6 +1,6 @@
 import { createApp } from "./app";
 import { ENV } from "./env.server";
-import { auth, db, logger } from "./services";
+import { auth, db, logger, notifications } from "./services";
 import { startTelemetry } from "./telemetry";
 
 const stopTelemetry = startTelemetry();
@@ -19,6 +19,9 @@ const app = createApp({
 	corsOrigin: ENV.CORS_ORIGIN,
 	trustProxy: ENV.TRUST_PROXY,
 	release: { version: ENV.APP_VERSION, commit: ENV.GIT_SHA },
+	apiDocs: ENV.NODE_ENV !== "production",
+	notifications,
+	resendWebhookSecret: ENV.RESEND_WEBHOOK_SECRET,
 });
 
 export default app;

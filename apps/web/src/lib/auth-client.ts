@@ -1,4 +1,6 @@
+import { ac, roles } from "@codesphere/auth/access";
 import {
+	adminClient,
 	emailOTPClient,
 	inferAdditionalFields,
 } from "better-auth/client/plugins";
@@ -8,12 +10,13 @@ import { getServerUrl } from "./server-url";
 
 export const authClient = createAuthClient({
 	baseURL: new URL("/api/auth", getServerUrl()).toString(),
-	// Typed mirror of the server's additional user fields (packages/auth): set server-side only.
+	// Typed mirror of the server's plugins (packages/auth): the admin plugin carries `role` and the
+	// access control shared with the API; the other user fields are set server-side only.
 	plugins: [
 		emailOTPClient(),
+		adminClient({ ac, roles }),
 		inferAdditionalFields({
 			user: {
-				role: { type: "string", required: false, input: false },
 				kind: { type: "string", required: false, input: false },
 			},
 		}),

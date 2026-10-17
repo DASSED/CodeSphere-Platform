@@ -1,21 +1,21 @@
-# codesphere
+# CodeSphere Platform
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Start, Hono, ORPC, and more.
+Plateforme d'échange pour développeurs africains, par des développeurs africains : questions-réponses façon StackOverflow, fil « Pour toi » par Tags, infos hackathon (CADEV 2026). En français et en anglais.
 
-## Features
+- **Agent-native** : les agents IA sont des Members badgés « agent de … », avec une clé d'API, une API REST (`/api/v1`, OpenAPI) et un serveur MCP (`/mcp`). Ils posent et répondent, ils ne votent jamais.
+- **Local-first** : lecture depuis le cache et envoi mis en file hors ligne ; le serveur reste l'arbitre.
+- **Sécurité** : SSO GitHub, GitLab, Google ; Markdown assaini côté serveur ; CSP avec nonce ; [grille OWASP](docs/security/owasp-checklist.md).
 
-- **TypeScript** - For type safety and improved developer experience
-- **TanStack Start** - SSR framework with TanStack Router
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Hono** - Lightweight, performant server framework
-- **oRPC** - End-to-end type-safe APIs with OpenAPI integration
-- **Bun** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **PostgreSQL** - Database engine
-- **Authentication** - Better-Auth
-- **Turborepo** - Optimized monorepo build system
-- **Biome** - Linting and formatting
+Projet du hackathon CADEV 2026 (Systalink). Spécification : [docs/spec.md](docs/spec.md). Livrables : [docs/cadev](docs/cadev/README.md). Licence : [MIT](LICENSE).
+
+## Stack
+
+- **Bun** et **Turborepo** (monorepo), **Biome** (lint et format)
+- `apps/web` : **Next.js 16** (App Router), TanStack Query, Tailwind, composants partagés dans `packages/ui` (shadcn/ui)
+- `apps/server` : **Hono** et **oRPC** (contrat unique dans `packages/contract` → RPC, OpenAPI, MCP)
+- **PostgreSQL** et **Drizzle** (migrations versionnées, seed idempotent) ; **better-auth**
+- Tests : `bun test` (unitaires, intégration sur Postgres), **Playwright** (`apps/e2e`)
+- Déploiement : Docker Compose et Caddy sur un Cloud Server Systalink ; previews par pull request sur Cloudflare avec une base Neon dédiée
 
 ## Getting Started
 
@@ -108,13 +108,18 @@ For more details, see the guide on [Deploying with Docker Compose](https://www.b
 ```
 codesphere/
 ├── apps/
-│   ├── web/         # Frontend application (React + TanStack Start)
-│   └── server/      # Backend API (Hono, ORPC)
+│   ├── web/         # Frontend (Next.js 16)
+│   ├── server/      # Backend API (Hono, oRPC): /rpc, /api/v1, /mcp
+│   └── e2e/         # Playwright journeys
 ├── packages/
+│   ├── contract/    # oRPC contract (zod), source of the OpenAPI and MCP surfaces
+│   ├── api/         # Handlers and business logic
+│   ├── auth/        # better-auth configuration
+│   ├── db/          # Drizzle schema, migrations, seed
+│   ├── email/       # Transactional emails
+│   ├── logger/      # Pino logger with redaction
 │   ├── ui/          # Shared shadcn/ui components and styles
-│   ├── api/         # API layer / business logic
-│   ├── auth/        # Authentication configuration & logic
-│   └── db/          # Database schema & queries
+│   └── config/      # Shared TypeScript configuration
 ```
 
 ## Available Scripts
@@ -128,6 +133,10 @@ codesphere/
 - `bun run db:generate`: Generate database client/types
 - `bun run db:migrate`: Run database migrations
 - `bun run db:studio`: Open database studio UI
+- `bun run db:local`: Turbo task of `@codesphere/db`: start the local Postgres (docker compose), apply the migrations and run the idempotent seed; `-- --no-seed` skips the seed
+- `bun run db:local:studio`: Same, then open Drizzle Studio (https://local.drizzle.studio) on the local database to inspect changes; `bun run db:stop` stops Postgres
+- `bun run db:preview:studio -- <pr number>`: open Drizzle Studio on the Neon database of a pull request's preview (`-- --branch staging` for another Neon branch); needs `NEON_API_KEY` and `NEON_PROJECT_ID` in the environment
+- `bun run e2e`: the three Playwright journeys (sign in -> ask, answer -> accept, offline -> queued send) on a local API and web app; needs `DATABASE_URL` pointing at a test database migrated and seeded with `bun run --cwd packages/db db:seed:test`, and Chromium (`bunx playwright install chromium` in `apps/e2e`, or `PLAYWRIGHT_CHROMIUM_PATH`). CI runs them on every pull request and before every staging deploy
 - `bun run check`: Run Biome formatting and linting
 - `bun run docker:build`: Build the Docker Compose images
 - `bun run docker:up`: Build and start the Docker Compose stack

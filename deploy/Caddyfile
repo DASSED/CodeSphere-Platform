@@ -1,0 +1,74 @@
+# Production reverse proxy for docker-compose.prod.yml.
+#
+# Two hosts, one application:
+#   {$PUBLIC_HOST}  the public site. Every /admin page is redirected to the back-office host.
+#   {$ADMIN_HOST}   the back-office host. Serves the same web app, so /admin works here.
+#
+# /design-system and the rest of the site are NOT redirected: only /admin and /admin/* move.
+#
+# Sign-in never depends on that redirect: the OAuth callbacks (/api/auth/*) and /post-signin are
+# served on the public host, then an Admin is sent to /admin, which moves to the back-office host
+# with the session cookie (COOKIE_DOMAIN is the apex host, so both hosts receive it).
+#
+# The API paths (the same prefixes as apps/server/src/worker.ts) go to the server, everything
+# else to the web app. Each host proxies its own API paths, so the browser never calls another
+# origin and the session cookie stays first-party (COOKIE_DOMAIN shares it between the hosts).
+#
+# Hosts come from the environment (PUBLIC_HOST, ADMIN_HOST, ACME_EMAIL), set in the compose file.
+{
+	email {$ACME_EMAIL}
+}
+
+(api_paths) {
+	@api path /api/* /rpc /rpc/* /mcp /mcp/*
+	handle @api {
+		# The API returns data, never a page to render (#54).
+		header Content-Security-Policy "default-src 'none'; frame-ancestors 'none'"
+		reverse_proxy server:3000
+	}
+}
+
+# Every response (#54, spec §4). The pages' Content-Security-Policy, with its per-request nonce,
+# comes from the Next.js proxy (apps/web/src/proxy.ts): Caddy cannot draw a nonce.
+(security_headers) {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		X-Frame-Options "DENY"
+		Cross-Origin-Opener-Policy "same-origin"
+		-Server
+	}
+}
+
+{$PUBLIC_HOST} {
+	encode zstd gzip
+	import security_headers
+
+	@admin path /admin /admin/*
+	# 307, not 308: a permanent redirect is cached by browsers for good, and the back-office host
+	# may still change. 307 also keeps the method.
+	redir @admin https://{$ADMIN_HOST}{uri} 307
+
+	import api_paths
+	handle {
+		reverse_proxy web:3001
+	}
+}
+
+{$ADMIN_HOST} {
+	encode zstd gzip
+	import security_headers
+
+	# Back-office pages stay out of search engines.
+	header X-Robots-Tag "noindex, nofollow"
+
+	@root path /
+	redir @root /admin 302
+
+	import api_paths
+	handle {
+		reverse_proxy web:3001
+	}
+}

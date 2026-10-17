@@ -1,0 +1,75 @@
+steps:
+  - echo: "Baseline: signed-in Home in English, no agent named QA agent"
+  - await: { visible: { text: Followed Tags } }
+  - await: { idle: true }
+
+  - echo: Home. Open the account menu; expect a Settings entry
+  - tap: { text: Account menu }
+  - await: { visible: { text: Settings } }
+  - tap: { text: Settings }
+  - await: { visible: { text: Public profile }, timeout: 30000 }
+  - await: { idle: true }
+
+  - echo: Settings. Open the Agents tab; expect My agents with the create form
+  - tap: { text: Agents }
+  - await: { visible: { text: My agents } }
+  - await: { idle: true }
+  - await: { visible: { text: No agent yet. } }
+  - await: { visible: { text: New agent (0/3) } }
+
+  - echo: No agent yet, 0/3. Fill the name, pick Contribute, create; expect the one-time key and the agent listed
+  - type: { into: { id: agent-name }, text: QA agent, submit: false }
+  - tap: { text: Contribute }
+  - await: { visible: { text: May also ask questions and answer. } }
+  - tap: { text: Create the agent }
+  - await: { visible: { text: "Clé de l'agent QA agent" }, timeout: 15000 }
+
+  - echo: One-time key dialog. Copy the key to arm the close button, then close; expect the agent listed as Active
+  - tap: { text: Copier la clé }
+  - await: { visible: { text: Clé copiée } }
+  - tap: { text: "J'ai copié la clé" }
+  - await: { hidden: { text: "Clé de l'agent QA agent" }, timeout: 10000 }
+  - await: { idle: true }
+  - assert: { visible: { text: QA agent } }
+  - assert: { visible: { text: Active } }
+  - assert: { visible: { text: New agent (1/3) } }
+  - assert: { hidden: { text: No agent yet. } }
+
+  - echo: Agent active. Disable it; expect Disabled and a re-enable button
+  - tap: { text: Disable }
+  - await: { visible: { text: Re-enable with a new key }, timeout: 10000 }
+  - assert: { visible: { text: Disabled } }
+
+  - echo: Agent disabled. Re-enable with a new key; expect the key dialog, then Active again
+  - tap: { text: Re-enable with a new key }
+  - await: { visible: { text: "Clé de l'agent QA agent" }, timeout: 15000 }
+  - tap: { text: Copier la clé }
+  - await: { visible: { text: Clé copiée } }
+  - tap: { text: "J'ai copié la clé" }
+  - await: { hidden: { text: "Clé de l'agent QA agent" }, timeout: 10000 }
+  - await: { visible: { text: Active }, timeout: 10000 }
+  - assert: { visible: { text: Rotate the key } }
+
+  - echo: Active again. Rotate the key; expect the key dialog again, then Active
+  - tap: { text: Rotate the key }
+  - await: { visible: { text: "Clé de l'agent QA agent" }, timeout: 15000 }
+  - tap: { text: Copier la clé }
+  - await: { visible: { text: Clé copiée } }
+  - tap: { text: "J'ai copié la clé" }
+  - await: { hidden: { text: "Clé de l'agent QA agent" }, timeout: 10000 }
+  - await: { idle: true }
+
+  - echo: Restore the baseline. Delete the agent (arm, then Enter on the focused confirm); expect No agent yet and 0/3
+  - tap: { text: Delete the agent… }
+  - tool: keyboard
+    args:
+      key: enter
+  - await: { visible: { text: No agent yet. }, timeout: 10000 }
+  - assert: { visible: { text: New agent (0/3) } }
+  - assert: { hidden: { text: Rotate the key } }
+
+  - echo: Back Home through the logo, so the flow can run again at once
+  - tap: { text: CodeSphere home }
+  - await: { visible: { text: Followed Tags }, timeout: 30000 }
+  - await: { idle: true }
+executionPrerequisite: Chrome with CDP on port 9222 showing the CodeSphere home page (http://localhost:3001/) in English, signed in as a human Member who has no agent named QA agent; local API and web dev servers running.

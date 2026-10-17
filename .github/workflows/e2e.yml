@@ -1,0 +1,84 @@
+name: End-to-end
+
+# The three Playwright journeys (#55): sign in -> ask; answer -> accept; offline -> queued send.
+# They run on a local stack (Postgres service, API, production build of the web app) seeded with
+# the deterministic test data, on every pull request and before every staging deploy
+# (staging.yml and production.yml call this workflow and do not deploy when it fails).
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  journeys:
+    name: Playwright journeys
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18.0
+        env:
+          POSTGRES_USER: codesphere
+          POSTGRES_PASSWORD: codesphere
+          POSTGRES_DB: codesphere_e2e
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U codesphere"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://codesphere:codesphere@localhost:5432/codesphere_e2e
+      # Same values as apps/e2e/playwright.config.ts: they are baked into the build.
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3100
+      NEXT_PUBLIC_EMAIL_OTP_SIGNIN: "true"
+      NEXT_PUBLIC_HAS_DATABASE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.0
+      # Retried: a cold cache re-downloads everything and can hit rate limits (infra, not code).
+      - name: Install dependencies
+        run: |
+          for attempt in 1 2 3; do
+            bun install --frozen-lockfile --ignore-scripts && exit 0
+            echo "::warning::install attempt $attempt failed, retrying"
+            sleep 15
+          done
+          exit 1
+      - run: bun run env:generate
+
+      - name: Migrate and seed the test database
+        working-directory: packages/db
+        run: |
+          bunx drizzle-kit migrate
+          bun run db:seed:test
+
+      - name: Install Chromium
+        working-directory: apps/e2e
+        run: bunx playwright install --with-deps chromium
+
+      - name: Build the web app
+        working-directory: apps/web
+        run: bun run build
+
+      - name: Run the journeys
+        working-directory: apps/e2e
+        env:
+          E2E_WEB_COMMAND: bunx next start --port 3101
+        run: bun run e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: |
+            apps/e2e/playwright-report
+            apps/e2e/test-results
+          retention-days: 7

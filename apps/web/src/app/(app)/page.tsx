@@ -12,16 +12,23 @@ import {
 	EmptyMedia,
 	EmptyTitle,
 } from "@codesphere/ui/components/molecules/empty";
+import { FollowedTags } from "@codesphere/ui/components/molecules/followed-tags";
 import { SegmentedControl } from "@codesphere/ui/components/molecules/segmented-control";
+import { FeedFilters } from "@codesphere/ui/components/organisms/feed-filters";
 import { useQuery } from "@tanstack/react-query";
 import { CheckIcon, MessageSquareIcon, TagIcon } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 import type * as z from "zod";
-
+import { FeedSkeleton, HomeFeed, useFeed } from "@/components/home-feed";
 import { AskButton } from "@/components/site-header";
-import { authClient } from "@/lib/auth-client";
+import TagsOnboardingRedirect from "@/components/tags-onboarding-redirect";
+import { HAS_DATABASE } from "@/lib/deployment";
 import { firstName, greetingKey, submissionClose } from "@/lib/home";
+import { gettingStarted } from "@/lib/tags-onboarding";
+import { useHydratedSession } from "@/lib/use-hydrated-session";
 import { useMounted } from "@/lib/use-mounted";
 import { orpc } from "@/utils/orpc";
 
@@ -29,12 +36,15 @@ type HackathonData = z.infer<typeof Hackathon>;
 
 // Home (#130, design from the home prototype): desktop visitor = one centred column with the
 // banner; desktop Member = feed and a sticky rail; phone = promise for a visitor, greeting and a
-// compact ribbon for a Member. The feed itself (tabs, cards) arrives with « Flux B » (#66).
+// compact ribbon for a Member. The feed (#66): three tabs, language and country filters, cards
+// leading to the Question page, Agents' Questions dashed and hidden on request.
 export default function Home() {
-	const { data: session, isPending } = authClient.useSession();
-	const hackathon = useQuery(
-		orpc.hackathons.get.queryOptions({ input: { slug: "cadev-2026" } }),
-	);
+	const { data: session, isPending } = useHydratedSession();
+	// Without a database the banner is simply absent.
+	const hackathon = useQuery({
+		...orpc.hackathons.get.queryOptions({ input: { slug: "cadev-2026" } }),
+		enabled: HAS_DATABASE,
+	});
 	if (isPending) {
 		return <PageSkeleton />;
 	}
@@ -50,6 +60,7 @@ function useBannerLabels() {
 	return {
 		eyebrow: t("eyebrow"),
 		days: t("days"),
+		daysShort: t("daysShort"),
 		hours: t("hours"),
 		remaining: (days: number) => t("remaining", { days }),
 		timeline: t("timeline"),
@@ -97,8 +108,8 @@ function Banner({
 		<Button
 			variant={variant === "rail" ? "outline" : "secondary"}
 			size="sm"
-			disabled
-			title={t("soon")}
+			render={<Link href={`/hackathons/${hackathon.slug}` as Route} />}
+			nativeButton={false}
 		>
 			{t("see")}
 		</Button>
@@ -119,22 +130,86 @@ function Banner({
 }
 
 const TABS = ["forYou", "recent", "unanswered"] as const;
+
+/** Countries offered by the filter: the most represented first, then the diaspora. */
+const FEED_COUNTRIES = [
+	"SN",
+	"CI",
+	"BF",
+	"ML",
+	"BJ",
+	"TG",
+	"CM",
+	"NG",
+	"GH",
+	"KE",
+	"MA",
+	"OTHER",
+] as const;
 type TabKey = (typeof TABS)[number];
 
-function FeedTabs({ signedIn }: { signedIn: boolean }) {
+function FeedSection({ signedIn }: { signedIn: boolean }) {
 	const t = useTranslations("home.tabs");
+	const tFilters = useTranslations("home.filters");
 	// Keyed by id, not by label: switching language keeps the selected tab.
 	const [tab, setTab] = useState<TabKey>(signedIn ? "forYou" : "recent");
+	const [language, setLanguage] = useState("all");
+	const [country, setCountry] = useState("all");
+	const me = useQuery({
+		...orpc.members.me.queryOptions(),
+		enabled: HAS_DATABASE && signedIn,
+	});
 	const labels = TABS.map((key) => t(key));
+	// The server never has the persisted cache: the skeleton until mounted (no hydration mismatch).
+	const mounted = useMounted();
+	const feed = useFeed(tab, signedIn, {
+		language,
+		country,
+		hideAgents: me.data?.hideAgentContent ?? false,
+	});
 	return (
-		<div className="flex flex-wrap items-center justify-between gap-3">
-			<SegmentedControl
-				options={labels}
-				value={t(tab)}
-				onValueChange={(label) => setTab(TABS[labels.indexOf(label)] ?? tab)}
-			/>
+		<div className="grid gap-5">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<SegmentedControl
+					options={labels}
+					value={t(tab)}
+					onValueChange={(label) => setTab(TABS[labels.indexOf(label)] ?? tab)}
+				/>
+				<FeedFilters
+					compact
+					labels={{
+						language: tFilters("language"),
+						country: tFilters("country"),
+					}}
+					language={language}
+					onLanguageChange={setLanguage}
+					country={country}
+					onCountryChange={setCountry}
+					languages={[
+						{ value: "all", label: tFilters("allLanguages") },
+						{ value: "fr", label: "Français" },
+						{ value: "en", label: "English" },
+					]}
+					countries={[
+						{ value: "all", label: tFilters("allCountries") },
+						...FEED_COUNTRIES.map((code) => ({
+							value: code,
+							label: code === "OTHER" ? tFilters("diaspora") : code,
+						})),
+					]}
+				/>
+			</div>
 			{!signedIn && tab === "forYou" && (
-				<p className="text-muted-foreground text-sm">{t("signInForYou")}</p>
+				<p className="-mt-2 text-muted-foreground text-sm">
+					{t("signInForYou")}
+				</p>
+			)}
+			{!mounted || feed.isPending ? (
+				<FeedSkeleton />
+			) : feed.items.length === 0 ? (
+				<EmptyFeed signedIn={signedIn} />
+			) : (
+				<HomeFeed {...feed} />
 			)}
 		</div>
 	);
@@ -156,7 +231,11 @@ function EmptyFeed({ signedIn }: { signedIn: boolean }) {
 			<EmptyContent className="flex-row flex-wrap justify-center">
 				<AskButton />
 				{signedIn && (
-					<Button variant="outline" disabled>
+					<Button
+						variant="outline"
+						render={<Link href="/onboarding/tags" />}
+						nativeButton={false}
+					>
 						<TagIcon />
 						{t("followTags")}
 					</Button>
@@ -181,8 +260,7 @@ function VisitorHome({ hackathon }: { hackathon: HackathonData | undefined }) {
 				<p className="text-muted-foreground">{t("lead")}</p>
 			</section>
 			<Banner hackathon={hackathon} />
-			<FeedTabs signedIn={false} />
-			<EmptyFeed signedIn={false} />
+			<FeedSection signedIn={false} />
 		</main>
 	);
 }
@@ -204,6 +282,8 @@ function MemberHome({
 		: null;
 	return (
 		<main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 md:grid-cols-[minmax(0,1fr)_20rem] md:px-6 md:py-8">
+			{/* Tags are read from the database: without one there is nothing to onboard. */}
+			{HAS_DATABASE && <TagsOnboardingRedirect />}
 			<div className="grid min-w-0 content-start gap-5">
 				{/* Phone only: greeting and compact ribbon (variant 4). */}
 				<div className="grid gap-4 md:hidden">
@@ -217,41 +297,119 @@ function MemberHome({
 					</div>
 					<Banner hackathon={hackathon} variant="ribbon" />
 				</div>
-				<FeedTabs signedIn />
-				<EmptyFeed signedIn />
+				<FeedSection signedIn />
 			</div>
 			{/* Desktop only: sticky rail (variant 3). */}
 			<aside className="sticky top-24 hidden content-start gap-4 self-start md:grid">
 				<Banner hackathon={hackathon} variant="rail" />
-				<section className="grid gap-3 rounded-2xl border border-border bg-card p-5">
-					<p className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest">
-						{t("start.title")}
-					</p>
-					<ul className="grid gap-2 text-sm">
-						<li className="flex items-center gap-2">
-							<span className="grid size-5 place-items-center rounded-full bg-emerald-600 text-white">
-								<CheckIcon className="size-3" />
-							</span>
-							{t("start.account")}
-						</li>
-						<li className="flex items-center gap-2 text-muted-foreground">
-							<span className="size-5 rounded-full border border-border" />
-							{t("start.tags")}
-						</li>
-						<li className="flex items-center gap-2 text-muted-foreground">
-							<span className="size-5 rounded-full border border-border" />
-							{t("start.question")}
-						</li>
-					</ul>
-				</section>
-				<section className="grid gap-2 rounded-2xl border border-border bg-card p-5">
-					<p className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest">
-						{t("followed.title")}
-					</p>
-					<p className="text-muted-foreground text-sm">{t("followed.none")}</p>
-				</section>
+				<GettingStartedCard />
+				<FollowedTagsCard />
 			</aside>
 		</main>
+	);
+}
+
+/**
+ * The first steps of a new Member, read from their account: a done step is ticked, an open one
+ * links to where it is done. Gone once every step is done.
+ */
+function GettingStartedCard() {
+	const t = useTranslations("home.start");
+	const followed = useQuery({
+		...orpc.tags.followed.queryOptions(),
+		enabled: HAS_DATABASE,
+	});
+	const me = useQuery({
+		...orpc.members.me.queryOptions(),
+		enabled: HAS_DATABASE,
+	});
+	const progress = gettingStarted({
+		followedCount: followed.data?.items.length,
+		hasAskedQuestion: me.data?.hasAskedQuestion,
+	});
+	if (!progress || progress.complete) {
+		return null;
+	}
+	const steps = [
+		{ key: "account", done: true, href: null },
+		{ key: "tags", done: progress.tags, href: "/onboarding/tags" },
+		{ key: "question", done: progress.question, href: "/ask" },
+	] as const;
+	return (
+		<section
+			aria-labelledby="getting-started"
+			className="grid gap-3 rounded-2xl border border-border bg-card p-5"
+		>
+			<div className="flex items-baseline justify-between gap-2">
+				<p
+					id="getting-started"
+					className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest"
+				>
+					{t("title")}
+				</p>
+				<p className="font-mono text-muted-foreground text-xs">
+					{t("progress", { done: progress.done, total: steps.length })}
+				</p>
+			</div>
+			<ul className="grid gap-2 text-sm">
+				{steps.map(({ key, done, href }) => (
+					<li key={key} className="flex items-center gap-2">
+						{done ? (
+							<span className="grid size-5 place-items-center rounded-full bg-emerald-600 text-white">
+								<CheckIcon className="size-3" />
+								<span className="sr-only">{t("done")}</span>
+							</span>
+						) : (
+							<span className="size-5 rounded-full border border-border" />
+						)}
+						{done || !href ? (
+							<span className={done ? undefined : "text-muted-foreground"}>
+								{t(key)}
+							</span>
+						) : (
+							<Link
+								href={href}
+								className="text-foreground underline-offset-4 hover:underline"
+							>
+								{t(key)}
+							</Link>
+						)}
+					</li>
+				))}
+			</ul>
+		</section>
+	);
+}
+
+/** The Tags behind « Pour toi », with a way to change them (#66). */
+function FollowedTagsCard() {
+	const t = useTranslations("home.followed");
+	const followed = useQuery({
+		...orpc.tags.followed.queryOptions(),
+		enabled: HAS_DATABASE,
+	});
+	const tags = followed.data?.items.map((tag) => tag.name) ?? [];
+	return (
+		<section className="grid gap-3 rounded-2xl border border-border bg-card p-5">
+			<p className="font-mono font-semibold text-[0.68rem] text-muted-foreground uppercase tracking-widest">
+				{t("title")}
+			</p>
+			{tags.length === 0 ? (
+				<p className="text-muted-foreground text-sm">{t("none")}</p>
+			) : (
+				<FollowedTags label="" tags={tags} className="flex-wrap" />
+			)}
+			<Button
+				variant="outline"
+				size="sm"
+				className="justify-self-start"
+				render={<Link href="/settings?tab=tags" />}
+				nativeButton={false}
+			>
+				<TagIcon />
+				{t("manage")}
+			</Button>
+		</section>
 	);
 }
 
